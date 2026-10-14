@@ -1,20 +1,28 @@
 {
  "version": 2,
  "owner": "drasticstatic",
- "generated": "2026-10-14T03:46:04.647Z",
+ "generated": "2026-10-14T08:26:59.672Z",
  "timeZone": "America/New_York",
- "total": 6,
- "shown": 5,
- "shownPublic": 1,
+ "total": 16,
+ "shown": 10,
+ "shownPublic": 6,
  "shownPrivate": 4,
  "filtered": {
   "merges": 0,
   "mirrors": 0,
   "bots": 0,
   "undone": 0,
-  "copies": 1
+  "copies": 6
  },
  "repos": [
+  {
+   "name": "psychedelic-policy-reform-dapp-public-preview",
+   "label": "dApp preview",
+   "blurb": "Evidence, a pledge preview and updates",
+   "url": "https://github.com/drasticstatic/psychedelic-policy-reform-dapp-public-preview",
+   "private": false,
+   "count": 4
+  },
   {
    "name": "psychedelic-policy-reform",
    "label": "The initiative's notes",
@@ -29,7 +37,7 @@
    "blurb": "This record",
    "url": "https://github.com/drasticstatic/psychedelic-policy-reform-astro-public",
    "private": false,
-   "count": 1
+   "count": 2
   },
   {
    "name": "psychedelic-policy-reform-astro",
@@ -42,6 +50,18 @@
  ],
  "kinds": [
   {
+   "id": "fix",
+   "name": "Fixes",
+   "icon": "wrench",
+   "count": 1
+  },
+  {
+   "id": "words",
+   "name": "Words and pages",
+   "icon": "article",
+   "count": 1
+  },
+  {
    "id": "records",
    "name": "Records and docs",
    "icon": "notebook",
@@ -51,13 +71,13 @@
    "id": "under",
    "name": "Behind the scenes",
    "icon": "gear-six",
-   "count": 1
+   "count": 3
   },
   {
    "id": "new",
    "name": "New",
    "icon": "sparkle",
-   "count": 1
+   "count": 2
   },
   {
    "id": "update",
@@ -71,7 +91,13 @@
    "id": "medium",
    "name": "Medium",
    "icon": "lightning",
-   "count": 2
+   "count": 6
+  },
+  {
+   "id": "low",
+   "name": "Low",
+   "icon": "leaf",
+   "count": 1
   }
  ],
  "people": [
@@ -79,43 +105,247 @@
    "name": "Christopher W",
    "github": "drasticstatic",
    "avatar": "github",
-   "count": 5
+   "count": 10
   }
  ],
  "first": "2026-09-15",
- "last": "2026-10-13",
+ "last": "2026-10-14",
  "months": [
   {
    "key": "2026-10",
    "label": "October 2026",
-   "count": 3,
+   "count": 8,
    "days": [
+    {
+     "date": "2026-10-14",
+     "label": "Wednesday, October 14",
+     "groups": [
+      {
+       "repo": "psychedelic-policy-reform-dapp-public-preview",
+       "label": "dApp preview",
+       "private": false,
+       "items": [
+        {
+         "id": "02fdbde98fe9",
+         "sha": "02fdbde98fe9a7a5673b12a524e8d8503d1f20fc",
+         "short": "02fdbde",
+         "repo": "psychedelic-policy-reform-dapp-public-preview",
+         "repoLabel": "dApp preview",
+         "private": false,
+         "masked": false,
+         "url": "https://github.com/drasticstatic/psychedelic-policy-reform-dapp-public-preview/commit/02fdbde98fe9a7a5673b12a524e8d8503d1f20fc",
+         "d": "2026-10-14",
+         "time": "4:26 AM",
+         "ts": "2026-10-14T08:26:19Z",
+         "text": "Keep the Coinbase and Base Account SDKs out of the bundle",
+         "area": "Dapp",
+         "kind": {
+          "id": "fix",
+          "name": "Fixes",
+          "icon": "wrench"
+         },
+         "priority": {
+          "id": "medium",
+          "name": "Medium",
+          "icon": "lightning"
+         },
+         "who": {
+          "name": "Christopher W",
+          "github": "drasticstatic",
+          "avatar": "github",
+          "known": true
+         },
+         "agents": [
+          {
+           "name": "Alfred",
+           "tool": "Claude Code",
+           "label": "Alfred · Claude Code"
+          }
+         ]
+        },
+        {
+         "id": "433833758531",
+         "sha": "4338337585313f6e16869d763951ef26ceb066d6",
+         "short": "4338337",
+         "repo": "psychedelic-policy-reform-dapp-public-preview",
+         "repoLabel": "dApp preview",
+         "private": false,
+         "masked": false,
+         "url": "https://github.com/drasticstatic/psychedelic-policy-reform-dapp-public-preview/commit/4338337585313f6e16869d763951ef26ceb066d6",
+         "d": "2026-10-14",
+         "time": "4:23 AM",
+         "ts": "2026-10-14T08:23:18Z",
+         "text": "Deploy and allowlist sync workflows, README, roadmap and upkeep notes",
+         "area": "Dapp",
+         "kind": {
+          "id": "under",
+          "name": "Behind the scenes",
+          "icon": "gear-six"
+         },
+         "priority": {
+          "id": "medium",
+          "name": "Medium",
+          "icon": "lightning"
+         },
+         "who": {
+          "name": "Christopher W",
+          "github": "drasticstatic",
+          "avatar": "github",
+          "known": true
+         },
+         "agents": [
+          {
+           "name": "Alfred",
+           "tool": "Claude Code",
+           "label": "Alfred · Claude Code"
+          }
+         ]
+        },
+        {
+         "id": "ca6ab99a747f",
+         "sha": "ca6ab99a747fdf71ac976d0c61f1ceedc83a4f16",
+         "short": "ca6ab99",
+         "repo": "psychedelic-policy-reform-dapp-public-preview",
+         "repoLabel": "dApp preview",
+         "private": false,
+         "masked": false,
+         "url": "https://github.com/drasticstatic/psychedelic-policy-reform-dapp-public-preview/commit/ca6ab99a747fdf71ac976d0c61f1ceedc83a4f16",
+         "d": "2026-10-14",
+         "time": "4:22 AM",
+         "ts": "2026-10-14T08:22:10Z",
+         "text": "Evidence, Updates, About and Map pages",
+         "area": "Dapp",
+         "kind": {
+          "id": "words",
+          "name": "Words and pages",
+          "icon": "article"
+         },
+         "priority": {
+          "id": "medium",
+          "name": "Medium",
+          "icon": "lightning"
+         },
+         "who": {
+          "name": "Christopher W",
+          "github": "drasticstatic",
+          "avatar": "github",
+          "known": true
+         },
+         "agents": [
+          {
+           "name": "Alfred",
+           "tool": "Claude Code",
+           "label": "Alfred · Claude Code"
+          }
+         ]
+        },
+        {
+         "id": "f385a38679ad",
+         "sha": "f385a38679ad7b877acea3a8662d22fd97eb5188",
+         "short": "f385a38",
+         "repo": "psychedelic-policy-reform-dapp-public-preview",
+         "repoLabel": "dApp preview",
+         "private": false,
+         "masked": false,
+         "url": "https://github.com/drasticstatic/psychedelic-policy-reform-dapp-public-preview/commit/f385a38679ad7b877acea3a8662d22fd97eb5188",
+         "d": "2026-10-14",
+         "time": "4:21 AM",
+         "ts": "2026-10-14T08:21:53Z",
+         "text": "The dApp preview's scaffold, on arrival kit 1.2.1",
+         "area": "Dapp",
+         "kind": {
+          "id": "new",
+          "name": "New",
+          "icon": "sparkle"
+         },
+         "priority": {
+          "id": "medium",
+          "name": "Medium",
+          "icon": "lightning"
+         },
+         "who": {
+          "name": "Christopher W",
+          "github": "drasticstatic",
+          "avatar": "github",
+          "known": true
+         },
+         "agents": [
+          {
+           "name": "Alfred",
+           "tool": "Claude Code",
+           "label": "Alfred · Claude Code"
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    },
     {
      "date": "2026-10-13",
      "label": "Tuesday, October 13",
      "groups": [
       {
-       "repo": "psychedelic-policy-reform-astro",
-       "label": "AstroLog source",
-       "private": true,
+       "repo": "psychedelic-policy-reform-astro-public",
+       "label": "AstroLog",
+       "private": false,
        "items": [
         {
-         "id": "c21a3e494863",
-         "short": "c21a3e4",
-         "repo": "psychedelic-policy-reform-astro",
-         "repoLabel": "AstroLog source",
-         "private": true,
-         "masked": true,
-         "url": null,
+         "id": "4d31674894d7",
+         "sha": "4d31674894d7dc8ef8cad901baf49bc8f8427618",
+         "short": "4d31674",
+         "repo": "psychedelic-policy-reform-astro-public",
+         "repoLabel": "AstroLog",
+         "private": false,
+         "masked": false,
+         "url": "https://github.com/drasticstatic/psychedelic-policy-reform-astro-public/commit/4d31674894d7dc8ef8cad901baf49bc8f8427618",
+         "d": "2026-10-13",
+         "time": "11:46 PM",
+         "ts": "2026-10-14T03:46:11Z",
+         "text": "First snapshot, private rows masked",
+         "area": "Ledger",
+         "kind": {
+          "id": "under",
+          "name": "Behind the scenes",
+          "icon": "gear-six"
+         },
+         "priority": {
+          "id": "low",
+          "name": "Low",
+          "icon": "leaf"
+         },
+         "who": {
+          "name": "Christopher W",
+          "github": "drasticstatic",
+          "avatar": "github",
+          "known": true
+         },
+         "agents": [
+          {
+           "name": "Alfred",
+           "tool": "Claude Code",
+           "label": "Alfred · Claude Code"
+          }
+         ]
+        },
+        {
+         "id": "cf31d715207d",
+         "sha": "cf31d715207d77a500365db3d63ef37eeff4d8e0",
+         "short": "cf31d71",
+         "repo": "psychedelic-policy-reform-astro-public",
+         "repoLabel": "AstroLog",
+         "private": false,
+         "masked": false,
+         "url": "https://github.com/drasticstatic/psychedelic-policy-reform-astro-public/commit/cf31d715207d77a500365db3d63ef37eeff4d8e0",
          "d": "2026-10-13",
          "time": "11:45 PM",
-         "ts": "2026-10-14T03:45:42Z",
-         "text": "██████ ██████ ████ ██████ ██ ██████ ██████ ██ ██████",
-         "area": "",
+         "ts": "2026-10-14T03:45:33Z",
+         "text": "The initiative's AstroLog, on arrival kit 1.2.1",
+         "area": "Astrolog",
          "kind": {
-          "id": "records",
-          "name": "Records and docs",
-          "icon": "notebook"
+          "id": "new",
+          "name": "New",
+          "icon": "sparkle"
          },
          "priority": {
           "id": "medium",
@@ -139,28 +369,27 @@
        ]
       },
       {
-       "repo": "psychedelic-policy-reform-astro-public",
-       "label": "AstroLog",
-       "private": false,
+       "repo": "psychedelic-policy-reform-astro",
+       "label": "AstroLog source",
+       "private": true,
        "items": [
         {
-         "id": "cf31d715207d",
-         "sha": "cf31d715207d77a500365db3d63ef37eeff4d8e0",
-         "short": "cf31d71",
-         "repo": "psychedelic-policy-reform-astro-public",
-         "repoLabel": "AstroLog",
-         "private": false,
-         "masked": false,
-         "url": "https://github.com/drasticstatic/psychedelic-policy-reform-astro-public/commit/cf31d715207d77a500365db3d63ef37eeff4d8e0",
+         "id": "c21a3e494863",
+         "short": "c21a3e4",
+         "repo": "psychedelic-policy-reform-astro",
+         "repoLabel": "AstroLog source",
+         "private": true,
+         "masked": true,
+         "url": null,
          "d": "2026-10-13",
          "time": "11:45 PM",
-         "ts": "2026-10-14T03:45:33Z",
-         "text": "The initiative's AstroLog, on arrival kit 1.2.1",
-         "area": "Astrolog",
+         "ts": "2026-10-14T03:45:42Z",
+         "text": "██████ ██████ ████ ██████ ██ ██████ ██████ ██ ██████",
+         "area": "",
          "kind": {
-          "id": "new",
-          "name": "New",
-          "icon": "sparkle"
+          "id": "records",
+          "name": "Records and docs",
+          "icon": "notebook"
          },
          "priority": {
           "id": "medium",
@@ -328,6 +557,196 @@
   }
  ],
  "items": [
+  {
+   "id": "02fdbde98fe9",
+   "sha": "02fdbde98fe9a7a5673b12a524e8d8503d1f20fc",
+   "short": "02fdbde",
+   "repo": "psychedelic-policy-reform-dapp-public-preview",
+   "repoLabel": "dApp preview",
+   "private": false,
+   "masked": false,
+   "url": "https://github.com/drasticstatic/psychedelic-policy-reform-dapp-public-preview/commit/02fdbde98fe9a7a5673b12a524e8d8503d1f20fc",
+   "d": "2026-10-14",
+   "time": "4:26 AM",
+   "ts": "2026-10-14T08:26:19Z",
+   "text": "Keep the Coinbase and Base Account SDKs out of the bundle",
+   "area": "Dapp",
+   "kind": {
+    "id": "fix",
+    "name": "Fixes",
+    "icon": "wrench"
+   },
+   "priority": {
+    "id": "medium",
+    "name": "Medium",
+    "icon": "lightning"
+   },
+   "who": {
+    "name": "Christopher W",
+    "github": "drasticstatic",
+    "avatar": "github",
+    "known": true
+   },
+   "agents": [
+    {
+     "name": "Alfred",
+     "tool": "Claude Code",
+     "label": "Alfred · Claude Code"
+    }
+   ]
+  },
+  {
+   "id": "433833758531",
+   "sha": "4338337585313f6e16869d763951ef26ceb066d6",
+   "short": "4338337",
+   "repo": "psychedelic-policy-reform-dapp-public-preview",
+   "repoLabel": "dApp preview",
+   "private": false,
+   "masked": false,
+   "url": "https://github.com/drasticstatic/psychedelic-policy-reform-dapp-public-preview/commit/4338337585313f6e16869d763951ef26ceb066d6",
+   "d": "2026-10-14",
+   "time": "4:23 AM",
+   "ts": "2026-10-14T08:23:18Z",
+   "text": "Deploy and allowlist sync workflows, README, roadmap and upkeep notes",
+   "area": "Dapp",
+   "kind": {
+    "id": "under",
+    "name": "Behind the scenes",
+    "icon": "gear-six"
+   },
+   "priority": {
+    "id": "medium",
+    "name": "Medium",
+    "icon": "lightning"
+   },
+   "who": {
+    "name": "Christopher W",
+    "github": "drasticstatic",
+    "avatar": "github",
+    "known": true
+   },
+   "agents": [
+    {
+     "name": "Alfred",
+     "tool": "Claude Code",
+     "label": "Alfred · Claude Code"
+    }
+   ]
+  },
+  {
+   "id": "ca6ab99a747f",
+   "sha": "ca6ab99a747fdf71ac976d0c61f1ceedc83a4f16",
+   "short": "ca6ab99",
+   "repo": "psychedelic-policy-reform-dapp-public-preview",
+   "repoLabel": "dApp preview",
+   "private": false,
+   "masked": false,
+   "url": "https://github.com/drasticstatic/psychedelic-policy-reform-dapp-public-preview/commit/ca6ab99a747fdf71ac976d0c61f1ceedc83a4f16",
+   "d": "2026-10-14",
+   "time": "4:22 AM",
+   "ts": "2026-10-14T08:22:10Z",
+   "text": "Evidence, Updates, About and Map pages",
+   "area": "Dapp",
+   "kind": {
+    "id": "words",
+    "name": "Words and pages",
+    "icon": "article"
+   },
+   "priority": {
+    "id": "medium",
+    "name": "Medium",
+    "icon": "lightning"
+   },
+   "who": {
+    "name": "Christopher W",
+    "github": "drasticstatic",
+    "avatar": "github",
+    "known": true
+   },
+   "agents": [
+    {
+     "name": "Alfred",
+     "tool": "Claude Code",
+     "label": "Alfred · Claude Code"
+    }
+   ]
+  },
+  {
+   "id": "f385a38679ad",
+   "sha": "f385a38679ad7b877acea3a8662d22fd97eb5188",
+   "short": "f385a38",
+   "repo": "psychedelic-policy-reform-dapp-public-preview",
+   "repoLabel": "dApp preview",
+   "private": false,
+   "masked": false,
+   "url": "https://github.com/drasticstatic/psychedelic-policy-reform-dapp-public-preview/commit/f385a38679ad7b877acea3a8662d22fd97eb5188",
+   "d": "2026-10-14",
+   "time": "4:21 AM",
+   "ts": "2026-10-14T08:21:53Z",
+   "text": "The dApp preview's scaffold, on arrival kit 1.2.1",
+   "area": "Dapp",
+   "kind": {
+    "id": "new",
+    "name": "New",
+    "icon": "sparkle"
+   },
+   "priority": {
+    "id": "medium",
+    "name": "Medium",
+    "icon": "lightning"
+   },
+   "who": {
+    "name": "Christopher W",
+    "github": "drasticstatic",
+    "avatar": "github",
+    "known": true
+   },
+   "agents": [
+    {
+     "name": "Alfred",
+     "tool": "Claude Code",
+     "label": "Alfred · Claude Code"
+    }
+   ]
+  },
+  {
+   "id": "4d31674894d7",
+   "sha": "4d31674894d7dc8ef8cad901baf49bc8f8427618",
+   "short": "4d31674",
+   "repo": "psychedelic-policy-reform-astro-public",
+   "repoLabel": "AstroLog",
+   "private": false,
+   "masked": false,
+   "url": "https://github.com/drasticstatic/psychedelic-policy-reform-astro-public/commit/4d31674894d7dc8ef8cad901baf49bc8f8427618",
+   "d": "2026-10-13",
+   "time": "11:46 PM",
+   "ts": "2026-10-14T03:46:11Z",
+   "text": "First snapshot, private rows masked",
+   "area": "Ledger",
+   "kind": {
+    "id": "under",
+    "name": "Behind the scenes",
+    "icon": "gear-six"
+   },
+   "priority": {
+    "id": "low",
+    "name": "Low",
+    "icon": "leaf"
+   },
+   "who": {
+    "name": "Christopher W",
+    "github": "drasticstatic",
+    "avatar": "github",
+    "known": true
+   },
+   "agents": [
+    {
+     "name": "Alfred",
+     "tool": "Claude Code",
+     "label": "Alfred · Claude Code"
+    }
+   ]
+  },
   {
    "id": "c21a3e494863",
    "short": "c21a3e4",
