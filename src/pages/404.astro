@@ -1,0 +1,203 @@
+---
+// GitHub Pages serves this for any missing path under /psychedelic-policy-reform-astro-public, at any
+// depth. Every link here is a full URL, so it works however deep the wrong turn was. No first-visit
+// splash on a wrong turn; "/" search still works.
+import { getCollection } from "astro:content";
+import Base from "../layouts/Base.astro";
+import KeystoneArch from "../components/KeystoneArch.astro";
+import { BUCKETS, DAPP, NAME, SITE, entrySlug } from "../data/site";
+
+const base = import.meta.env.BASE_URL;
+const at = (path: string) => `${SITE}${base}${path}`;
+const entries = await getCollection("changelog");
+const docs = await getCollection("library");
+const data = [
+  { l: "AstroLog porch", u: at("/"), k: "home porch index readme astrolog" },
+  { l: "Changelog", u: at("/changelog"), k: "changelog entries changes" },
+  { l: "Library", u: at("/library"), k: "library docs write-ups explainers rfra" },
+  { l: "Ledger", u: at("/ledger"), k: "ledger commits history" },
+  { l: "Map", u: at("/map"), k: "map sitemap" },
+  { l: "Roadmap", u: at("/roadmap"), k: "roadmap plans next" },
+  { l: "Sustainability", u: at("/sustainability"), k: "sustainability upkeep tokens" },
+  { l: "dApp preview", u: `${DAPP}/`, k: "dapp app wallet pledge evidence" },
+  ...BUCKETS.filter((b) => entries.some((e) => (e.data.repo ?? "initiative") === b.slug)).map((b) => ({
+    l: `${b.name} changelog`,
+    u: at(`/changelog/${b.slug}`),
+    k: `${b.slug} ${b.name}`,
+  })),
+  ...entries.map((e) => ({ l: e.data.title, u: at(`/changelog/${e.data.repo ?? "initiative"}/${entrySlug(e.id)}`), k: `${e.id} ${e.data.title}` })),
+  ...docs.map((d) => ({ l: d.data.title, u: at(`/library/${entrySlug(d.id)}`), k: `${d.id} ${d.data.title}` })),
+].map((x) => ({ ...x, k: x.k.toLowerCase() }));
+---
+
+<Base title={`Page not found — ${NAME} AstroLog`} description="This address doesn't lead to a page. The way back is below." splash={false}>
+  <section class="lost">
+    <div class="print">
+      <KeystoneArch seed="404" width={150} />
+    </div>
+    <h1>No page has been set here yet.</h1>
+    <p class="lede">
+      The link may be old, or the page hasn't been written yet. Nothing is broken on your side, and
+      every way below leads back.
+    </p>
+    <div class="guess" id="guess" hidden>
+      <p class="guess-label">Were you looking for one of these?</p>
+      <div class="guess-links" id="guess-links"></div>
+    </div>
+    <div class="ways">
+      <a class="way primary" href={at("/")}><i class="ph ph-arrow-left" aria-hidden="true"></i>Back to the porch</a>
+      <button type="button" class="way" data-arrival-open="search"><i class="ph ph-magnifying-glass" aria-hidden="true"></i>Search instead <kbd>/</kbd></button>
+    </div>
+    <ul class="more">
+      <li><a href={at("/changelog")}><i class="ph ph-clock-counter-clockwise" aria-hidden="true"></i>Changelog</a></li>
+      <li><a href={at("/library")}><i class="ph ph-books" aria-hidden="true"></i>Library</a></li>
+      <li><a href={at("/ledger")}><i class="ph ph-scroll" aria-hidden="true"></i>Ledger</a></li>
+      <li><a href={at("/map")}><i class="ph ph-map-trifold" aria-hidden="true"></i>Map</a></li>
+      <li><a href={`${DAPP}/`}><i class="ph ph-cube" aria-hidden="true"></i>The dApp preview</a></li>
+    </ul>
+  </section>
+</Base>
+
+<script is:inline define:vars={{ data }}>
+  (function () {
+    var stop = ["html", "changelog", "astro", "public", "library", "index", "the", "and", "www", "psychedelic", "policy", "reform"];
+    var words = decodeURIComponent(location.pathname)
+      .toLowerCase()
+      .split(/[^a-z0-9]+/)
+      .filter(function (w) {
+        return w.length > 2 && stop.indexOf(w) < 0;
+      });
+    var scored = data
+      .map(function (e) {
+        var s = 0;
+        words.forEach(function (w) {
+          if (e.k.indexOf(w) >= 0) s += 2;
+          else if (w.length > 4 && e.k.indexOf(w.slice(0, 4)) >= 0) s += 1;
+        });
+        return { e: e, s: s };
+      })
+      .filter(function (x) {
+        return x.s > 0;
+      })
+      .sort(function (a, b) {
+        return b.s - a.s;
+      })
+      .slice(0, 3);
+    if (!scored.length) return;
+    document.getElementById("guess").hidden = false;
+    document.getElementById("guess-links").innerHTML = scored
+      .map(function (x) {
+        return '<a href="' + x.e.u + '"><i class="ph ph-arrow-right" aria-hidden="true"></i>' + x.e.l.replace(/</g, "&lt;") + "</a>";
+      })
+      .join("");
+  })();
+</script>
+
+<style>
+  .lost {
+    max-width: 36rem;
+    margin: 0 auto;
+    padding: 2.5rem 1.25rem 3rem;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .print {
+    margin: 0 0 1.25rem;
+  }
+  h1 {
+    font-size: clamp(2rem, 6vw, 2.8rem);
+    line-height: 1.12;
+    margin: 0 0 0.75rem;
+    text-wrap: balance;
+  }
+  .lede {
+    margin: 0 0 1.5rem;
+    color: var(--muted);
+  }
+  .guess {
+    margin: 0 0 1.5rem;
+  }
+  .guess-label {
+    margin: 0 0 0.5rem;
+    color: var(--muted);
+  }
+  .guess-links {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    align-items: center;
+  }
+  .guess-links :global(.ph) {
+    margin-right: 0.35rem;
+    vertical-align: -0.12em;
+  }
+  .ways {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.6rem;
+    margin: 0 0 2rem;
+  }
+  .way {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.6rem 1.05rem;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: color-mix(in srgb, var(--surface) 75%, transparent);
+    color: var(--foreground);
+    font: 600 0.93rem/1.2 var(--font-body);
+    text-decoration: none;
+    cursor: pointer;
+  }
+  .way:hover {
+    border-color: var(--accent);
+  }
+  .way.primary {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: var(--on-accent);
+  }
+  .way kbd {
+    font: 600 0.72rem/1 ui-monospace, Menlo, monospace;
+    padding: 0.15rem 0.35rem;
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    background: var(--background);
+    color: var(--foreground);
+  }
+  .more {
+    width: 100%;
+    max-width: 24rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    text-align: left;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: color-mix(in srgb, var(--surface) 78%, transparent);
+    overflow: hidden;
+  }
+  .more li + li {
+    border-top: 1px solid var(--border);
+  }
+  .more a {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    padding: 0.8rem 1rem;
+    color: var(--foreground);
+    text-decoration: none;
+  }
+  .more a:hover {
+    background: var(--surface-muted);
+    color: var(--accent);
+  }
+  .more .ph {
+    color: var(--accent);
+    font-size: 1.2rem;
+  }
+</style>

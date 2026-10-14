@@ -1,0 +1,11 @@
+---
+// /sustainability: the repository's SUSTAINABILITY.md, as a page (kit 1.2).
+import Base from "../layouts/Base.astro";
+import RepoDoc from "../components/RepoDoc.astro";
+import { NAME } from "../data/site";
+import { pageCardUrl } from "../og/pages";
+---
+
+<Base title={`Sustainability — ${NAME} AstroLog`} description={`What it takes to keep ${NAME}'s pages running: the publishing token, the daily rebuild, the shared kit, the wallet allowlist and cached previews, and what to do for each.`} active="sustainability" ogImage={pageCardUrl("sustainability")} ogAlt={`${NAME}'s sustainability notes: what keeps these pages running, beside the keystone arch.`}>
+  <RepoDoc doc="sustainability" />
+</Base>

@@ -1,0 +1,28 @@
+---
+// The initiative's figure, drawn inline: a stone arch with its keystone set and a sprout beneath it
+// (the same generator as the share cards, src/og/keystone-svg.mjs). Colored per mode from org.css
+// (.ks-figure rules), and its stones catch the light one by one unless motion is Still.
+import { archSvg } from "../og/keystone-svg.mjs";
+
+interface Props {
+  seed?: string;
+  width?: number;
+  label?: string;
+}
+const { seed = "porch", width = 240, label } = Astro.props;
+const svg = archSvg(seed, { width: 400, height: 330, cx: 200, cy: 236, ri: 112, ro: 176, ground: 330, strokeWidth: 2.2, title: label });
+---
+
+<div class="ks-figure" style={`width:${width}px`} aria-hidden={label ? undefined : "true"} set:html={svg} />
+
+<style>
+  .ks-figure {
+    max-width: 100%;
+    margin: 0 auto;
+  }
+  .ks-figure :global(svg) {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+</style>

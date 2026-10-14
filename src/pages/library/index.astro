@@ -1,0 +1,128 @@
+---
+import { getCollection } from "astro:content";
+import Base from "../../layouts/Base.astro";
+import { pageCardUrl } from "../../og/pages";
+import { NAME } from "../../data/site";
+
+const entries = (await getCollection("library")).sort((a, b) => a.data.title.localeCompare(b.data.title));
+const base = import.meta.env.BASE_URL;
+---
+
+<Base
+  title={`Library — ${NAME}`}
+  description="Explainers in plain words on the law and the evidence behind the initiative, starting with RFRA. Drafts are marked, and none of it is legal advice."
+  filename="library/index.astro"
+  active="library"
+  ogImage={pageCardUrl("library")}
+  ogAlt={`${NAME} AstroLog: explainers and write-ups, beside a stone arch with its keystone set.`}
+>
+  <section class="content-section">
+    <h1>Library</h1>
+    <p class="intro">
+      Explainers in plain words, starting with the law this initiative is built on. Each one is
+      marked as a draft until it's been reviewed, and none of it is legal advice.
+    </p>
+
+    {entries.length > 2 && (
+      <input type="search" id="search-input" placeholder="Search the library" aria-label="Search library entries" />
+    )}
+
+    <ul class="library-list" id="library-list">
+      {
+        entries.map((entry) => (
+          <li data-search={`${entry.data.title} ${entry.data.description}`.toLowerCase()}>
+            <a href={`${base}/library/${entry.id.replace(/\.md$/, "")}`}>
+              <span class="entry-title">{entry.data.title}{entry.data.draft && <span class="draft-pill">Draft</span>}<span data-arr-new-tag hidden></span></span>
+              <span class="entry-desc">{entry.data.description}</span>
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+    <p class="no-results" id="no-results" hidden>Nothing matches that search. Try fewer words.</p>
+  </section>
+</Base>
+
+<script>
+  const searchInput = document.getElementById("search-input") as HTMLInputElement | null;
+  const items = document.querySelectorAll<HTMLLIElement>("#library-list li");
+  const noResults = document.getElementById("no-results")!;
+  searchInput?.addEventListener("input", () => {
+    const query = searchInput.value.trim().toLowerCase();
+    let visible = 0;
+    items.forEach((item) => {
+      const show = !query || (item.dataset.search ?? "").includes(query);
+      item.hidden = !show;
+      if (show) visible++;
+    });
+    noResults.hidden = visible > 0;
+  });
+</script>
+
+<style>
+  .content-section {
+    max-width: 42rem;
+    margin: 0 auto;
+    padding: 2.75rem 1.25rem 3rem;
+  }
+  h1 {
+    font-size: clamp(2.1rem, 5vw, 2.6rem);
+    line-height: 1.1;
+    margin: 0 0 0.9rem;
+  }
+  .intro {
+    color: var(--muted);
+    max-width: 34rem;
+    margin: 0 0 1.75rem;
+  }
+  #search-input {
+    width: 100%;
+    padding: 0.6rem 0.9rem;
+    margin-bottom: 1rem;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: inherit;
+    font: inherit;
+    font-size: 0.95rem;
+  }
+  .library-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    border-top: 1px solid var(--border);
+  }
+  .library-list a {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    padding: 1rem 0.25rem;
+    border-bottom: 1px solid var(--border);
+    color: inherit;
+    text-decoration: none;
+  }
+  .library-list a:hover .entry-title {
+    color: var(--accent);
+  }
+  .entry-title {
+    font-family: var(--font-heading);
+    font-size: 1.2rem;
+    line-height: 1.3;
+  }
+  .draft-pill {
+    margin-left: 0.55rem;
+    padding: 0.08rem 0.5rem;
+    border-radius: 999px;
+    vertical-align: 0.2em;
+    font: 600 0.72rem/1.4 var(--font-body);
+    background: color-mix(in srgb, var(--leaf) 18%, transparent);
+    color: var(--foreground);
+  }
+  .entry-desc {
+    font-size: 0.95rem;
+    color: var(--muted);
+  }
+  .no-results {
+    color: var(--muted);
+  }
+</style>

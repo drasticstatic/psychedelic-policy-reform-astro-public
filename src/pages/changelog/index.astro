@@ -1,0 +1,165 @@
+---
+import { getCollection } from "astro:content";
+import Base from "../../layouts/Base.astro";
+import { pageCardUrl } from "../../og/pages";
+import { BUCKETS, NAME } from "../../data/site";
+
+const entries = await getCollection("changelog");
+const base = import.meta.env.BASE_URL;
+const REPO_BUCKETS = BUCKETS;
+
+const counts = Object.fromEntries(
+  REPO_BUCKETS.map((b) => [b.slug, entries.filter((e) => (e.data.repo ?? "initiative") === b.slug).length])
+);
+---
+
+<Base
+  title={`Changelog — ${NAME}`}
+  description="Every notable step of the initiative, in plain language, grouped by the part of the work it belongs to."
+  filename="changelog/index.astro"
+  active="changelog"
+  ogImage={pageCardUrl("changelog")}
+  ogAlt={`${NAME} AstroLog: every change, newest first, beside a stone arch with its keystone set.`}
+>
+  <section class="content-section">
+    <h1>Changelog</h1>
+    <p class="intro">
+      A running record of the initiative's finished steps, grouped by the part of the work they
+      belong to. The explainers live in the <a href={`${base}/library`}>library</a>.
+    </p>
+
+    <div class="repo-grid">
+      {
+        REPO_BUCKETS.map((repo) => {
+          const live = !repo.comingSoon || counts[repo.slug] > 0;
+          const inner = (
+            <>
+              <i class={`ph ${repo.icon}`} aria-hidden="true" />
+              <span class="repo-card-text">
+                <span class="repo-card-title">
+                  {repo.name}
+                  {repo.comingSoon && !counts[repo.slug] && <span class="badge">No entries yet</span>}
+                </span>
+                <span class="repo-card-desc">{repo.description}</span>
+                {live && (
+                  <span class="entry-count tabular">
+                    {counts[repo.slug]} {counts[repo.slug] === 1 ? "entry" : "entries"}
+                  </span>
+                )}
+              </span>
+            </>
+          );
+          return live ? (
+            <a class="repo-card" href={`${base}/changelog/${repo.slug}`}>{inner}</a>
+          ) : (
+            <div class="repo-card quiet">
+              {inner}
+              {repo.externalUrl && (
+                <a class="external-link" href={repo.externalUrl}>{repo.externalLabel}</a>
+              )}
+            </div>
+          );
+        })
+      }
+    </div>
+  </section>
+</Base>
+
+<style>
+  .content-section {
+    max-width: 46rem;
+    margin: 0 auto;
+    padding: 2.75rem 1.25rem 3rem;
+  }
+  h1 {
+    font-size: clamp(2.1rem, 5vw, 2.6rem);
+    line-height: 1.1;
+    margin: 0 0 0.9rem;
+  }
+  .intro {
+    color: var(--muted);
+    max-width: 36rem;
+    margin: 0 0 2rem;
+  }
+  .repo-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.9rem;
+  }
+  @media (max-width: 640px) {
+    .repo-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+  .repo-card {
+    position: relative;
+    display: flex;
+    gap: 0.85rem;
+    padding: 1.1rem 1.15rem;
+    border-radius: 16px;
+    border: 1px solid var(--border);
+    background: color-mix(in srgb, var(--surface) 62%, transparent);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    color: inherit;
+    text-decoration: none;
+  }
+  a.repo-card:hover {
+    border-color: var(--accent);
+  }
+  .repo-card.quiet {
+    border-style: dashed;
+    background: transparent;
+  }
+  .repo-card > .ph {
+    font-size: 1.55rem;
+    color: var(--accent);
+    flex-shrink: 0;
+    margin-top: 0.1rem;
+  }
+  .repo-card.quiet > .ph {
+    color: var(--muted);
+  }
+  .repo-card-text {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    min-width: 0;
+  }
+  .repo-card-title {
+    font-family: var(--font-heading);
+    font-size: 1.15rem;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .badge {
+    font-family: var(--font-body);
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 0.1rem 0.55rem;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--leaf) 18%, transparent);
+    color: var(--muted);
+  }
+  .repo-card-desc {
+    font-size: 0.93rem;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+  .entry-count {
+    font-size: 0.82rem;
+    color: var(--muted);
+  }
+  .external-link {
+    position: absolute;
+    right: 1.15rem;
+    bottom: 0.9rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+  }
+  .repo-card.quiet .repo-card-text {
+    padding-bottom: 1.5rem;
+  }
+</style>

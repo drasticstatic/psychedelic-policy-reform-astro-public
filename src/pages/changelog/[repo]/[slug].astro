@@ -1,0 +1,166 @@
+---
+import { getCollection, render } from "astro:content";
+import Base from "../../../layouts/Base.astro";
+import Who from "../../../components/Who.astro";
+import { entryCardUrl } from "../../../og/cards";
+import { NAME, PRIORITY, entrySlug, formatDate, tldrOf } from "../../../data/site";
+
+export async function getStaticPaths() {
+  const entries = await getCollection("changelog");
+  const byRepo: Record<string, typeof entries> = {};
+  for (const entry of entries) {
+    const repo = entry.data.repo ?? "initiative";
+    (byRepo[repo] ??= []).push(entry);
+  }
+  const paths: { params: { repo: string; slug: string }; props: any }[] = [];
+  for (const [repo, repoEntries] of Object.entries(byRepo)) {
+    const sorted = [...repoEntries].sort((a, b) => a.data.date.localeCompare(b.data.date));
+    sorted.forEach((entry, i) => {
+      paths.push({
+        params: { repo, slug: entrySlug(entry.id) },
+        props: { entry, prev: sorted[i - 1] ?? null, next: sorted[i + 1] ?? null },
+      });
+    });
+  }
+  return paths;
+}
+
+const { repo } = Astro.params;
+const { entry, prev, next } = Astro.props;
+const { Content } = await render(entry);
+const base = import.meta.env.BASE_URL;
+const priorityLabel = PRIORITY;
+const tldr = tldrOf(entry.body);
+---
+
+<Base
+  title={`${entry.data.title} — ${NAME} Changelog`}
+  description={tldr || entry.data.title}
+  filename={`changelog/${repo}/${entry.id}`}
+  active="changelog"
+  ogImage={entryCardUrl(entry)}
+  ogAlt={`${entry.data.title}. A ${NAME} AstroLog changelog entry${entry.data.who ? ` by ${entry.data.who}` : ""}, with a sprout of its own.`}
+  ogType="article"
+>
+  <article class="content-section">
+    <p class="back"><a href={`${base}/changelog/${repo}`}><i class="ph ph-arrow-left"></i> All entries in this project</a></p>
+    <p class="entry-meta">
+      <span class={`priority-badge priority-${entry.data.priority}`}>{priorityLabel[entry.data.priority]}</span>
+      <time class="tabular" datetime={entry.data.date}>{formatDate(entry.data.date)}</time>
+      {entry.data.who && <span class="meta-who"><Who who={entry.data.who} size={22} />By {entry.data.who}</span>}
+    </p>
+    <h1>{entry.data.title}</h1>
+    <div class="prose">
+      <Content />
+    </div>
+    <p class="share">
+      <button type="button" class="share-btn" data-arrival-open="copy"><i class="ph ph-link" aria-hidden="true"></i>Copy a link to this entry</button>
+      <span>Shared in Telegram, iMessage or Discord, it arrives with its own preview card.</span>
+    </p>
+    <nav class="prev-next" aria-label="More entries">
+      {prev ? (
+        <a class="prev" href={`${base}/changelog/${repo}/${entrySlug(prev.id)}`}>
+          <span class="pn-label">Earlier</span>
+          <span class="pn-title">{prev.data.title}</span>
+        </a>
+      ) : <span />}
+      {next ? (
+        <a class="next" href={`${base}/changelog/${repo}/${entrySlug(next.id)}`}>
+          <span class="pn-label">Later</span>
+          <span class="pn-title">{next.data.title}</span>
+        </a>
+      ) : <span />}
+    </nav>
+  </article>
+</Base>
+
+<style>
+  .content-section {
+    max-width: 40rem;
+    margin: 0 auto;
+    padding: 2.5rem 1.25rem 3rem;
+  }
+  .back {
+    margin: 0 0 1.25rem;
+  }
+  .back a {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.9rem;
+    color: var(--muted);
+    text-decoration: none;
+  }
+  .back a:hover {
+    color: var(--accent);
+  }
+  .entry-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.6rem;
+    margin: 0 0 0.6rem;
+    font-size: 0.88rem;
+    color: var(--muted);
+  }
+  .meta-who {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+  .priority-badge {
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.08rem 0.55rem;
+    border-radius: 999px;
+  }
+  .priority-P1-high {
+    background: color-mix(in srgb, var(--accent) 22%, transparent);
+    color: var(--foreground);
+  }
+  .priority-P2-medium {
+    background: color-mix(in srgb, var(--leaf) 20%, transparent);
+    color: var(--foreground);
+  }
+  .priority-P3-low {
+    background: color-mix(in srgb, var(--muted) 15%, transparent);
+    color: var(--muted);
+  }
+  h1 {
+    font-size: clamp(1.9rem, 5vw, 2.35rem);
+    line-height: 1.15;
+    letter-spacing: -0.01em;
+    margin: 0 0 1.5rem;
+  }
+  .prev-next {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-top: 3rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border);
+  }
+  .prev-next a {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    max-width: 48%;
+    color: inherit;
+    text-decoration: none;
+  }
+  .prev-next .next {
+    text-align: right;
+    margin-left: auto;
+  }
+  .pn-label {
+    font-size: 0.8rem;
+    color: var(--muted);
+  }
+  .pn-title {
+    font-family: var(--font-heading);
+    font-size: 1rem;
+  }
+  .prev-next a:hover .pn-title {
+    color: var(--accent);
+  }
+</style>

@@ -1,0 +1,83 @@
+/* Colors, type and the modes (Docket, Parchment, Capitol, Follow the day) come from the arrival kit's
+   org.css, served from this site's /arrival/ folder and shared with the dApp preview. This file is
+   layout only. A faint ruled-paper texture sits behind every page, like a ledger. */
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  max-width: 100vw;
+  overflow-x: hidden;
+}
+
+body {
+  background-color: var(--background);
+  background-image: radial-gradient(ellipse at 85% -10%, color-mix(in srgb, var(--stone) 10%, transparent), transparent 55%),
+    radial-gradient(ellipse at -10% 110%, color-mix(in srgb, var(--leaf) 9%, transparent), transparent 50%),
+    repeating-linear-gradient(180deg, transparent 0 31px, color-mix(in srgb, var(--foreground) 3.5%, transparent) 31px 32px);
+  background-attachment: fixed;
+  color: var(--foreground);
+  font: 400 1.0625rem/1.65 var(--font-body);
+}
+:root[data-contrast="more"] body,
+:root[data-reading="on"] body {
+  background-image: none;
+}
+
+h1,
+h2,
+h3,
+.brand-title {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  color: var(--heading);
+}
+
+a {
+  color: var(--accent);
+}
+
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+summary:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: 6px;
+}
+
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+/* "Not legal advice": one small, steady note wherever law or evidence is discussed. */
+.legal-note {
+  display: flex;
+  gap: 0.6rem;
+  align-items: flex-start;
+  margin: 0 0 1.5rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid color-mix(in srgb, var(--stone) 45%, var(--border));
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--stone) 8%, var(--surface));
+  font-size: 0.92rem;
+  line-height: 1.55;
+  color: var(--foreground);
+}
+.legal-note .ph {
+  color: var(--stone);
+  font-size: 1.15rem;
+  margin-top: 0.1rem;
+  flex-shrink: 0;
+}
+.draft-note {
+  border-color: color-mix(in srgb, var(--leaf) 50%, var(--border));
+  background: color-mix(in srgb, var(--leaf) 9%, var(--surface));
+}
+.draft-note .ph {
+  color: var(--leaf);
+}

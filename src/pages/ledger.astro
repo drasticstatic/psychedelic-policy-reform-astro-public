@@ -1,0 +1,70 @@
+---
+// The ledger: every public change to this org's code, in plain words, and its private work shown
+// masked. Gathered at build time from the organization's GitHub history (src/ledger/ledger.mjs, the
+// arrival kit's generator v2, configured in src/data/ledger.config.mjs): only the private repositories
+// named there are read, and only their dates, kind and priority reach the page (`npm run
+// ledger:verify` checks). The site rebuilds every day (the sync workflow's schedule).
+import Base from "../layouts/Base.astro";
+import Ledger from "../components/Ledger.astro";
+import { loadLedger } from "../ledger/ledger.mjs";
+import { LEDGER } from "../data/ledger.config.mjs";
+import { STONES, NAME } from "../data/site";
+import { ledgerCardUrl } from "../og/cards";
+
+const ledger = await loadLedger(LEDGER);
+const base = import.meta.env.BASE_URL;
+---
+
+<Base
+  title={`Ledger — ${NAME} AstroLog`}
+  description={`Every public change to the initiative's code on GitHub, in plain words: grouped by day and by kind, credited by first name and last initial, and linked to the change itself. Private work shows too, masked.`}
+  active="ledger"
+  ogImage={ledgerCardUrl}
+  ogAlt={`${NAME}'s ledger: every public change to its code, in plain words, beside the keystone arch.`}
+>
+  <section class="content-section">
+    <h1>Ledger</h1>
+    <p class="intro">
+      Every public change to the initiative's code on GitHub, in plain words, for anyone who'd rather not open GitHub. Each line is one change, sorted into a kind, credited by first name and last initial, and linked to the change itself. It's gathered from the history of the initiative's own repositories (the <a href="https://github.com/drasticstatic/psychedelic-policy-reform-astro-public">AstroLog</a> and the <a href="https://github.com/drasticstatic/psychedelic-policy-reform-dapp-public-preview">dApp preview</a>) and refreshed every day.
+    </p>
+    <p class="intro">
+      Work in the initiative's private repositories shows too, behind the curtain: the repository, the day and the kind of change, with its words masked (████ ██ ██████) and no link. When an AI helped, its name is on the line below the person's.
+    </p>
+    <p class="intro">
+      The <a href={`${base}/changelog`}>changelog</a> tells the story of what changed and why. The ledger is the step-by-step record underneath it.
+    </p>
+    <Ledger ledger={ledger} colors={STONES} openMonths={2} />
+  </section>
+</Base>
+
+<style>
+  .content-section {
+    max-width: 56rem;
+    margin: 0 auto;
+    padding: 2.75rem 1.25rem 3rem;
+  }
+  h1 {
+    font-size: clamp(2.1rem, 5vw, 2.6rem);
+    line-height: 1.1;
+    margin: 0 0 0.9rem;
+  }
+  .intro {
+    max-width: 42rem;
+    margin: 0 0 1rem;
+    color: var(--muted);
+  }
+  .intro:last-of-type {
+    margin-bottom: 1.75rem;
+  }
+  /* The kit's ledger sits on the ruled background: give its months a soft sheet. */
+  .content-section :global(.lg-month) {
+    border-radius: 10px;
+    overflow: hidden;
+    background: color-mix(in srgb, var(--surface) 86%, transparent);
+  }
+  .content-section :global(.lg-chip),
+  .content-section :global(.lg-select select),
+  .content-section :global(.lg-search input) {
+    border-radius: 999px;
+  }
+</style>

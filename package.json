@@ -1,0 +1,26 @@
+{
+  "name": "psychedelic-policy-reform-astro",
+  "type": "module",
+  "version": "0.1.0",
+  "private": true,
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "astro": "astro",
+    "ledger:snapshot": "node src/ledger/snapshot.mjs",
+    "ledger:verify": "node src/ledger/verify-private.mjs"
+  },
+  "dependencies": {
+    "@astrojs/markdown-satteri": "0.4.3",
+    "astro": "^7.3.2",
+    "satori": "0.18.3",
+    "sharp": "0.35.5"
+  },
+  "allowScripts": {
+    "esbuild": true
+  }
+}

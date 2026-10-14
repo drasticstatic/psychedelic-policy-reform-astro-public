@@ -1,0 +1,165 @@
+---
+// The porch: this repository's README.md, rendered as the AstroLog's front door, under the
+// initiative's figure (an arch with its keystone set).
+import { getCollection, render } from "astro:content";
+import Base from "../layouts/Base.astro";
+import KeystoneArch from "../components/KeystoneArch.astro";
+import { DAPP, NAME } from "../data/site";
+
+const [readme] = await getCollection("home");
+const { Content } = await render(readme);
+const base = import.meta.env.BASE_URL;
+---
+
+<Base
+  title={`${NAME} — AstroLog`}
+  description="The open record of an RFRA-based psychedelic policy reform initiative, seen from Pennsylvania: a changelog, explainers in plain words, a map and a ledger."
+>
+  <section class="porch">
+    <KeystoneArch seed="porch" width={220} />
+    <p class="hint arr-hint">Press <kbd>/</kbd> to search every entry, explainer and page. New here? <a href="#welcome" data-arrival-open="guide">Take the welcome tour</a>.</p>
+    <div class="prose readme">
+      <Content />
+    </div>
+    <div class="doors">
+      <a class="door" href={`${base}/library/rfra-in-plain-words`}>
+        <i class="ph ph-scales" aria-hidden="true"></i>
+        <span><strong>RFRA in plain words</strong><span>What the law says, and why sincere religious use matters. A draft, to be reviewed.</span></span>
+      </a>
+      <a class="door" href={`${base}/roadmap`}>
+        <i class="ph ph-path" aria-hidden="true"></i>
+        <span><strong>The roadmap</strong><span>An evidence library, a Pennsylvania lane, partners, and who this serves.</span></span>
+      </a>
+      <a class="door" href={`${DAPP}/`}>
+        <i class="ph ph-cube" aria-hidden="true"></i>
+        <span><strong>The dApp preview</strong><span>The evidence shelves, and a pledge you can try. Nothing is recorded yet.</span></span>
+      </a>
+    </div>
+    <h2 class="porch-h">What's changed lately</h2>
+    <arrival-latest limit="4"></arrival-latest>
+    <p class="porch-more"><a href={`${base}/changelog`}><i class="ph ph-clock-counter-clockwise" aria-hidden="true"></i>Every entry</a><a href={`${base}/ledger`}><i class="ph ph-scroll" aria-hidden="true"></i>The ledger: every public change, in plain words</a></p>
+    <h2 class="porch-h">Who made the changes</h2>
+    <p class="porch-intro">Every entry credits whoever did the work, by first name and last initial.</p>
+    <arrival-people></arrival-people>
+  </section>
+</Base>
+
+<style>
+  .porch {
+    max-width: 44rem;
+    margin: 0 auto;
+    padding: 2.25rem 1.25rem 3.5rem;
+  }
+  .hint {
+    margin: 1rem auto 0;
+    text-align: center;
+    text-wrap: balance;
+    color: var(--muted);
+  }
+  .hint a {
+    color: var(--accent);
+  }
+  .readme {
+    margin-top: 1.75rem;
+  }
+  .doors {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.75rem;
+    margin: 2rem 0 0;
+  }
+  @media (max-width: 680px) {
+    .doors {
+      grid-template-columns: 1fr;
+    }
+  }
+  .door {
+    display: flex;
+    gap: 0.7rem;
+    padding: 1rem 1rem 1.05rem;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: color-mix(in srgb, var(--surface) 84%, transparent);
+    color: inherit;
+    text-decoration: none;
+  }
+  .door:hover {
+    border-color: var(--accent);
+  }
+  .door > .ph {
+    font-size: 1.4rem;
+    color: var(--stone);
+    flex-shrink: 0;
+    margin-top: 0.1rem;
+  }
+  .door strong {
+    display: block;
+    font-family: var(--font-heading);
+    font-size: 1.05rem;
+    color: var(--heading);
+    margin-bottom: 0.2rem;
+  }
+  .door span span {
+    display: block;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    color: var(--muted);
+  }
+  .porch-h {
+    font-size: 1.45rem;
+    line-height: 1.25;
+    margin: 2.5rem 0 0.75rem;
+  }
+  .porch-more {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem 1.2rem;
+    margin: 0.9rem 0 0;
+    font-size: 0.93rem;
+  }
+  .porch-more a {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+  }
+  .porch-intro {
+    margin: -0.25rem 0 0.9rem;
+    color: var(--muted);
+  }
+  .readme :global(h1) {
+    font-size: clamp(2rem, 5.5vw, 2.6rem);
+    line-height: 1.12;
+    letter-spacing: -0.01em;
+    text-align: center;
+    text-wrap: balance;
+    margin: 0 0 1rem;
+  }
+  .readme :global(h1 + blockquote) {
+    border: none;
+    padding: 0;
+    text-align: center;
+    font-size: 1.1rem;
+    margin: 0 auto 1.25rem;
+    max-width: 34rem;
+  }
+  .readme :global(p:has(> a > img)) {
+    text-align: center;
+  }
+  .readme :global(img) {
+    max-width: 100%;
+  }
+  .readme :global(table) {
+    display: block;
+    width: 100%;
+    overflow-x: auto;
+    border-collapse: collapse;
+    font-size: 0.92rem;
+    margin: 0 0 1.25rem;
+  }
+  .readme :global(th),
+  .readme :global(td) {
+    text-align: left;
+    padding: 0.5rem 0.6rem;
+    border-bottom: 1px solid var(--border);
+  }
+</style>

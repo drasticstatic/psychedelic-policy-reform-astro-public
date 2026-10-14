@@ -1,0 +1,80 @@
+---
+import { getCollection, render } from "astro:content";
+import Base from "../../layouts/Base.astro";
+import { docCardUrl } from "../../og/cards";
+import { NAME, entrySlug } from "../../data/site";
+
+export async function getStaticPaths() {
+  const entries = await getCollection("library");
+  return entries.map((entry) => ({
+    params: { slug: entrySlug(entry.id) },
+    props: { entry },
+  }));
+}
+
+const { entry } = Astro.props;
+const { Content } = await render(entry);
+const base = import.meta.env.BASE_URL;
+---
+
+<Base
+  title={`${entry.data.title} — ${NAME} Library`}
+  description={entry.data.description}
+  filename={`library/${entry.id}`}
+  active="library"
+  ogImage={docCardUrl(entry)}
+  ogAlt={`${entry.data.title}. A ${NAME} AstroLog library write-up, with a sprout of its own.`}
+  ogType="article"
+>
+  <article class="content-section">
+    <p class="back"><a href={`${base}/library`}><i class="ph ph-arrow-left"></i> The whole library</a></p>
+    <h1>{entry.data.title}</h1>
+    <p class="desc">{entry.data.description}</p>
+    {entry.data.draft && (
+      <p class="legal-note draft-note"><i class="ph ph-note-pencil" aria-hidden="true"></i><span><strong>Draft, to be reviewed.</strong> This explainer hasn't been reviewed yet. It may change, and it will say so here once it's been checked.</span></p>
+    )}
+    {entry.data.legal && (
+      <p class="legal-note"><i class="ph ph-scales" aria-hidden="true"></i><span><strong>Not legal advice.</strong> This is general information about the law and public sources, written for understanding. It isn't legal advice, and it can't account for anyone's situation. For advice, talk to a lawyer licensed where you live.</span></p>
+    )}
+    <div class="prose">
+      <Content />
+    </div>
+    <p class="share">
+      <button type="button" class="share-btn" data-arrival-open="copy"><i class="ph ph-link" aria-hidden="true"></i>Copy a link to this write-up</button>
+      <span>Shared in Telegram, iMessage or Discord, it arrives with its own preview card.</span>
+    </p>
+  </article>
+</Base>
+
+<style>
+  .content-section {
+    max-width: 42rem;
+    margin: 0 auto;
+    padding: 2.5rem 1.25rem 3rem;
+  }
+  .back {
+    margin: 0 0 1.25rem;
+  }
+  .back a {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.9rem;
+    color: var(--muted);
+    text-decoration: none;
+  }
+  .back a:hover {
+    color: var(--accent);
+  }
+  h1 {
+    font-size: clamp(1.9rem, 5vw, 2.35rem);
+    line-height: 1.15;
+    letter-spacing: -0.01em;
+    margin: 0 0 0.6rem;
+  }
+  .desc {
+    color: var(--muted);
+    font-size: 1.05rem;
+    margin: 0 0 2rem;
+  }
+</style>
