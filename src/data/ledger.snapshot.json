@@ -1,0 +1,506 @@
+{
+ "version": 2,
+ "owner": "drasticstatic",
+ "generated": "2026-10-14T03:46:04.647Z",
+ "timeZone": "America/New_York",
+ "total": 6,
+ "shown": 5,
+ "shownPublic": 1,
+ "shownPrivate": 4,
+ "filtered": {
+  "merges": 0,
+  "mirrors": 0,
+  "bots": 0,
+  "undone": 0,
+  "copies": 1
+ },
+ "repos": [
+  {
+   "name": "psychedelic-policy-reform",
+   "label": "The initiative's notes",
+   "blurb": "",
+   "url": null,
+   "private": true,
+   "count": 3
+  },
+  {
+   "name": "psychedelic-policy-reform-astro-public",
+   "label": "AstroLog",
+   "blurb": "This record",
+   "url": "https://github.com/drasticstatic/psychedelic-policy-reform-astro-public",
+   "private": false,
+   "count": 1
+  },
+  {
+   "name": "psychedelic-policy-reform-astro",
+   "label": "AstroLog source",
+   "blurb": "",
+   "url": null,
+   "private": true,
+   "count": 1
+  }
+ ],
+ "kinds": [
+  {
+   "id": "records",
+   "name": "Records and docs",
+   "icon": "notebook",
+   "count": 2
+  },
+  {
+   "id": "under",
+   "name": "Behind the scenes",
+   "icon": "gear-six",
+   "count": 1
+  },
+  {
+   "id": "new",
+   "name": "New",
+   "icon": "sparkle",
+   "count": 1
+  },
+  {
+   "id": "update",
+   "name": "Updates",
+   "icon": "arrows-clockwise",
+   "count": 1
+  }
+ ],
+ "priorities": [
+  {
+   "id": "medium",
+   "name": "Medium",
+   "icon": "lightning",
+   "count": 2
+  }
+ ],
+ "people": [
+  {
+   "name": "Christopher W",
+   "github": "drasticstatic",
+   "avatar": "github",
+   "count": 5
+  }
+ ],
+ "first": "2026-09-15",
+ "last": "2026-10-13",
+ "months": [
+  {
+   "key": "2026-10",
+   "label": "October 2026",
+   "count": 3,
+   "days": [
+    {
+     "date": "2026-10-13",
+     "label": "Tuesday, October 13",
+     "groups": [
+      {
+       "repo": "psychedelic-policy-reform-astro",
+       "label": "AstroLog source",
+       "private": true,
+       "items": [
+        {
+         "id": "c21a3e494863",
+         "short": "c21a3e4",
+         "repo": "psychedelic-policy-reform-astro",
+         "repoLabel": "AstroLog source",
+         "private": true,
+         "masked": true,
+         "url": null,
+         "d": "2026-10-13",
+         "time": "11:45 PM",
+         "ts": "2026-10-14T03:45:42Z",
+         "text": "██████ ██████ ████ ██████ ██ ██████ ██████ ██ ██████",
+         "area": "",
+         "kind": {
+          "id": "records",
+          "name": "Records and docs",
+          "icon": "notebook"
+         },
+         "priority": {
+          "id": "medium",
+          "name": "Medium",
+          "icon": "lightning"
+         },
+         "who": {
+          "name": "Christopher W",
+          "github": "drasticstatic",
+          "avatar": "github",
+          "known": true
+         },
+         "agents": [
+          {
+           "name": "Alfred",
+           "tool": "Claude Code",
+           "label": "Alfred · Claude Code"
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "repo": "psychedelic-policy-reform-astro-public",
+       "label": "AstroLog",
+       "private": false,
+       "items": [
+        {
+         "id": "cf31d715207d",
+         "sha": "cf31d715207d77a500365db3d63ef37eeff4d8e0",
+         "short": "cf31d71",
+         "repo": "psychedelic-policy-reform-astro-public",
+         "repoLabel": "AstroLog",
+         "private": false,
+         "masked": false,
+         "url": "https://github.com/drasticstatic/psychedelic-policy-reform-astro-public/commit/cf31d715207d77a500365db3d63ef37eeff4d8e0",
+         "d": "2026-10-13",
+         "time": "11:45 PM",
+         "ts": "2026-10-14T03:45:33Z",
+         "text": "The initiative's AstroLog, on arrival kit 1.2.1",
+         "area": "Astrolog",
+         "kind": {
+          "id": "new",
+          "name": "New",
+          "icon": "sparkle"
+         },
+         "priority": {
+          "id": "medium",
+          "name": "Medium",
+          "icon": "lightning"
+         },
+         "who": {
+          "name": "Christopher W",
+          "github": "drasticstatic",
+          "avatar": "github",
+          "known": true
+         },
+         "agents": [
+          {
+           "name": "Alfred",
+           "tool": "Claude Code",
+           "label": "Alfred · Claude Code"
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "repo": "psychedelic-policy-reform",
+       "label": "The initiative's notes",
+       "private": true,
+       "items": [
+        {
+         "id": "fe0d4924b861",
+         "short": "fe0d492",
+         "repo": "psychedelic-policy-reform",
+         "repoLabel": "The initiative's notes",
+         "private": true,
+         "masked": true,
+         "url": null,
+         "d": "2026-10-13",
+         "time": "5:58 AM",
+         "ts": "2026-10-13T09:58:53Z",
+         "text": "████████ ██████ ████ ████ ██ ████████ ██ ████ ██████ ██",
+         "area": "",
+         "kind": {
+          "id": "records",
+          "name": "Records and docs",
+          "icon": "notebook"
+         },
+         "priority": null,
+         "who": {
+          "name": "Christopher W",
+          "github": "drasticstatic",
+          "avatar": "github",
+          "known": true
+         },
+         "agents": [
+          {
+           "name": "Alfred",
+           "tool": "Claude Code",
+           "label": "Alfred · Claude Code"
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "key": "2026-09",
+   "label": "September 2026",
+   "count": 2,
+   "days": [
+    {
+     "date": "2026-09-22",
+     "label": "Tuesday, September 22",
+     "groups": [
+      {
+       "repo": "psychedelic-policy-reform",
+       "label": "The initiative's notes",
+       "private": true,
+       "items": [
+        {
+         "id": "06525a615bdc",
+         "short": "06525a6",
+         "repo": "psychedelic-policy-reform",
+         "repoLabel": "The initiative's notes",
+         "private": true,
+         "masked": true,
+         "url": null,
+         "d": "2026-09-22",
+         "time": "8:28 AM",
+         "ts": "2026-09-22T12:28:00Z",
+         "text": "██████ ██████ ████████ ██████ ████ ████████",
+         "area": "",
+         "kind": {
+          "id": "under",
+          "name": "Behind the scenes",
+          "icon": "gear-six"
+         },
+         "priority": null,
+         "who": {
+          "name": "Christopher W",
+          "github": "drasticstatic",
+          "avatar": "github",
+          "known": true
+         },
+         "agents": [
+          {
+           "name": "Mystarch",
+           "tool": "Claude Code",
+           "label": "Mystarch · Claude Code"
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "date": "2026-09-15",
+     "label": "Tuesday, September 15",
+     "groups": [
+      {
+       "repo": "psychedelic-policy-reform",
+       "label": "The initiative's notes",
+       "private": true,
+       "items": [
+        {
+         "id": "e0cf8b5b6ce1",
+         "short": "e0cf8b5",
+         "repo": "psychedelic-policy-reform",
+         "repoLabel": "The initiative's notes",
+         "private": true,
+         "masked": true,
+         "url": null,
+         "d": "2026-09-15",
+         "time": "8:25 AM",
+         "ts": "2026-09-15T12:25:57Z",
+         "text": "████████ ████████ ████████ ██ ██ ████████ ██████ ██ ████████",
+         "area": "",
+         "kind": {
+          "id": "update",
+          "name": "Updates",
+          "icon": "arrows-clockwise"
+         },
+         "priority": null,
+         "who": {
+          "name": "Christopher W",
+          "github": "drasticstatic",
+          "avatar": "github",
+          "known": true
+         },
+         "agents": [
+          {
+           "name": "Mystarch",
+           "tool": "Claude Code",
+           "label": "Mystarch · Claude Code"
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  }
+ ],
+ "items": [
+  {
+   "id": "c21a3e494863",
+   "short": "c21a3e4",
+   "repo": "psychedelic-policy-reform-astro",
+   "repoLabel": "AstroLog source",
+   "private": true,
+   "masked": true,
+   "url": null,
+   "d": "2026-10-13",
+   "time": "11:45 PM",
+   "ts": "2026-10-14T03:45:42Z",
+   "text": "██████ ██████ ████ ██████ ██ ██████ ██████ ██ ██████",
+   "area": "",
+   "kind": {
+    "id": "records",
+    "name": "Records and docs",
+    "icon": "notebook"
+   },
+   "priority": {
+    "id": "medium",
+    "name": "Medium",
+    "icon": "lightning"
+   },
+   "who": {
+    "name": "Christopher W",
+    "github": "drasticstatic",
+    "avatar": "github",
+    "known": true
+   },
+   "agents": [
+    {
+     "name": "Alfred",
+     "tool": "Claude Code",
+     "label": "Alfred · Claude Code"
+    }
+   ]
+  },
+  {
+   "id": "cf31d715207d",
+   "sha": "cf31d715207d77a500365db3d63ef37eeff4d8e0",
+   "short": "cf31d71",
+   "repo": "psychedelic-policy-reform-astro-public",
+   "repoLabel": "AstroLog",
+   "private": false,
+   "masked": false,
+   "url": "https://github.com/drasticstatic/psychedelic-policy-reform-astro-public/commit/cf31d715207d77a500365db3d63ef37eeff4d8e0",
+   "d": "2026-10-13",
+   "time": "11:45 PM",
+   "ts": "2026-10-14T03:45:33Z",
+   "text": "The initiative's AstroLog, on arrival kit 1.2.1",
+   "area": "Astrolog",
+   "kind": {
+    "id": "new",
+    "name": "New",
+    "icon": "sparkle"
+   },
+   "priority": {
+    "id": "medium",
+    "name": "Medium",
+    "icon": "lightning"
+   },
+   "who": {
+    "name": "Christopher W",
+    "github": "drasticstatic",
+    "avatar": "github",
+    "known": true
+   },
+   "agents": [
+    {
+     "name": "Alfred",
+     "tool": "Claude Code",
+     "label": "Alfred · Claude Code"
+    }
+   ]
+  },
+  {
+   "id": "fe0d4924b861",
+   "short": "fe0d492",
+   "repo": "psychedelic-policy-reform",
+   "repoLabel": "The initiative's notes",
+   "private": true,
+   "masked": true,
+   "url": null,
+   "d": "2026-10-13",
+   "time": "5:58 AM",
+   "ts": "2026-10-13T09:58:53Z",
+   "text": "████████ ██████ ████ ████ ██ ████████ ██ ████ ██████ ██",
+   "area": "",
+   "kind": {
+    "id": "records",
+    "name": "Records and docs",
+    "icon": "notebook"
+   },
+   "priority": null,
+   "who": {
+    "name": "Christopher W",
+    "github": "drasticstatic",
+    "avatar": "github",
+    "known": true
+   },
+   "agents": [
+    {
+     "name": "Alfred",
+     "tool": "Claude Code",
+     "label": "Alfred · Claude Code"
+    }
+   ]
+  },
+  {
+   "id": "06525a615bdc",
+   "short": "06525a6",
+   "repo": "psychedelic-policy-reform",
+   "repoLabel": "The initiative's notes",
+   "private": true,
+   "masked": true,
+   "url": null,
+   "d": "2026-09-22",
+   "time": "8:28 AM",
+   "ts": "2026-09-22T12:28:00Z",
+   "text": "██████ ██████ ████████ ██████ ████ ████████",
+   "area": "",
+   "kind": {
+    "id": "under",
+    "name": "Behind the scenes",
+    "icon": "gear-six"
+   },
+   "priority": null,
+   "who": {
+    "name": "Christopher W",
+    "github": "drasticstatic",
+    "avatar": "github",
+    "known": true
+   },
+   "agents": [
+    {
+     "name": "Mystarch",
+     "tool": "Claude Code",
+     "label": "Mystarch · Claude Code"
+    }
+   ]
+  },
+  {
+   "id": "e0cf8b5b6ce1",
+   "short": "e0cf8b5",
+   "repo": "psychedelic-policy-reform",
+   "repoLabel": "The initiative's notes",
+   "private": true,
+   "masked": true,
+   "url": null,
+   "d": "2026-09-15",
+   "time": "8:25 AM",
+   "ts": "2026-09-15T12:25:57Z",
+   "text": "████████ ████████ ████████ ██ ██ ████████ ██████ ██ ████████",
+   "area": "",
+   "kind": {
+    "id": "update",
+    "name": "Updates",
+    "icon": "arrows-clockwise"
+   },
+   "priority": null,
+   "who": {
+    "name": "Christopher W",
+    "github": "drasticstatic",
+    "avatar": "github",
+    "known": true
+   },
+   "agents": [
+    {
+     "name": "Mystarch",
+     "tool": "Claude Code",
+     "label": "Mystarch · Claude Code"
+    }
+   ]
+  }
+ ]
+}
