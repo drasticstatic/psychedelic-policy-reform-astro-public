@@ -1,6 +1,6 @@
 # 🧭 Roadmap
 
-<div class="tldr"><i class="ph ph-path"></i> <span><strong>TL;DR:</strong> The initiative has a home. Next come an evidence library, a Pennsylvania lane, partner organizations (to be announced), and a plain account of what clearer protection for sincere religious practice could mean for each community it serves. No dates: each step lands in the changelog when it's ready.</span></div>
+<div class="tldr"><i class="ph ph-path"></i> <span><strong>TL;DR:</strong> The initiative has a home, and its conversation has a place: Facebook groups in Pennsylvania. Four life-changing healing communities are at its heart: PIR®, Psanctuary, ORG and The Holy Earth Foundation. Next come an evidence library, a Pennsylvania lane, partner organizations (to be announced), and handing the keys to more people. Further out: tokens of gratitude beyond a signed pledge. No dates: each step lands in the changelog when it's ready.</span></div>
 
 Where Psychedelic Policy Reform is headed, in rough order. What's already done is in the
 [changelog](https://drasticstatic.github.io/psychedelic-policy-reform-astro-public/changelog), and what
@@ -11,8 +11,24 @@ page. This is also the repository's `ROADMAP.md`.
 > **Not legal advice.** This roadmap describes research and publishing work. Nothing here is legal
 > advice or a prediction about any case.
 
+## ✨ Where it started
+
+The spark was **Kevin M's "Roadmap to Reform" masterclass**: a program on changing psychedelic laws
+through real-world policy work, from the advocate behind Decriminalize Denver, the 2019 campaign that
+made Denver the first US city to decriminalize psilocybin mushrooms. It inspired Christopher W to bring
+this work home to Pennsylvania. Naming the masterclass credits an inspiration; it doesn't mean Kevin M
+has endorsed this initiative or speaks for it.
+
 ## ✅ Just landed
 
+- **Where the conversation happens, for now**: the Community window lists two Facebook groups
+  Christopher W manages, Pennsylvania Psychedelic Reform and Pennsylvania RFRA, and two related NORML
+  groups (NORML Southern PA, and NORML's Lebanon Valley College chapter), labelled as related, not
+  partners.
+- **The four communities at its heart, named** (Christopher's decision): PIR®, Psanctuary, ORG and
+  The Holy Earth Foundation, below, with the line that naming them isn't an endorsement.
+- **Arrival kit 1.4** on both sites: the welcome guide everywhere, and a bottom strip that shows it
+  scrolls on phones.
 - **This AstroLog**: a changelog, a library, a [map](https://drasticstatic.github.io/psychedelic-policy-reform-astro-public/map)
   with a picture of every page, and a [ledger](https://drasticstatic.github.io/psychedelic-policy-reform-astro-public/ledger)
   of every change to the code.
@@ -55,30 +71,50 @@ This initiative is seen from Pennsylvania, so the state gets a lane of its own.
 **Partner organizations: to be announced.** When a partner is ready to be named, it gets a changelog
 entry and a place on this roadmap, in the partner's own words.
 
-### 🌱 What this work can mean for each community
+### 🌱 The four communities at its heart
 
 This initiative is meant to serve communities whose sincere spiritual practice includes sacraments the
-law still restricts. Four communities in its circle, each described in its own public words, and what
-this lane can offer them:
+law still restricts. Four are at its heart: **PIR®, Psanctuary, ORG and The Holy Earth Foundation**.
+Each is a life-changing healing community, and this initiative wants to see their work protected, and
+blessing Pennsylvania. Each is described here in its own public words, with what this lane can offer it:
 
 | Community | In its own words | What this lane can offer |
 | --- | --- | --- |
 | **[Psychedelics In Recovery™ (PIR®)](https://www.psychedelicsinrecovery.org/)** | "a 12-step fellowship of people from all 12-step programs and other paths of recovery" | Plain, sourced explainers members can read for themselves, so conversations about the law start from facts rather than rumor. |
 | **[Psanctuary](https://www.psanctuary.org/)** | "an inter-tradition church built on growing together with a sincere sacred mushroom practice rooted in spiritual autonomy" | A clear picture of how religious-freedom law has treated sincere sacramental practice, to inform the church's own decisions alongside its own counsel. |
 | **[ORG](https://orgspirituality.org/)** (Octagon Religious-Research Group) | "Where science and spirituality meet." (its motto) | An evidence library it can draw from and contribute to, on both the research side and the religious-freedom side. |
-| **[The Holy Earth Foundation](https://theholyearthfoundation.github.io/)** | Home to Plants &amp; Miracles, a teaching that brings A Course in Miracles together with plant medicine traditions. | A shared, sourced understanding of how the law treats plant-medicine traditions practiced as religion, and a place to follow changes as they come. |
+| **[The Holy Earth Foundation](https://theholyearthfoundation.github.io/)** | Home to Plants & Miracles, a teaching that brings A Course in Miracles together with plant medicine traditions. | A shared, sourced understanding of how the law treats plant-medicine traditions practiced as religion, and a place to follow changes as they come. |
 
 Naming a community here describes who this work hopes to help. It doesn't mean that community has
 endorsed the initiative or taken a position on it, and nothing here speaks for any of them. PIR®, as
 a 12-step fellowship, keeps to its own traditions.
+
+## 🤝 Stewardship and succession
+
+So these pages outlive any one person (today drasticstatic, Christopher W, owns both repositories and
+will hold the tokens that publish them). Details on the
+[sustainability](https://drasticstatic.github.io/psychedelic-policy-reform-astro-public/sustainability) page.
+
+- [ ] A home of the initiative's own: an organization (or the first partner's) that owns these repositories, with at least two owners
+- [ ] Publishing through org-owned automation (a GitHub App, or a bot account), not personal tokens
+- [ ] A token register: every token and secret, its owner and its expiry date
+- [ ] A renewal runbook, with a reminder a month before each expiry
+- [ ] Hand-over steps written down: adding an owner, transferring repositories and the wallet-connect project
+- [ ] Exports and backups of the repositories and anything outside GitHub (the Facebook groups' admin roles included), on a schedule
+- [ ] Wallet connect: the initiative's own Reown project (one setting: the dApp's `NEXT_PUBLIC_REOWN_PROJECT_ID`), before anything is recorded
 
 ## 🌌 Later, and still being explored
 
 - **Pledges that count.** The dApp preview's pledge is a preview: a wallet signature, no gas, nothing
   recorded. Recording pledges (with clear consent, and no personal details) comes only after the
   evidence library is underway.
+- **Tokens of gratitude.** Beyond a signed pledge, a deeper and optional commitment: a soulbound,
+  non-transferable token of gratitude from Christopher W's gratitude-token project. It would stay in
+  the wallet it's given to and couldn't be sold, sent on or traded; it isn't money and it isn't a vote.
+  A sneak peek is on the [pledge page](https://drasticstatic.github.io/psychedelic-policy-reform-dapp-public-preview/pledge).
+  No dates, and no contract yet.
 - **A supporters' network of our own**: open protocols like Lens and Farcaster, paired with a DAO
   where supporters propose ideas and decide together. Privacy first. A direction, not a promise.
 - **The initiative's own website and address**, once its partners are announced.
 
-*Maintained by Christopher W with Alfred (Claude Code). Last reviewed 2026-10-13.*
+*Maintained by Christopher W with Alfred (Claude Code). Last reviewed 2026-10-22.*
