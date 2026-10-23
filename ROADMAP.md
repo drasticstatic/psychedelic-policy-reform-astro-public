@@ -27,8 +27,8 @@ has endorsed this initiative or speaks for it.
   partners.
 - **The four communities at its heart, named** (Christopher's decision): PIR®, Psanctuary, ORG and
   The Holy Earth Foundation, below, with the line that naming them isn't an endorsement.
-- **Arrival kit 1.4** on both sites: the welcome guide everywhere, and a bottom strip that shows it
-  scrolls on phones.
+- **Arrival kit 1.4** on both sites: the welcome guide everywhere, and on this AstroLog a bottom
+  strip that shows it scrolls on phones.
 - **This AstroLog**: a changelog, a library, a [map](https://drasticstatic.github.io/psychedelic-policy-reform-astro-public/map)
   with a picture of every page, and a [ledger](https://drasticstatic.github.io/psychedelic-policy-reform-astro-public/ledger)
   of every change to the code.
