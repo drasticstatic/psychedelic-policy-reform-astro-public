@@ -274,9 +274,11 @@
 
     // ── kit 1.4 ───────────────────────────────────────────────────────────────────────────────
     // The dock (the one-row strip at the bottom) shows a fade and a chevron on the side with more, so
-    // a phone visitor can tell it scrolls: the AstroLog's .universal-footer .footer-inner and the dApp
-    // preview's .dock-inner.
-    dock: { scroll: true, selector: ".universal-footer .footer-inner, .dock-inner" },
+    // a phone visitor can tell it scrolls: the AstroLog's .universal-footer .footer-inner (the kit's
+    // default). Not the dApp preview's .dock-inner: React renders that footer, and the kit's chevrons
+    // added before hydration break it (React error #418). The dApp can opt in after hydration
+    // (data-arr-scroll + Arrival.strips()), a change in its own code.
+    dock: { scroll: true },
     // The initiative takes no gifts, so there's no Donate to add; the welcome guide stays everywhere.
     essentials: { donate: false },
 
