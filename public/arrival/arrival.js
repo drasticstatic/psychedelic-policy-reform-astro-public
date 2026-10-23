@@ -68,14 +68,51 @@
  *                         soon" slot ([data-arr-wallet-slot]) for a later wallet module.
  *   <arrival-map src>     the site map from a map.json (version 2): every destination as a card with
  *                         its share image as the thumbnail, grouped, "You are here" on this site.
+ *
+ * Wave 7 (v1.3, 2026-10-14), give with crypto; additive, so a v1.2 org.js keeps working:
+ *   ARRIVAL.give          fills the donate page's crypto slot with the wallet module. arrival.js draws
+ *                         the section at first paint (coins, "Treasury address coming soon" for any
+ *                         coin without one, a Connect button, a "New to wallets?" guide) and loads
+ *                         give/give.js, next to this file, when the section nears the screen or on
+ *                         the first click. give.js loads Reown AppKit (pinned, from a CDN) only when
+ *                         the visitor asks to connect. No address in org.js means no address on the
+ *                         page, ever: connecting is then a labelled preview. give: { enabled: false }
+ *                         keeps the empty slot (PIR).
+ *   window.Arrival.dialog({ title, eyebrow, html, cls })  a kit dialog (focus trap, Esc, backdrop,
+ *                         focus return) for modules: { el, show(focusEl?), hide() }.
+ *   window.Arrival.toast(text)  the kit's quiet status toast.
+ *
+ * Wave 8 (v1.4, 2026-10-22); additive, so a v1.3 org.js keeps working. Only the first item shows up
+ * without new org.js keys; everything else waits until it's configured:
+ *   Essentials            Donate and the welcome guide are always in the footer, the More dropdown
+ *                         and the Menu (ARRIVAL.essentials; false, or { donate: false } etc. opts out).
+ *                         The More button now stays in the bar to hold them. Donate links the nav's
+ *                         own donate item, else donate.href, else <portal>/donate/ (beside this file).
+ *   The footer            scoped against host CSS (a site's `section`, `footer a` or `ul` rules no
+ *                         longer reach it), columns balanced (2 + 2, never 3 + 1), and an optional
+ *                         card look: <arrival-footer frame>.
+ *   Grouped dropdowns     a dropdown can have `groups: [{ label, icon, items }]`: a heading and a
+ *                         divider per group, in the dropdown, the More panel and the Menu.
+ *   Scroll strips         a one-row strip that scrolls sideways (the bottom dock) gets edge fades and
+ *                         chevron buttons, only on the side with more to show (ARRIVAL.dock, or
+ *                         data-arr-scroll on any strip).
+ *   <arrival-pledge>      a pledge of support signed with a wallet (ARRIVAL.pledge): free, nothing
+ *                         sent, nothing recorded, no counts. Drawn here at first paint; pledge/pledge.js
+ *                         (beside this file) loads when it nears the screen and borrows give.js's
+ *                         wallet layer. A "verify a signature" tool checks any pledge in the browser.
+ *   donate.tax            a calm "Receipts and taxes" section on the donate page that claims nothing
+ *                         the org's own config doesn't say.
  */
 (function () {
   "use strict";
   if (window.Arrival) return;
 
-  var VERSION = "1.2.1";
+  var VERSION = "1.4.0";
   var C = window.ARRIVAL || {};
   var doc = document;
+  // Where this file was loaded from, so modules beside it (give/give.js) load from the same place,
+  // on the portal and on any other origin that loads the kit by full URL.
+  var KIT_BASE = ((doc.currentScript && doc.currentScript.src) || "").replace(/[^/]*$/, "");
   var root = doc.documentElement;
   var siteId = root.getAttribute("data-arrival-site") || "site";
   var site = assign({}, (C.sites || {})[siteId] || {}, window.ARRIVAL_SITE || {});
@@ -148,6 +185,13 @@
       openLink: "Open",
       youAreHere: "You are here",
       mapLoading: "Drawing the map…",
+      // v1.4
+      donate: "Donate",
+      donateNote: "Ways to give",
+      guideNote: "A short tour of these pages",
+      involved: "Get involved",
+      scrollLeft: "Show earlier links",
+      scrollRight: "Show more links",
     },
     C.words || {}
   );
@@ -1206,6 +1250,9 @@
     if (hasContact) out.push({ t: (CONTACT.title || W.contact) + ": every way to reach us", k: "contact", i: "envelope-simple", x: "contact email form message question help reach out", run: openContact });
     if (hasCommunity) out.push({ t: (COMM.title || W.community) + ": the community", k: "community", i: COMM.icon || "users-three", x: "community chat talk join sign up members discord telegram mighty", run: openCommunity });
     out.push({ t: W.openGuide, k: "guide", i: "compass", x: "help onboarding tour welcome how", run: function () { openGuide(); } });
+    if (PLEDGE && PLEDGE.href) {
+      out.push({ t: (PLEDGE.title || PW.title) + ": sign it with a wallet", k: "pledge", i: "handshake", x: "pledge support sign signature wallet verify check", run: function () { location.href = PLEDGE.href; } });
+    }
     out.push({ t: "Copy a link to this page", k: "action", i: "link", x: "share url card preview telegram", run: copyLink });
     return out;
   }
@@ -1813,9 +1860,14 @@
                 "guide" | "search", exact?, priority? (lower folds first; default 2), keep?,
                 sites?: [siteIds], hideOn?: [siteIds], note? (a line under it in menus) }
        group: { id, label, icon, items: [link…], priority?, keep? }   (a dropdown)
+       v1.4, a dropdown in sections: { id, label, icon, items?: [link…], groups: [{ label, icon?,
+              items: [link…] }] }: its loose items first, then each group under its own heading and
+              a divider, in the dropdown, the More panel and the Menu (e.g. "Committees", then
+              "Infrastructure"). The footer, search and "current" treat it as one flat list.
      The bar shows every item it can fit; the rest move into a "More" dropdown, so the bar never
      wraps. Below `fold` px the whole bar becomes a Menu button and panel. `current="<id>"` on the
-     element marks the current item; otherwise it's matched from the URL. */
+     element marks the current item; otherwise it's matched from the URL. v1.4: More stays in the
+     bar to hold Donate and the welcome guide (ARRIVAL.essentials, below). */
   var NAV = C.nav && C.nav.items && C.nav.items.length ? C.nav : null;
   function visibleOn(it) {
     if (!it) return false;
@@ -1823,26 +1875,120 @@
     if (it.hideOn && it.hideOn.indexOf(siteId) >= 0) return false;
     return true;
   }
+  function isDrop(it) {
+    return !!(it && (it.items || it.groups));
+  }
+  // A dropdown's links in sections: its loose items (no heading), then each of its groups.
+  function sectionsOf(it) {
+    var out = [];
+    var loose = (it.items || []).filter(visibleOn);
+    if (loose.length) out.push({ links: loose });
+    (it.groups || []).forEach(function (g) {
+      var links = ((g && g.items) || []).filter(visibleOn);
+      if (links.length) out.push({ label: g.label, icon: g.icon, links: links });
+    });
+    return out;
+  }
+  function flatLinks(secs) {
+    var out = [];
+    secs.forEach(function (s) { out = out.concat(s.links); });
+    return out;
+  }
   function navItems() {
     if (!NAV) return [];
     return NAV.items
       .filter(visibleOn)
       .map(function (it) {
-        return it.items ? assign({}, it, { items: it.items.filter(visibleOn) }) : it;
+        if (!isDrop(it)) return it;
+        var secs = sectionsOf(it);
+        return assign({}, it, { sections: secs, items: flatLinks(secs) });
       })
       .filter(function (it) {
         return !it.items || it.items.length;
       });
   }
-  // Every link the nav knows, groups flattened, so the footer can name them by id.
+  // Every link the nav knows, dropdowns and their groups flattened, so the footer can name them by id.
   function navLinks() {
     var out = {};
     ((NAV && NAV.items) || []).forEach(function (it) {
-      (it.items || [it]).forEach(function (x) {
-        if (x.id) out[x.id] = x;
+      var list = [it];
+      if (isDrop(it)) {
+        list = (it.items || []).slice();
+        (it.groups || []).forEach(function (g) { list = list.concat((g && g.items) || []); });
+      }
+      list.forEach(function (x) {
+        if (x && x.id) out[x.id] = x;
       });
     });
     return out;
+  }
+
+  /* ── v1.4 · essentials: Donate and the welcome guide, never forgotten ──────────────────────
+     ARRIVAL.essentials = { donate?: false | { label, href, icon, note }, guide?: false | {…} }, or
+     false for neither. Both appear in the footer, the More dropdown and the Menu, wherever the org's
+     own config doesn't already have them (a group holding contact or community takes them; else
+     they get a "Get involved" group of their own). Donate's link: essentials.donate.href, else the
+     nav's own "donate" item (or any nav link to …/donate/), else donate.href, else <portal>/donate/
+     (the folder above this file) when the org has a donate page (ARRIVAL.donate). A donate item
+     the org hides on a site (sites/hideOn) stays hidden there. */
+  var ESS = C.essentials === false ? { donate: false, guide: false } : C.essentials || {};
+  var PORTAL = /\/arrival\/$/.test(KIT_BASE) ? KIT_BASE.replace(/arrival\/$/, "") : "";
+  function only(o, keys) {
+    var r = {};
+    keys.forEach(function (k) {
+      if (o && o[k] != null) r[k] = o[k];
+    });
+    return r;
+  }
+  function essentials() {
+    var all = navLinks();
+    var out = [];
+    var find = function (test) {
+      for (var k in all) if (Object.prototype.hasOwnProperty.call(all, k) && test(all[k])) return all[k];
+      return null;
+    };
+    if (ESS.donate !== false) {
+      var o = typeof ESS.donate === "object" ? ESS.donate : {};
+      var d = all.donate || find(function (x) { return /\/donate\/?$/.test(hrefOf(x).split(/[?#]/)[0]); });
+      var href = o.href || (d && hrefOf(d)) || (C.donate ? C.donate.href || (PORTAL && PORTAL + "donate/") : "") || "";
+      if (href && (!d || visibleOn(d))) out.push(assign({ id: "donate", label: W.donate, icon: "heart", note: W.donateNote }, only(d, ["label", "icon", "note"]), o, { href: href }));
+    }
+    if (ESS.guide !== false) {
+      var og = typeof ESS.guide === "object" ? ESS.guide : {};
+      var g = all.guide || find(function (x) { return x.open === "guide"; });
+      out.push(assign({ id: "guide", label: W.guide, icon: "signpost", href: "#welcome", note: W.guideNote }, only(g, ["label", "icon", "note"]), og, { open: "guide" }));
+    }
+    return out;
+  }
+  function sameLink(a, b) {
+    if (!a || !b) return false;
+    if (a.id && a.id === b.id) return true;
+    if (a.open || b.open) return !!a.open && a.open === b.open;
+    return !!hrefOf(a) && normUrl(hrefOf(a)) === normUrl(hrefOf(b));
+  }
+  function involved(x) {
+    return !!x && (x.open === "contact" || x.open === "community" || x.id === "contact" || x.id === "community" || x.id === "donate");
+  }
+  // groups: [{ label, icon, links, secs? }]. Adds the essentials none of them holds yet.
+  function withEssentials(groups, makeGroup) {
+    var ess = essentials();
+    var missing = ess.filter(function (e) {
+      return !groups.some(function (g) { return g.links.some(function (x) { return sameLink(x, e); }); });
+    });
+    if (!missing.length) return groups;
+    var home = groups.filter(function (g) { return g.links.some(involved); })[0];
+    if (home) {
+      home.links = home.links.concat(missing);
+      if (home.secs) {
+        // Into the last plain list; after a labelled group, as a list of their own under a hairline.
+        var last = home.secs[home.secs.length - 1];
+        if (last && !last.label) home.secs = home.secs.slice(0, -1).concat([assign({}, last, { links: last.links.concat(missing) })]);
+        else home.secs = home.secs.concat([{ links: missing, ess: true }]);
+      }
+    } else {
+      groups.push(makeGroup(missing));
+    }
+    return groups;
   }
   function hrefOf(it) {
     return (it.hrefs && it.hrefs[siteId]) || it.href || "";
@@ -1872,7 +2018,24 @@
     );
   }
   var navUid = 0;
+  var grpUid = 0;
   var navHosts = [];
+  function rowsHTML(links, forced, extra) {
+    return '<ul class="arr-nav-rows' + (extra || "") + '">' + links.map(function (x) { return "<li>" + linkTag(x, "arr-nav-row", forced, true) + "</li>"; }).join("") + "</ul>";
+  }
+  // A dropdown's body: loose rows, then each group as a labelled group with a heading and a divider.
+  function sectionsHTML(secs, forced) {
+    return secs
+      .map(function (s) {
+        if (!s.label) return rowsHTML(s.links, forced, s.ess ? " arr-nav-ess-rows" : "");
+        var hid = "arr-nav-g" + ++grpUid;
+        return (
+          '<div class="arr-nav-grp" role="group" aria-labelledby="' + hid + '"><p class="arr-nav-grp-h" id="' + hid + '">' + (s.icon ? icon(s.icon) : "") +
+          "<span>" + esc(s.label) + "</span></p>" + rowsHTML(s.links, forced) + "</div>"
+        );
+      })
+      .join("");
+  }
   function renderNav(host) {
     var items = navItems();
     if (!items.length) {
@@ -1881,6 +2044,12 @@
     }
     var n = ++navUid;
     var forced = host.getAttribute("current");
+    var ess = essentials();
+    // Which essentials an item already holds (so More doesn't list Donate twice when "Get involved"
+    // has folded into it).
+    var holds = function (links) {
+      return ess.filter(function (e) { return links.some(function (x) { return sameLink(x, e); }); }).map(function (e) { return e.id; }).join(" ");
+    };
     var bar = "";
     var menus = "";
     var more = "";
@@ -1892,22 +2061,33 @@
       if (it.items) {
         var mid = "arr-nav-" + n + "-" + k;
         var cur = it.items.some(function (x) { return isCurrent(x, forced); });
-        var rows = it.items.map(function (x) { return "<li>" + linkTag(x, "arr-nav-row", forced, true) + "</li>"; }).join("");
         bar +=
           li + '<button type="button" class="arr-nav-a arr-nav-btn' + (cur ? " is-current" : "") + '" data-arr-nav-toggle aria-expanded="false" aria-controls="' + mid + '">' +
           icon(it.icon || "list") + '<span class="arr-nav-label">' + esc(it.label) + '</span><i class="ph ph-caret-down arr-caret" aria-hidden="true"></i></button></li>';
-        menus += '<div class="arr-nav-menu arr-lift" id="' + mid + '" hidden><div class="arr-frame arr-shape"><div class="arr-in arr-shape"><ul class="arr-nav-rows">' + rows + "</ul></div></div></div>";
-        more += '<div class="arr-nav-more-group" data-arr-more-k="' + k + '" hidden><p class="arr-nav-more-h">' + icon(it.icon || "list") + esc(it.label) + '</p><ul class="arr-nav-rows">' + rows + "</ul></div>";
-        groups.push({ label: it.label, icon: it.icon, rows: rows });
+        menus += '<div class="arr-nav-menu arr-lift" id="' + mid + '" hidden><div class="arr-frame arr-shape"><div class="arr-in arr-shape">' + sectionsHTML(it.sections, forced) + "</div></div></div>";
+        more +=
+          '<div class="arr-nav-more-group" data-arr-more-k="' + k + '" data-arr-holds="' + holds(it.items) + '" hidden><p class="arr-nav-more-h">' + icon(it.icon || "list") + esc(it.label) + "</p>" +
+          sectionsHTML(it.sections, forced) + "</div>";
+        groups.push({ label: it.label, icon: it.icon, links: it.items, secs: it.sections.slice() });
       } else {
         bar += li + linkTag(it, "arr-nav-a", forced) + "</li>";
-        more += '<div data-arr-more-k="' + k + '" hidden><ul class="arr-nav-rows"><li>' + linkTag(it, "arr-nav-row", forced, true) + "</li></ul></div>";
-        mainLinks.push("<li>" + linkTag(it, "arr-nav-row", forced, true) + "</li>");
+        more += '<div data-arr-more-k="' + k + '" data-arr-holds="' + holds([it]) + '" hidden>' + rowsHTML([it], forced) + "</div>";
+        mainLinks.push(it);
       }
     });
+    // v1.4: Donate and the welcome guide close the More panel (hidden there while a folded item
+    // already shows them), and join the Menu wherever it doesn't list them yet.
+    if (ess.length) {
+      more +=
+        '<div class="arr-nav-ess" data-arr-ess><ul class="arr-nav-rows">' +
+        ess.map(function (e) { return '<li data-arr-ess-id="' + esc(e.id) + '">' + linkTag(e, "arr-nav-row", forced, true) + "</li>"; }).join("") + "</ul></div>";
+    }
     var moreId = "arr-nav-" + n + "-more";
     var menuId = "arr-menu-" + n;
-    var sections = (mainLinks.length ? [{ label: NAV.menuMain || W.menuMain, icon: "compass", rows: mainLinks.join("") }] : []).concat(groups);
+    var sections = (mainLinks.length ? [{ label: NAV.menuMain || W.menuMain, icon: "compass", links: mainLinks, secs: [{ links: mainLinks }] }] : []).concat(groups);
+    sections = withEssentials(sections, function (missing) {
+      return { label: W.involved, icon: "hand-heart", links: missing, secs: [{ links: missing }] };
+    });
     host.innerHTML =
       '<nav class="arr-nav" aria-label="' + esc(NAV.label || W.nav) + '">' +
       '<ul class="arr-nav-bar">' + bar +
@@ -1926,7 +2106,7 @@
         : "") +
       '<div class="arr-menu-grid">' +
       sections.map(function (s) {
-        return '<section class="arr-menu-sec"><p class="arr-menu-h">' + icon(s.icon || "list") + esc(s.label) + '</p><ul class="arr-nav-rows">' + s.rows + "</ul></section>";
+        return '<section class="arr-menu-sec"><p class="arr-menu-h">' + icon(s.icon || "list") + esc(s.label) + "</p>" + sectionsHTML(s.secs, forced) + "</section>";
       }).join("") +
       "</div></div></div></div></nav>";
     host.classList.add("arr-nav-host");
@@ -1971,23 +2151,44 @@
     var lis = [].slice.call(bar.querySelectorAll("[data-arr-nav-k]"));
     var moreLi = bar.querySelector("[data-arr-nav-more]");
     var copies = host.querySelectorAll("[data-arr-more-k]");
+    var ess = host.querySelector("[data-arr-ess]");
     var i;
     for (i = 0; i < lis.length; i++) lis[i].hidden = false;
     for (i = 0; i < copies.length; i++) copies[i].hidden = true;
-    moreLi.hidden = true;
-    if (!overflows(bar)) return;
-    moreLi.hidden = false;
-    var order = lis
-      .filter(function (li) { return !li.hasAttribute("data-keep"); })
-      .sort(function (a, b) {
-        return +a.getAttribute("data-pri") - +b.getAttribute("data-pri") || +b.getAttribute("data-arr-nav-k") - +a.getAttribute("data-arr-nav-k");
-      });
-    for (i = 0; i < order.length && overflows(bar); i++) {
-      order[i].hidden = true;
-      var c = host.querySelector('[data-arr-more-k="' + order[i].getAttribute("data-arr-nav-k") + '"]');
-      if (c) c.hidden = false;
+    // v1.4: More stays whenever it holds Donate and the welcome guide, so it's measured in the fit.
+    moreLi.hidden = !ess;
+    if (overflows(bar)) {
+      moreLi.hidden = false;
+      var order = lis
+        .filter(function (li) { return !li.hasAttribute("data-keep"); })
+        .sort(function (a, b) {
+          return +a.getAttribute("data-pri") - +b.getAttribute("data-pri") || +b.getAttribute("data-arr-nav-k") - +a.getAttribute("data-arr-nav-k");
+        });
+      for (i = 0; i < order.length && overflows(bar); i++) {
+        order[i].hidden = true;
+        var c = host.querySelector('[data-arr-more-k="' + order[i].getAttribute("data-arr-nav-k") + '"]');
+        if (c) c.hidden = false;
+      }
     }
+    syncEssentials(host, moreLi);
     if (overflows(bar)) setNavMode(host, "menu");
+  }
+  // An essential already shown by a folded item hides from More's closing rows; More goes only
+  // when it would be empty.
+  function syncEssentials(host, moreLi) {
+    var box = host.querySelector("[data-arr-ess]");
+    if (!box) return;
+    var held = " ";
+    var shown = host.querySelectorAll("[data-arr-more-k]:not([hidden])");
+    for (var i = 0; i < shown.length; i++) held += (shown[i].getAttribute("data-arr-holds") || "") + " ";
+    var rows = box.querySelectorAll("[data-arr-ess-id]");
+    var left = 0;
+    for (i = 0; i < rows.length; i++) {
+      rows[i].hidden = held.indexOf(" " + rows[i].getAttribute("data-arr-ess-id") + " ") >= 0;
+      if (!rows[i].hidden) left++;
+    }
+    box.hidden = !left;
+    if (!left && !shown.length && moreLi) moreLi.hidden = true;
   }
   function panelOf(btn) {
     return btn && doc.getElementById(btn.getAttribute("aria-controls"));
@@ -2062,26 +2263,33 @@
 
   /* ── v1.2 · the footer: <arrival-footer> ──────────────────────────────────────────────────
      ARRIVAL.footer = { label?, groups: [{ label, icon, items: [navId | link] }], note? }. Without
-     groups it repeats the nav: its links as one group, then each dropdown as its own. */
+     groups it repeats the nav: its links as one group, then each dropdown as its own.
+     v1.4: Donate and the welcome guide are added where the groups lack them (ARRIVAL.essentials);
+     the columns are balanced (four groups in a row of three become two rows of two); and the
+     kit's footer CSS is scoped so a site's own `section`, `footer a` or `ul` rules can't reach it.
+     <arrival-footer frame> draws it on the kit's card (a surface, padding, rounded corners). */
+  var footHosts = [];
   function renderFooter(host) {
     var F = C.footer || {};
     var byNav = navLinks();
-    var groups = F.groups;
-    if (!groups) {
+    var groups;
+    if (F.groups) {
+      groups = F.groups.map(function (g) {
+        return { label: g.label, icon: g.icon, links: (g.items || []).map(function (x) { return typeof x === "string" ? byNav[x] : x; }).filter(visibleOn) };
+      });
+    } else {
       var items = navItems();
-      groups = [{ label: (NAV && NAV.menuMain) || W.menuMain, icon: "compass", items: items.filter(function (x) { return !x.items; }) }].concat(
-        items.filter(function (x) { return x.items; }).map(function (g) { return { label: g.label, icon: g.icon, items: g.items }; })
+      groups = [{ label: (NAV && NAV.menuMain) || W.menuMain, icon: "compass", links: items.filter(function (x) { return !x.items; }) }].concat(
+        items.filter(function (x) { return x.items; }).map(function (g) { return { label: g.label, icon: g.icon, links: g.items }; })
       );
     }
+    groups = groups.filter(function (g) { return g.links.length; });
+    if (groups.length) groups = withEssentials(groups, function (missing) { return { label: W.involved, icon: "hand-heart", links: missing }; });
     var html = groups
       .map(function (g) {
-        var links = (g.items || [])
-          .map(function (x) { return typeof x === "string" ? byNav[x] : x; })
-          .filter(visibleOn);
-        if (!links.length) return "";
         return (
-          '<section class="arr-foot-group"><p class="arr-foot-h">' + icon(g.icon || "list") + esc(g.label) + "</p><ul>" +
-          links.map(function (x) { return "<li>" + linkTag(x, "arr-foot-a", host.getAttribute("current")) + "</li>"; }).join("") +
+          '<section class="arr-foot-group"><p class="arr-foot-h">' + icon(g.icon || "list") + "<span>" + esc(g.label) + '</span></p><ul class="arr-foot-list">' +
+          g.links.map(function (x) { return '<li class="arr-foot-li">' + linkTag(x, "arr-foot-a", host.getAttribute("current")) + "</li>"; }).join("") +
           "</ul></section>"
         );
       })
@@ -2093,8 +2301,31 @@
     host.innerHTML =
       '<nav class="arr-foot" aria-label="' + esc(F.label || W.footer) + '"><div class="arr-foot-groups">' + html + "</div>" +
       (F.note ? '<p class="arr-foot-note">' + F.note + "</p>" : "") + "</nav>";
+    footHosts.push(host);
+    balanceFoot(host);
+    if (window.ResizeObserver) new ResizeObserver(function () { balanceFoot(host); }).observe(host);
     if (fresh.length) markNew(host);
   }
+  // The most columns that fit (each at least 11.5rem), then evened out: 4 groups → 4, or 2 + 2,
+  // never 3 + 1; 5 → 5, 3 + 2 or 2 + 2 + 1. Without this the grid's auto-fit would orphan one.
+  function balanceFoot(host) {
+    var grid = host.querySelector(".arr-foot-groups");
+    if (!grid) return;
+    var n = grid.children.length;
+    var w = grid.clientWidth;
+    if (!n || !w) return;
+    var gap = parseFloat(getComputedStyle(grid).columnGap) || 0;
+    var min = 11.5 * (parseFloat(getComputedStyle(root).fontSize) || 16);
+    var fit = Math.max(1, Math.min(n, Math.floor((w + gap) / (min + gap))));
+    var cols = Math.ceil(n / Math.ceil(n / fit));
+    if (grid._cols !== cols) {
+      grid._cols = cols;
+      grid.style.setProperty("--arr-foot-cols", String(cols));
+    }
+  }
+  window.addEventListener("arrival:change", function () {
+    footHosts.forEach(balanceFoot); // text size changes the column width
+  });
 
   /* ── v1.2 · contact and community modals ──────────────────────────────────────────────────
      ARRIVAL.contact = { title?, intro?, paths: [{ kind: "form" | "email" | "page" | "github" | "chat",
@@ -2256,6 +2487,137 @@
        slot stays empty until a wallet module fills [data-arr-wallet-slot]; it never shows an
        address on its own. */
   var KINDS = { gift: ["Gift", "gift"], sponsor: ["Sponsor", "handshake"], time: ["Time and skills", "hand-heart"], "in-kind": ["In kind", "package"], founding: ["Founding", "plant"] };
+
+  /* ── v1.3 · give with crypto: the section, drawn at first paint ──────────────────────────
+     ARRIVAL.give = { enabled? (false keeps the empty slot), reownProjectId, chains? (EVM networks
+       the ETH address takes, default ["mainnet"]), addresses: { eth, btc, sol } (null until the
+       org publishes one), note?, title?, text?, social? (false hides email/social sign-in),
+       claim?: { to (an email for "add your name" notes) }, module? (give.js URL) }.
+     This draws everything a visitor sees before they click, so nothing moves when give/give.js
+     arrives; give.js adds what follows a click (the wallet window, the connected panel, the guide).
+     An address that doesn't look like its coin's is treated as missing, never shown. */
+  var GIVE = C.give && C.give.enabled !== false ? C.give : null;
+  var COINS = [
+    { id: "eth", name: "Ethereum", sym: "ETH", icon: "currency-eth", ok: /^0x[0-9a-fA-F]{40}$/ },
+    { id: "btc", name: "Bitcoin", sym: "BTC", icon: "currency-btc", ok: /^(bc1[02-9ac-hj-np-z]{8,87}|[13][1-9A-HJ-NP-Za-km-z]{25,34})$/, uri: "bitcoin:" },
+    { id: "sol", name: "Solana", sym: "SOL", icon: "coin", ok: /^[1-9A-HJ-NP-Za-km-z]{32,44}$/, uri: "solana:" },
+  ];
+  // Networks whose own coin is ETH (so "Send ETH" means ETH on every one of them).
+  var GIVE_NETS = { mainnet: "Ethereum", ethereum: "Ethereum", base: "Base", arbitrum: "Arbitrum One", optimism: "OP Mainnet", sepolia: "Sepolia (a test network)" };
+  function giveAddress(id) {
+    var A = (GIVE && GIVE.addresses) || {};
+    var v = A[id];
+    if (v == null || v === "") return null;
+    var coin = COINS.filter(function (c) { return c.id === id; })[0];
+    v = String(v).trim();
+    if (coin && coin.ok.test(v)) return v;
+    if (window.console) console.warn("[arrival] give.addresses." + id + " doesn't look like a " + (coin ? coin.name : id) + " address, so the page shows \"coming soon\" instead.");
+    return null;
+  }
+  function giveNets() {
+    var list = (GIVE.chains && GIVE.chains.length ? GIVE.chains : ["mainnet"]).filter(function (k) { return GIVE_NETS[k]; });
+    return list.length ? list : ["mainnet"];
+  }
+  function giveShell(n, X) {
+    var G = GIVE;
+    var A = G.addresses || { eth: null, btc: null, sol: null };
+    var coins = COINS.filter(function (c) { return Object.prototype.hasOwnProperty.call(A, c.id); });
+    var any = coins.some(function (c) { return giveAddress(c.id); });
+    var who = org.short || org.name || "us";
+    var rows = coins.map(function (c) {
+      var addr = giveAddress(c.id);
+      var head = '<span class="arr-path-icon arr-shape">' + icon(c.icon) + '</span><div class="arr-coin-main"><h3>' + esc(c.name) + ' <span class="arr-coin-sym">' + c.sym + "</span></h3>";
+      if (!addr) {
+        return '<li class="arr-coin arr-shape is-soon" data-coin="' + c.id + '">' + head + '<p class="arr-coin-soon">' + icon("hourglass-medium") + esc(G.soonText || "Treasury address coming soon") + "</p></div></li>";
+      }
+      var chunks = addr.match(/.{1,4}/g).map(function (s) { return "<span>" + esc(s) + "</span>"; }).join("");
+      var qid = "arr-qr-" + c.id + "-" + n;
+      return (
+        '<li class="arr-coin arr-shape" data-coin="' + c.id + '">' + head +
+        (c.id === "eth" ? '<p class="arr-coin-net">' + esc("On " + giveNets().map(function (k) { return GIVE_NETS[k]; }).join(", ")) + "</p>" : "") +
+        '<code class="arr-addr" translate="no" aria-label="' + esc(c.name + " address " + addr) + '">' + chunks + "</code>" +
+        '<div class="arr-coin-actions">' +
+        (c.id === "eth" ? '<button type="button" class="arr-btn arr-btn-primary arr-shape" data-give="send" data-coin="eth">' + icon("paper-plane-tilt") + "Send with your wallet</button>" : "") +
+        '<button type="button" class="arr-btn arr-btn-quiet arr-shape" data-arr-copy="' + esc(addr) + '">' + icon("copy") + "Copy</button>" +
+        '<button type="button" class="arr-btn arr-btn-quiet arr-shape" data-give="qr" data-coin="' + c.id + '" aria-expanded="false" aria-controls="' + qid + '">' + icon("qr-code") + "<span>Show QR code</span></button>" +
+        (c.uri ? '<a class="arr-btn arr-btn-quiet arr-shape" data-arr-direct href="' + esc(c.uri + addr) + '">' + icon("device-mobile") + "Open in a wallet app</a>" : "") +
+        "</div>" +
+        '<div class="arr-coin-qr" id="' + qid + '" hidden></div></div></li>'
+      );
+    }).join("");
+    var text = any
+      ? G.text || "Copy an address or scan its QR code with your wallet app, or connect a wallet and send from this page. Your wallet shows you exactly what you're approving before anything moves."
+      : G.previewText || "One button connects a browser wallet, a phone wallet (by QR code) or an email sign-in. No treasury address is published yet, so for now connecting is a preview of how giving will work: nothing can be sent.";
+    var safety = any
+      ? "Send only to an address on this page, and check its first and last characters in your wallet before you approve. No one from " + esc(who) + " will ever ask for your recovery phrase."
+      : "No wallet address is published here yet. If you see one anywhere claiming to be ours, please check with us first. No one from " + esc(who) + " will ever ask for your recovery phrase.";
+    return (
+      '<section class="arr-crypto arr-gift arr-shape" data-arr-wallet-slot data-arr-give data-give-mode="' + (any ? "live" : "preview") + '" aria-labelledby="arr-crypto-' + n + '">' +
+      '<h2 id="arr-crypto-' + n + '">' + icon("wallet") + esc(G.title || X.title || "Give with crypto") + (any ? "" : ' <span class="arr-soon">Preview</span>') + "</h2>" +
+      "<p>" + text + "</p>" +
+      (coins.length ? '<ul class="arr-coins">' + rows + "</ul>" : "") +
+      '<div class="arr-give-actions">' +
+      '<button type="button" class="arr-btn ' + (any ? "arr-btn-quiet" : "arr-btn-primary") + ' arr-shape" data-give="connect">' + icon("plugs-connected") + "<span>Connect a wallet</span></button>" +
+      '<button type="button" class="arr-btn arr-btn-quiet arr-shape" data-give="learn">' + icon("question") + "New to wallets?</button></div>" +
+      '<p class="arr-give-live" data-give-live role="status" aria-live="polite"></p>' +
+      '<div class="arr-give-panel arr-shape" data-give-panel hidden></div>' +
+      '<p class="arr-fine">' + safety + (G.note ? " " + G.note : "") + "</p></section>"
+    );
+  }
+  // give/give.js loads when the section nears the screen (so a click finds it ready), or on the
+  // first click. It talks to nobody until the visitor asks to connect.
+  // Modules beside this file (give/give.js, v1.4's pledge/pledge.js), loaded once, as ES modules.
+  var modP = {};
+  function loadModule(path, global, custom) {
+    if (window[global]) return Promise.resolve(window[global]);
+    if (modP[path]) return modP[path];
+    modP[path] = new Promise(function (resolve, reject) {
+      var s = doc.createElement("script");
+      s.type = "module";
+      s.src = custom || KIT_BASE + path + "?v=" + VERSION;
+      s.onload = function () {
+        if (window[global]) resolve(window[global]);
+        else reject(new Error(path + " loaded but didn't start"));
+      };
+      s.onerror = function () { reject(new Error(path + " didn't load")); };
+      doc.head.appendChild(s);
+    }).catch(function (err) {
+      modP[path] = null;
+      throw err;
+    });
+    return modP[path];
+  }
+  function loadGive() {
+    return loadModule("give/give.js", "ArrivalGive", GIVE && GIVE.module);
+  }
+  // Load a module's file when its section comes within 600px of the screen (so a click finds it
+  // ready), then init it with the section.
+  function watchNear(sec, load, root) {
+    if (!sec) return;
+    var go = function () { load().then(function (M) { M.init(root || sec); }, function () {}); };
+    if (!("IntersectionObserver" in window)) return idle(go);
+    var io = new IntersectionObserver(function (es) {
+      for (var i = 0; i < es.length; i++) if (es[i].isIntersecting) { io.disconnect(); go(); return; }
+    }, { rootMargin: "600px 0px" });
+    io.observe(sec);
+  }
+  function watchGive(sec) {
+    watchNear(sec, loadGive);
+  }
+  function giveClick(sec, b) {
+    if (b.getAttribute("aria-busy") === "true") return;
+    loadGive().then(
+      function (G) {
+        G.init(sec);
+        G.act(b.getAttribute("data-give"), b, sec);
+      },
+      function () {
+        var live = sec.querySelector("[data-give-live]");
+        if (live) live.textContent = "The wallet part of this page didn't load. Check your connection, then try again.";
+      }
+    );
+  }
+
   function renderDonate(el) {
     var D = C.donate || {};
     var L = D.ledger || null;
@@ -2290,12 +2652,15 @@
         '<section class="arr-contrib" aria-labelledby="arr-contrib-' + n + '"><h2 id="arr-contrib-' + n + '">' + icon("hand-heart") + esc(L.title || "Contribution ledger") + "</h2>" +
         (L.intro ? '<p class="arr-intro">' + L.intro + "</p>" : "") + '<div data-arr-contrib><p class="arr-fine">Gathering the names…</p></div></section>';
     }
-    h +=
-      '<section class="arr-crypto arr-shape" data-arr-wallet-slot aria-labelledby="arr-crypto-' + n + '">' +
-      '<h2 id="arr-crypto-' + n + '">' + icon(X.icon || "wallet") + esc(X.title || "Give with crypto") + ' <span class="arr-soon">' + esc(W.soon) + "</span></h2>" +
-      "<p>" + (X.text || "A way to give with a crypto wallet is on its way. It isn't open yet.") + "</p>" +
-      '<p class="arr-fine">' + (X.note || "No wallet address is published here yet. If you see one anywhere claiming to be ours, please check with us first.") + "</p></section>";
+    h += GIVE
+      ? giveShell(n, X)
+      : '<section class="arr-crypto arr-shape" data-arr-wallet-slot aria-labelledby="arr-crypto-' + n + '">' +
+        '<h2 id="arr-crypto-' + n + '">' + icon(X.icon || "wallet") + esc(X.title || "Give with crypto") + ' <span class="arr-soon">' + esc(W.soon) + "</span></h2>" +
+        "<p>" + (X.text || "A way to give with a crypto wallet is on its way. It isn't open yet.") + "</p>" +
+        '<p class="arr-fine">' + (X.note || "No wallet address is published here yet. If you see one anywhere claiming to be ours, please check with us first.") + "</p></section>";
+    if (D.tax) h += taxHTML(D.tax === true ? {} : D.tax, n);
     el.innerHTML = h;
+    if (GIVE) watchGive(el.querySelector("[data-arr-give]"));
     if (!L) return;
     var box = el.querySelector("[data-arr-contrib]");
     var empty = function () {
@@ -2322,6 +2687,39 @@
           }).join("") +
           "</ul>" + (j.updated ? '<p class="arr-fine">Updated ' + esc(fmtDate(j.updated, true)) + ".</p>" : "");
       });
+  }
+  /* ── v1.4 · receipts and taxes (ARRIVAL.donate.tax) ──────────────────────────────────────
+     donate.tax = { status?, deductible?, receipts?, note?, title? } (true or {} for the defaults).
+     The defaults claim nothing: ask us for a receipt; whether a gift is tax-deductible depends on
+     the organization's status and your situation; this isn't tax advice. Only the org's own config
+     states a status (e.g. "a 501(c)(3) nonprofit", with its EIN if it publishes one) or that gifts
+     are deductible. deductible: a sentence, or true / false for a plain one. Strings may hold
+     simple HTML, like the rest of ARRIVAL.donate. */
+  function taxHTML(T, n) {
+    var who = org.short || org.name || "us";
+    var ask = hasContact ? '<a href="#contact" data-arrival-open="contact">reach out</a>' : "reach out";
+    var receipts = T.receipts || "Ask us for a receipt: " + ask + " and say what you gave and when.";
+    var deductible =
+      typeof T.deductible === "string" && T.deductible
+        ? T.deductible
+        : T.deductible === true
+          ? esc(who) + " says gifts to it may be tax-deductible. How much, if at all, depends on your own situation."
+          : T.deductible === false
+            ? "Gifts to " + esc(who) + " aren't tax-deductible."
+            : "Whether a gift is tax-deductible depends on the organization's status and your own situation.";
+    var row = function (ic, label, text) {
+      return '<div class="arr-tax-row"><dt>' + icon(ic) + "<span>" + esc(label) + "</span></dt><dd>" + text + "</dd></div>";
+    };
+    return (
+      '<section class="arr-tax arr-shape" aria-labelledby="arr-tax-' + n + '"><h2 id="arr-tax-' + n + '">' + icon("receipt") + esc(T.title || "Receipts and taxes") + "</h2>" +
+      '<dl class="arr-tax-list">' +
+      row("receipt", "Receipts", receipts) +
+      (T.status ? row("bank", "Status", T.status) : "") +
+      row("scales", "Tax-deductible?", deductible) +
+      "</dl>" +
+      (T.note ? "<p>" + T.note + "</p>" : "") +
+      '<p class="arr-fine">This isn\'t tax advice. For your own situation, ask a tax professional.</p></section>'
+    );
   }
   function fmtMonth(s) {
     var m = /^(\d{4})-(\d{2})/.exec(String(s || ""));
@@ -2391,6 +2789,255 @@
       });
   }
 
+  /* ── v1.4 · a pledge of support: <arrival-pledge> ─────────────────────────────────────────
+     ARRIVAL.pledge = { enabled? (false: nothing), text (the pledge, in plain words), note? (the
+       org's own words, after the fine print), title?, intro?, href? (the page it lives on, so "/"
+       search finds it), reownProjectId? (default: give.reownProjectId), tokens? (false, or
+       { title, text, href, label }: the "Gratitude tokens (coming)" card), bots? (false, or
+       { title, points: [] }), verify? (false hides the "verify a signature" tool), words? }
+     Drawn here at first paint (the pledge, three steps, two cards, the verify tool), so nothing
+     moves when pledge/pledge.js arrives. pledge.js borrows give.js's wallet layer: one Reown AppKit
+     per page, the same allowlist check, the same "New to wallets?" guide. Signing is an EIP-191
+     message signature (no gas, no contract, no money), checked in the tab against the connected
+     wallet and then forgotten. Nothing is sent or recorded, and there are never any counts: counts
+     wait for records anyone can verify (the bots card says how). */
+  var PLEDGE = C.pledge && C.pledge.enabled !== false ? C.pledge : null;
+  var PW = assign(
+    {
+      title: "A pledge of support",
+      preview: "Preview",
+      intro: "Sign a short pledge with a crypto wallet. It's free: no gas and no money, and for now nothing is recorded.",
+      text: "I support {org} and the people it serves.",
+      readTitle: "Read the pledge",
+      readText: "It's above. Signing it says you support it, and nothing else about you.",
+      connectTitle: "Connect a wallet",
+      connectText: "One button for a browser wallet, a phone wallet (by QR code) or an email sign-in.",
+      connect: "Connect a wallet",
+      learn: "New to wallets?",
+      signTitle: "Sign it",
+      signText: "Your wallet shows the pledge and asks you to sign. It's a message, not a transaction: no gas, no contract, no money.",
+      sign: "Sign the pledge",
+      done: "done",
+      fine: "Signing sends nothing anywhere. The signature is checked here, in this tab, and then forgotten. This page never shows or keeps your wallet's address.",
+      tokensTitle: "Gratitude tokens",
+      tokensTag: "Coming",
+      tokensText:
+        "Later, a pledge may come with a token of gratitude, for anyone who'd like a deeper commitment. It would be soulbound: it stays in the wallet it was given to, and can't be sold, sent on or traded. It isn't money; it's a thank-you. It comes from the gratitude-token project Christopher W is building, which is still being tested. No dates.",
+      botsTitle: "How you'll know these aren't bots",
+      bots: [
+        "Each pledge is a signature. Anyone can check it against the wallet address that made it, with the tool below or any Ethereum toolkit.",
+        "A signature proves that a wallet signed. It doesn't prove that a unique person did: one person can make many wallets, and a program can sign too.",
+        "So before any count or list of pledges appears, pledges will be published as records anyone can check, such as on-chain attestations (the Ethereum Attestation Service is one way), optionally paired with a check that a real, unique person is behind each one. Human Passport (formerly Gitcoin Passport), World ID and BrightID are among the options; none has been chosen.",
+        "Until then, this page shows no counts at all.",
+      ],
+      verifyTitle: "Verify a signature",
+      verifyText: "Paste a wallet address, the exact message that was signed, and the signature. The check happens here in your browser; nothing is sent anywhere.",
+      address: "Wallet address",
+      addressHint: "0x and 40 more letters and numbers.",
+      signature: "Signature",
+      signatureHint: "0x and 130 more letters and numbers.",
+      message: "The message, exactly as it was signed",
+      messageHint: "Every line, space and character counts.",
+      check: "Check the signature",
+      clear: "Clear",
+      failed: "This part of the page didn't load. Check your connection, then try again.",
+    },
+    (PLEDGE && PLEDGE.words) || {}
+  );
+  function pledgeText() {
+    return (PLEDGE && PLEDGE.text) || PW.text.replace("{org}", org.name || org.short || "this organization");
+  }
+  function pledgeStep(k, n, title, text, body, done) {
+    return (
+      '<li class="arr-pledge-step' + (done ? " is-done" : "") + '" data-pledge-step="' + k + '"><span class="arr-pledge-num arr-shape" aria-hidden="true"><span>' + n + "</span>" + icon("check") + "</span>" +
+      '<div class="arr-pledge-body"><h3>' + esc(title) + '<span class="arr-sr" data-pledge-done' + (done ? "" : " hidden") + ">, " + esc(PW.done) + "</span></h3><p>" + esc(text) + "</p>" + (body || "") + "</div></li>"
+    );
+  }
+  function verifyHTML(n) {
+    var f = function (name, label, hint, area) {
+      var id = "arr-pv-" + name + "-" + n;
+      return (
+        '<label class="arr-give-field" for="' + id + '">' + esc(label) +
+        (area
+          ? '<textarea class="arr-input arr-pledge-msg" id="' + id + '" name="' + name + '" rows="6" spellcheck="false" autocomplete="off"></textarea>'
+          : '<input class="arr-input arr-pledge-hex" id="' + id + '" name="' + name + '" spellcheck="false" autocomplete="off" autocapitalize="off">') +
+        "<small>" + esc(hint) + "</small></label>"
+      );
+    };
+    return (
+      '<section class="arr-pledge-verify arr-shape" id="verify-signature" aria-labelledby="arr-pv-' + n + '"><h2 id="arr-pv-' + n + '">' + icon("seal-check") + esc(PW.verifyTitle) + "</h2>" +
+      "<p>" + esc(PW.verifyText) + "</p>" +
+      '<form data-pledge-form="verify" novalidate><div class="arr-give-fields">' + f("address", PW.address, PW.addressHint) + f("signature", PW.signature, PW.signatureHint) + "</div>" +
+      f("message", PW.message, PW.messageHint, true) +
+      '<div class="arr-give-actions"><button type="submit" class="arr-btn arr-btn-primary arr-shape">' + icon("check-circle") + esc(PW.check) + "</button>" +
+      '<button type="reset" class="arr-btn arr-btn-quiet arr-shape">' + icon("eraser") + esc(PW.clear) + "</button></div>" +
+      '<p class="arr-pledge-result" data-pledge-result role="status" aria-live="polite"></p></form></section>'
+    );
+  }
+  function renderPledge(el) {
+    if (!PLEDGE) {
+      el.hidden = true;
+      return;
+    }
+    var P = PLEDGE;
+    var n = ++uid;
+    var T = P.tokens === false ? null : P.tokens || {};
+    var B = P.bots === false ? null : P.bots || {};
+    var points = (B && B.points) || PW.bots;
+    var btn = function (name, label, ic, primary, off) {
+      return '<button type="button" class="arr-btn ' + (primary ? "arr-btn-primary" : "arr-btn-quiet") + ' arr-shape" data-pledge="' + name + '"' + (off ? " disabled" : "") + ">" + icon(ic) + "<span>" + esc(label) + "</span></button>";
+    };
+    el.innerHTML =
+      '<section class="arr-pledge arr-shape" data-arr-pledge aria-labelledby="arr-pledge-' + n + '">' +
+      '<h2 id="arr-pledge-' + n + '">' + icon("handshake") + esc(P.title || PW.title) + ' <span class="arr-soon">' + esc(PW.preview) + "</span></h2>" +
+      '<p class="arr-pledge-intro">' + (P.intro || esc(PW.intro)) + "</p>" +
+      '<blockquote class="arr-pledge-text arr-shape" data-pledge-text>' + esc(pledgeText()) + "</blockquote>" +
+      '<ol class="arr-pledge-steps">' +
+      pledgeStep("read", 1, PW.readTitle, PW.readText, "", true) +
+      pledgeStep("connect", 2, PW.connectTitle, PW.connectText, '<div class="arr-give-actions">' + btn("connect", PW.connect, "plugs-connected", true) + btn("learn", PW.learn, "question") + "</div>") +
+      pledgeStep("sign", 3, PW.signTitle, PW.signText, '<div class="arr-give-actions">' + btn("sign", PW.sign, "signature", true, true) + "</div>") +
+      "</ol>" +
+      '<p class="arr-pledge-live" data-pledge-live role="status" aria-live="polite"></p>' +
+      '<div class="arr-pledge-panel arr-shape" data-pledge-panel hidden></div>' +
+      '<p class="arr-fine">' + esc(PW.fine) + (P.note ? " " + P.note : "") + "</p></section>" +
+      (T || B
+        ? '<div class="arr-pledge-cards">' +
+          (T
+            ? '<section class="arr-pledge-card arr-shape" aria-labelledby="arr-pt-' + n + '"><h3 id="arr-pt-' + n + '">' + icon("hand-heart") + "<span>" + esc(T.title || PW.tokensTitle) +
+              ' <span class="arr-soon">' + esc(PW.tokensTag) + "</span></span></h3><p>" + (T.text || esc(PW.tokensText)) + "</p>" +
+              (T.href ? '<a class="arr-btn arr-btn-quiet arr-shape" href="' + esc(T.href) + '" rel="noopener">' + esc(T.label || "Read about it") + icon("arrow-square-out") + "</a>" : "") + "</section>"
+            : "") +
+          (B
+            ? '<section class="arr-pledge-card arr-shape" aria-labelledby="arr-pb-' + n + '"><h3 id="arr-pb-' + n + '">' + icon("shield-check") + "<span>" + esc(B.title || PW.botsTitle) + "</span></h3>" +
+              '<ul class="arr-ticks">' + points.map(function (x) { return "<li>" + icon("check") + "<span>" + x + "</span></li>"; }).join("") + "</ul></section>"
+            : "") +
+          "</div>"
+        : "") +
+      (P.verify === false ? "" : verifyHTML(n));
+    watchNear(el.querySelector("[data-arr-pledge]") || el, loadPledge, el);
+  }
+  function loadPledge() {
+    return loadModule("pledge/pledge.js", "ArrivalPledge", PLEDGE && PLEDGE.module);
+  }
+  function pledgeAct(root, name, el) {
+    loadPledge().then(
+      function (M) {
+        M.init(root);
+        M.act(name, el, root);
+      },
+      function () {
+        var out = root.querySelector(name === "verify" ? "[data-pledge-result]" : "[data-pledge-live]");
+        if (out) out.textContent = PW.failed;
+      }
+    );
+  }
+
+  /* ── v1.4 · scroll strips: how a visitor knows the dock scrolls ─────────────────────────────
+     A one-row strip that scrolls sideways (the bottom dock, on a phone) gets a soft fade on each
+     edge with more beyond it, and a small chevron button there that scrolls it: keyboard reachable,
+     smooth only when motion is allowed, and nothing at all while everything fits. Which strips: any
+     element with data-arr-scroll, plus, with ARRIVAL.dock = { scroll: true } (or dock: true), the
+     kit's dock markup (.universal-footer .footer-inner) and PIR's (.dock .wrap), or dock.selector.
+     The strip must already scroll (overflow-x: auto). The buttons sit in its parent, absolutely
+     placed, so the strip's own layout doesn't change; a static parent becomes position: relative. */
+  var DOCK = C.dock === true ? { scroll: true } : C.dock && typeof C.dock === "object" ? C.dock : {};
+  var STRIPS = "[data-arr-scroll]" + (DOCK.scroll ? ", " + (DOCK.selector || ".universal-footer .footer-inner, .dock .wrap") : "");
+  function scrollStrips(scope) {
+    var list = [];
+    try {
+      list = (scope || doc).querySelectorAll(STRIPS);
+    } catch (e) {}
+    for (var i = 0; i < list.length; i++) makeStrip(list[i]);
+  }
+  function makeStrip(el) {
+    if (el._arrStrip || !el.parentNode) return;
+    el._arrStrip = true;
+    el.classList.add("arr-strip");
+    var par = el.parentNode;
+    try {
+      if (getComputedStyle(par).position === "static") par.style.position = "relative";
+    } catch (e) {}
+    var mk = function (dir) {
+      var b = doc.createElement("button");
+      var label = dir === "l" ? W.scrollLeft : W.scrollRight;
+      b.type = "button";
+      b.className = "arr-strip-btn arr-shape arr-strip-btn-" + dir;
+      b.setAttribute("data-arr-strip", dir);
+      b.setAttribute("aria-label", label);
+      b.title = label;
+      b.hidden = true;
+      b.innerHTML = icon(dir === "l" ? "caret-left" : "caret-right");
+      b._arrStrip = el;
+      return b;
+    };
+    var L = mk("l");
+    var R = mk("r");
+    par.insertBefore(L, el);
+    par.insertBefore(R, el.nextSibling);
+    el._arrBtns = [L, R];
+    var raf = 0;
+    var upd = function () {
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(function () { syncStrip(el); });
+    };
+    el.addEventListener("scroll", upd, { passive: true });
+    window.addEventListener("resize", upd);
+    if (window.ResizeObserver) new ResizeObserver(upd).observe(el);
+    if (doc.fonts && doc.fonts.ready) doc.fonts.ready.then(upd);
+    syncStrip(el);
+  }
+  function syncStrip(el) {
+    var L = el._arrBtns[0];
+    var R = el._arrBtns[1];
+    var max = el.scrollWidth - el.clientWidth;
+    var x = Math.abs(el.scrollLeft);
+    var rtl = getComputedStyle(el).direction === "rtl";
+    var before = max > 1 && x > 1;
+    var after = max > 1 && x < max - 1;
+    var left = rtl ? after : before;
+    var right = rtl ? before : after;
+    el.classList.toggle("arr-strip-l", left);
+    el.classList.toggle("arr-strip-r", right);
+    var had = doc.activeElement;
+    L.hidden = !left;
+    R.hidden = !right;
+    placeStrip(el, L, R);
+    // A chevron that just ran out of room hands focus on, so focus is never dropped.
+    if ((had === L && !left) || (had === R && !right)) {
+      var other = had === L ? R : L;
+      if (!other.hidden) other.focus();
+      else {
+        var links = el.querySelectorAll("a[href], button");
+        if (links.length) links[had === L ? 0 : links.length - 1].focus();
+      }
+    }
+  }
+  function placeStrip(el, L, R) {
+    var par = el.parentNode;
+    var pr = par.getBoundingClientRect();
+    var r = el.getBoundingClientRect();
+    var top = r.top - pr.top - par.clientTop;
+    [L, R].forEach(function (b) {
+      if (b.hidden) return;
+      b.style.top = Math.round(top + (r.height - b.offsetHeight) / 2) + "px";
+    });
+    if (!L.hidden) L.style.left = Math.round(r.left - pr.left - par.clientLeft) + "px";
+    if (!R.hidden) R.style.left = Math.round(r.right - pr.left - par.clientLeft - R.offsetWidth) + "px";
+  }
+  function stripScroll(b) {
+    var s = b._arrStrip;
+    if (!s) return;
+    var dir = b.getAttribute("data-arr-strip") === "l" ? -1 : 1;
+    if (getComputedStyle(s).direction === "rtl") dir = -dir;
+    var step = dir * Math.max(80, Math.round(s.clientWidth * 0.7));
+    var smooth = state.motion !== STILL && state.reading !== "on" && !media("(prefers-reduced-motion: reduce)");
+    try {
+      s.scrollBy({ left: step, behavior: smooth ? "smooth" : "auto" });
+    } catch (e) {
+      s.scrollLeft += step;
+    }
+  }
+
   /* ── custom elements (defined here in <head>, so they render as the parser reaches them) ── */
   function define(name, render) {
     if (!window.customElements || customElements.get(name)) return;
@@ -2413,6 +3060,7 @@
   define("arrival-footer", renderFooter);
   define("arrival-donate", renderDonate);
   define("arrival-map", renderMap);
+  define("arrival-pledge", renderPledge);
 
   /* ── cursor effects: a trail behind the pointer, per motion level ────────────────────────
      motions[i].trail = true | { colors: [...], life: ms, width: px, alpha: 0..1, sparks: 0..1,
@@ -2570,6 +3218,28 @@
       return;
     }
     if (!t.closest(".arr-nav-menu, .arr-menu-panel")) closeNavs(false);
+    // v1.3: every button of the give-with-crypto module (on the page or in its guide) goes to give.js.
+    if (GIVE && (b = t.closest("[data-give]")) && !b.disabled) {
+      var gsec = b.closest("[data-arr-give]") || doc.querySelector("[data-arr-give]");
+      if (gsec) {
+        e.preventDefault();
+        giveClick(gsec, b);
+        return;
+      }
+    }
+    // v1.4: the pledge's buttons go to pledge.js; a strip's chevrons scroll it.
+    if (PLEDGE && (b = t.closest("[data-pledge]")) && !b.disabled) {
+      var proot = b.closest("arrival-pledge") || doc.querySelector("arrival-pledge");
+      if (proot && b.getAttribute("aria-busy") !== "true") {
+        e.preventDefault();
+        pledgeAct(proot, b.getAttribute("data-pledge"), b);
+        return;
+      }
+    }
+    if ((b = t.closest("[data-arr-strip]"))) {
+      stripScroll(b);
+      return;
+    }
     if ((b = t.closest("[data-arr-copy]"))) {
       var text = b.getAttribute("data-arr-copy");
       try {
@@ -2640,6 +3310,23 @@
       goStep(step + 1);
     }
     if (!t.closest(".arr-drawer-wrap, .arr-nav-menu, .arr-menu-panel")) closeDrawers(false);
+  });
+  // v1.4: the pledge's "verify a signature" form is checked by pledge.js (loaded on first use).
+  doc.addEventListener("submit", function (e) {
+    var f = e.target;
+    if (!PLEDGE || !f || !f.matches || !f.matches("form[data-pledge-form]")) return;
+    e.preventDefault();
+    var root = f.closest("arrival-pledge");
+    if (root) pledgeAct(root, f.getAttribute("data-pledge-form"), f);
+  });
+  doc.addEventListener("reset", function (e) {
+    var f = e.target;
+    if (!f || !f.matches || !f.matches("form[data-pledge-form]")) return;
+    var out = f.querySelector("[data-pledge-result]");
+    if (out) {
+      out.textContent = "";
+      out.removeAttribute("data-state");
+    }
   });
   // Focus leaving an open dropdown or Menu (Tab past its last link) closes it.
   doc.addEventListener("focusin", function (e) {
@@ -2745,6 +3432,7 @@
   function boot() {
     startVisit();
     sync();
+    scrollStrips();
     if (location.hash === "#welcome") openGuide();
     else if ((location.hash === "#contact" || location.hash === "#community") && canOpen(location.hash.slice(1))) open(location.hash.slice(1));
     else if (splashWanted()) openSplash();
@@ -2773,5 +3461,20 @@
     },
     config: C,
     site: site,
+    // v1.3, for modules such as give/give.js: the kit's own dialog and toast.
+    dialog: function (o) {
+      o = o || {};
+      var id = "arr-dlg-" + ++uid;
+      var d = makeDialog("arr-modal " + (o.cls || ""), id, o.onClose);
+      d.innerHTML = panel(modalHead(o.title || "", o.eyebrow, id) + (o.html || ""), "arr-modal-panel");
+      return {
+        el: d,
+        show: function (focusEl) { show(d, focusEl || d.querySelector("[data-arr-close]")); },
+        hide: function () { hide(d); },
+      };
+    },
+    toast: toast,
+    // v1.4: give fades and chevrons to strips added after load (any [data-arr-scroll] in scope).
+    strips: scrollStrips,
   };
 })();

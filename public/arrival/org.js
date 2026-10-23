@@ -1,4 +1,4 @@
-/* Psychedelic Policy Reform's arrival config, read by arrival.js (kit v1.2.1). Shared by every page
+/* Psychedelic Policy Reform's arrival config, read by arrival.js (kit v1.4). Shared by every page
    of the initiative: this AstroLog (where the kit's files live, under /arrival/) and, by absolute
    URL, the dApp preview.
 
@@ -227,6 +227,14 @@
       },
       more: ['Want to know when a space opens? The <a href="' + LOG + '/changelog">changelog</a> will say so first.'],
     },
+
+    // ── kit 1.4 ───────────────────────────────────────────────────────────────────────────────
+    // The dock (the one-row strip at the bottom) shows a fade and a chevron on the side with more, so
+    // a phone visitor can tell it scrolls: the AstroLog's .universal-footer .footer-inner and the dApp
+    // preview's .dock-inner.
+    dock: { scroll: true, selector: ".universal-footer .footer-inner, .dock-inner" },
+    // The initiative takes no gifts, so there's no Donate to add; the welcome guide stays everywhere.
+    essentials: { donate: false },
 
     record: {
       intro: "The initiative's AstroLog has three parts.",
