@@ -181,3 +181,10 @@
   opacity: 0.45;
   transition: opacity 0.3s ease;
 }
+
+/* ── the community window (2026-10-22): a live card with one door shows just that door. The kit
+   always draws a public slot and a join slot; each Facebook group has one link, so an empty
+   "coming soon" slot beside it would be untrue. ─────────────────────────────────────────────── */
+.arr-plat:not(.is-soon) .arr-plat-link.is-off {
+  display: none;
+}

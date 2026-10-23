@@ -13,6 +13,15 @@
   var LOG = ROOT + "/psychedelic-policy-reform-astro-public";
   var DAPP = ROOT + "/psychedelic-policy-reform-dapp-public-preview";
   var GH = "https://github.com/drasticstatic";
+  // Facebook groups (Christopher's decision, 2026-10-22). Each tinyurl Christopher shared resolves
+  // (curl -sI, 2026-10-22) to the group's plain facebook.com/groups/<name> address, used here. Names
+  // are the groups' own, as Facebook's public listings show them. Facebook may ask a visitor to sign in.
+  //   Groups Christopher W manages:
+  var FB_REFORM = "https://www.facebook.com/groups/pennsylvaniapsychedelicreform"; // tinyurl.com/pennsylvaniapsychedelicreform
+  var FB_RFRA = "https://www.facebook.com/groups/pennsylvaniarfra"; // tinyurl.com/pennsylvaniarfra
+  //   Related groups (not part of this initiative):
+  var FB_NORML_SPA = "https://www.facebook.com/groups/normlsouthernpa"; // tinyurl.com/normlsouthernpa
+  var FB_NORML_LVC = "https://www.facebook.com/groups/normllvc"; // tinyurl.com/normllvc
   // Keystone gold, sage leaf and slate blues. They color the guide's glyph (one stone per step) and
   // the initials avatars of anyone without a GitHub picture.
   var STONES = ["#e0b65e", "#84d1a5", "#7fa7d9", "#c99a4a", "#5fb487", "#a7c4e6", "#f0d08f", "#3f8f6a"];
@@ -132,7 +141,7 @@
           priority: 3,
           items: [
             { id: "pledge-preview", label: "Pledge (preview)", icon: "signature", href: DAPP + "/pledge", sites: ["astrolog"], note: "Try a wallet-signed pledge. Nothing is recorded" },
-            { id: "community", label: "Community", icon: "users-three", href: LOG + "/#community", open: "community", note: "Where supporters will gather" },
+            { id: "community", label: "Community", icon: "users-three", href: LOG + "/#community", open: "community", note: "Facebook groups for Pennsylvania, for now" },
             { id: "contact", label: "Reach out", icon: "envelope-simple", href: GH, open: "contact", note: "Every way to reach the initiative" },
           ],
         },
@@ -200,17 +209,50 @@
       fine: "Please don't send personal legal details through any of these. This initiative works on policy and evidence and can't give legal advice.",
     },
 
-    // ── where supporters will gather: nothing yet, on purpose, and a sneak peek ─────────────────
+    // ── where supporters gather: for now, Facebook groups in Pennsylvania (two Christopher W manages,
+    //    two related ones), an email slot still to come, and a sneak peek at a network of our own.
+    //    One link per group (org.css hides the kit's empty second slot on a live card). ──────────
     community: {
-      name: "a community space",
+      name: "Facebook groups in Pennsylvania",
       icon: "users-three",
       label: "See every way in",
-      title: "Where we'll gather",
+      title: "Where we gather",
       eyebrow: "Community",
-      text: "The initiative doesn't have a community space of its own yet. The slots below are ready, and each one stays marked “coming soon” until it's real.",
-      intro: "No community space yet, on purpose: one will open once the initiative's partner organizations are announced. Until then, these slots wait, and the dApp preview's pledge shows the direction.",
+      text: "For now, the conversation happens in Facebook groups in Pennsylvania: two that Christopher W manages, and two related NORML groups. A space of the initiative's own comes later.",
+      intro: "For now, people following this work gather in Facebook groups in Pennsylvania. Two are groups Christopher W manages; two are related groups run by others. Facebook may ask you to sign in.",
       platforms: [
-        { id: "discussion", kind: "forum", name: "A discussion space", status: "soon", text: "Somewhere to ask questions and share sources." },
+        {
+          id: "fb-reform",
+          kind: "Facebook group",
+          icon: "facebook-logo",
+          name: "Pennsylvania Psychedelic Reform",
+          text: "A group Christopher W manages, for anyone following psychedelic law and policy reform in Pennsylvania.",
+          join: { href: FB_REFORM, label: "Open the group", note: "facebook.com/groups/pennsylvaniapsychedelicreform" },
+        },
+        {
+          id: "fb-rfra",
+          kind: "Facebook group",
+          icon: "facebook-logo",
+          name: "Pennsylvania RFRA",
+          text: "A group Christopher W manages, on religious-freedom law in Pennsylvania (the state's Religious Freedom Protection Act and the federal RFRA) and what it means for sincere sacramental practice.",
+          join: { href: FB_RFRA, label: "Open the group", note: "facebook.com/groups/pennsylvaniarfra" },
+        },
+        {
+          id: "fb-norml-spa",
+          kind: "Related group",
+          icon: "facebook-logo",
+          name: "NORML Southern PA",
+          text: "A related Facebook group for southern Pennsylvania, in the circle of NORML (the National Organization for the Reform of Marijuana Laws). Not part of this initiative.",
+          join: { href: FB_NORML_SPA, label: "Open the group", note: "facebook.com/groups/normlsouthernpa" },
+        },
+        {
+          id: "fb-norml-lvc",
+          kind: "Related group",
+          icon: "facebook-logo",
+          name: "NORML - Lebanon Valley College Chapter",
+          text: "A related Facebook group: NORML's Lebanon Valley College chapter. Not part of this initiative.",
+          join: { href: FB_NORML_LVC, label: "Open the group", note: "facebook.com/groups/normllvc" },
+        },
         { id: "updates", kind: "email", name: "Updates by email", status: "soon", text: "News when something changes, and nothing else." },
       ],
       bespoke: {
@@ -220,12 +262,14 @@
         text: "In time, supporters could sign a pledge with a wallet signature and gather in a small network that belongs to them rather than to one company.",
         points: [
           "Pledges signed with a wallet signature: no gas, and no personal details needed. The dApp preview lets you try one today, and nothing is recorded.",
+          "Tokens of gratitude, later: soulbound thank-yous that stay in the wallet they're given to, a deeper commitment beyond a signed pledge (a sneak peek on the pledge page).",
           "Profiles and posts on open protocols like Lens and Farcaster, paired with a DAO where supporters propose ideas and decide together.",
           "Privacy first: everyone chooses what's public.",
         ],
         note: "No dates, and nothing to sign up for yet. This is a direction, not a promise.",
       },
-      more: ['Want to know when a space opens? The <a href="' + LOG + '/changelog">changelog</a> will say so first.'],
+      fine: "The NORML groups are related, not partners: this initiative doesn't speak for them, and they don't speak for it. Please don't share personal legal details in any group; this initiative can't give legal advice.",
+      more: ['Want to know when a space of our own opens? The <a href="' + LOG + '/changelog">changelog</a> will say so first.'],
     },
 
     // ── kit 1.4 ───────────────────────────────────────────────────────────────────────────────
@@ -304,6 +348,10 @@
         { t: "Evidence library (coming soon)", k: "dApp", i: "folder-open", h: DAPP + "/evidence", x: "sources law statutes court decisions research practice pennsylvania" },
         { t: "Pledge of support (preview)", k: "dApp", i: "signature", h: DAPP + "/pledge", x: "sign wallet signature support pledge web3 reown" },
         { t: "Updates", k: "dApp", i: "newspaper", h: DAPP + "/updates", x: "news latest follow" },
+        { t: "Pennsylvania Psychedelic Reform", k: "Facebook group", i: "facebook-logo", h: FB_REFORM, x: "community facebook group pennsylvania psychedelic reform discuss" },
+        { t: "Pennsylvania RFRA", k: "Facebook group", i: "facebook-logo", h: FB_RFRA, x: "community facebook group pennsylvania rfra religious freedom protection act" },
+        { t: "NORML Southern PA", k: "Facebook group, related", i: "facebook-logo", h: FB_NORML_SPA, x: "norml southern pennsylvania cannabis marijuana related group" },
+        { t: "NORML - Lebanon Valley College Chapter", k: "Facebook group, related", i: "facebook-logo", h: FB_NORML_LVC, x: "norml lvc lebanon valley college cannabis marijuana related group" },
         { t: "About the initiative", k: "dApp", i: "info", h: DAPP + "/about", x: "what who rfra pennsylvania partners not legal advice" },
         { t: "Roadmap", k: "page", i: "path", h: LOG + "/roadmap", x: "plans next future evidence pennsylvania partners" },
         { t: "Sustainability", k: "page", i: "plant", h: LOG + "/sustainability", x: "maintenance keep running tokens costs upkeep allowlist" },
