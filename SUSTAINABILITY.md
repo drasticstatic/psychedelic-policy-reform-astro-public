@@ -23,19 +23,37 @@ Markdown stay private (only the finished pages are published).
 
 ### 🔑 The publishing token (`PUBLIC_REPO_TOKEN`)
 
-Both private repositories publish into their public siblings with a **classic personal access token**
-stored as the Actions secret `PUBLIC_REPO_TOKEN` (scopes `repo` and `workflow`). Until it's added, every
-push still builds the site and runs the checks, but the publish steps are skipped with a warning; the
-first versions of both sites were published by hand. When the token expires, **the sites stop updating
-without any visible sign on the sites themselves**: new entries, the daily ledger and every fix simply
-stop arriving, and the pages keep showing the last good build.
+Both private repositories publish into their public siblings with the Actions secret
+`PUBLIC_REPO_TOKEN`.
 
-*What to do:* make a classic token with `repo` and `workflow`, add it as `PUBLIC_REPO_TOKEN` in both
-`psychedelic-policy-reform-astro` and `psychedelic-policy-reform-dapp` (Settings → Secrets and
-variables → Actions), run each repository's workflows by hand once, and check the ledger's newest day.
-Renew it before the expiry date GitHub shows.
+**Since 2026-10-26** it's the fine-grained token `public-sync-ppr`:
+- resource owner `drasticstatic`
+- only `psychedelic-policy-reform-astro-public` and `psychedelic-policy-reform-dapp-public-preview`
+- Contents + Workflows read/write
+- **no expiration**
 
-### 📒 The ledger's private lane (`LEDGER_TOKEN`, optional)
+Without it, every push still builds the site and runs the checks, but the publish steps are skipped with
+a warning. That happened from 2026-10-14 to 2026-10-26, and the first versions of both sites were
+published by hand. If the token is ever revoked or regenerated, **the sites stop updating without any
+visible sign on the sites themselves**: new entries, the daily ledger and every fix simply stop
+arriving, and the pages keep showing the last good build.
+
+*What to do:* make a new fine-grained token with the same owner, repositories and permissions. Set it as
+`PUBLIC_REPO_TOKEN` in both `psychedelic-policy-reform-astro` and `psychedelic-policy-reform-dapp`, piped
+from the clipboard (`pbpaste | gh secret set PUBLIC_REPO_TOKEN -R drasticstatic/<repo>`). Then run each
+repository's workflows by hand once, the AstroLog first because the dApp loads its kit, and check the
+ledger's newest day.
+
+### 📒 The ledger's private lane (`LEDGER_TOKEN`)
+
+**Set since 2026-10-26:** the fine-grained token `ledger-read-drasticstatic`.
+- **Resource owner:** `drasticstatic`.
+- **Repositories, and only these six:** `O-R-G`, `O-R-G-astro`, `O-R-G-dapp`,
+  `psychedelic-policy-reform`, `-astro` and `-dapp`. Never all of drasticstatic.
+- **Permission:** Contents read-only. **No expiration.**
+- **Shared with** `drasticstatic/O-R-G-astro`.
+- **To replace it:** make a new token over the same six repositories, set it as `LEDGER_TOKEN` on both
+  repositories, and run the deploy once.
 
 The [ledger](https://drasticstatic.github.io/psychedelic-policy-reform-astro-public/ledger) shows the
 initiative's private work masked (repository, day and kind, with the words hidden). In the workflow, the
@@ -49,6 +67,9 @@ between the build and the publish and fails the deploy if any private words reac
 
 So the ledger stays fresh on days nothing else changes, the AstroLog's deploy workflow also runs
 **every day at 10:53 UTC**. It uses a few minutes of the account's Actions allowance a day.
+
+The workflow builds on **Node 24** (since 2026-10-26). Astro 7.4 needs Node 22.23.4 or newer, and the
+runner resolved a bare `22` to 22.23.3, so keep it on the long-term release rather than a bare `22`.
 
 *What to do:* if the ledger's newest day looks old, open the workflow's run history. A failed scheduled
 run usually means the token above, or GitHub's API having a bad moment (the build then falls back to
