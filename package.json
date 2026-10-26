@@ -22,5 +22,10 @@
   },
   "allowScripts": {
     "esbuild": true
+  },
+  "overrides": {
+    "satori": {
+      "fflate": "^0.7.5"
+    }
   }
 }
