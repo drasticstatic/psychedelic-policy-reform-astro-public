@@ -19,7 +19,10 @@ import { archSvg } from "./keystone-svg.mjs";
 export const W = 1200;
 export const H = 630;
 
-const h = (type, style, children) => ({ type, props: { style, children } });
+// Every box is border-box: satori 0.18 laid boxes out that way, but satori 0.63 follows CSS
+// (content-box), so a box with a set width or height plus padding or a border overflowed and the
+// card's frame and footer were cut off. This default draws the same card on both versions.
+const h = (type, style, children) => ({ type, props: { style: { boxSizing: "border-box", ...style }, children } });
 const img = (src, width, height, style = {}) => ({ type: "img", props: { src, width, height, style } });
 const clip = (s, n) => (s && s.length > n ? s.slice(0, n - 1).replace(/[\s,.;:]+\S*$/, "") + "…" : s || "");
 const svgData = (svg) => `data:image/svg+xml;base64,${Buffer.from(svg).toString("base64")}`;
