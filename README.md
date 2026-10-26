@@ -1,3 +1,8 @@
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="public/brand/readme-banner-dark.svg">
+  <img alt="Psychedelic Policy Reform. Religious freedom for sincere sacramental practice, seen from Pennsylvania: a quiet docket page breathing behind a stone arch with a glowing golden keystone." src="public/brand/readme-banner-light.svg" width="100%">
+</picture>
+
 # Psychedelic Policy Reform
 
 > The open record of an RFRA-based psychedelic policy reform initiative, seen from Pennsylvania.
@@ -49,8 +54,10 @@ nothing is recorded yet).
 - `changelog/`: one Markdown file per entry, named `YYYY-MM-DD-short-slug.md`.
 - `library/`: explainers and longer write-ups. A draft says so (`draft: true`), and anything about law
   or evidence carries the "not legal advice" note (`legal: true`).
-- `src/`, `public/`: the Astro site. `public/arrival/` holds the arrival kit (v1.2.1) that both this
-  AstroLog and the dApp preview load.
+- `src/`, `public/`: the Astro site. `public/arrival/` holds the arrival kit (v1.5.1) that both this
+  AstroLog and the dApp preview load. Since kit 1.5 it welcomes visitors in English first, with
+  Español one tap away; the kit's own menus are translated and marked "under review", and a quiet
+  note says when a page's words are still in English. `public/brand/` holds this README's banner.
 - `ROADMAP.md` and `SUSTAINABILITY.md`: where this is headed, and what keeps it running. Each is also
   a page on the site.
 
