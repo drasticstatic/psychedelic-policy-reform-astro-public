@@ -123,10 +123,16 @@ about numbers.
 
 ### 🔗 Links that leave GitHub
 
-The Community window links four Facebook groups (Pennsylvania Psychedelic Reform and Pennsylvania RFRA,
+The Communities page links four Facebook groups (Pennsylvania Psychedelic Reform and Pennsylvania RFRA,
 which Christopher W manages, and two related NORML groups), by their plain facebook.com/groups
-addresses. *What to do:* if a group is renamed, moved or closed, update `community` in
-`public/arrival/org.js` and the community card in `src/og/pages.ts`.
+addresses. *What to do:* if a group is renamed, moved or closed, update `GROUPS` in
+`src/pages/communities.astro`, the groups in `contact` and `search` in `public/arrival/org.js`, and the
+communities card in `src/og/pages.ts`.
+
+The same page's community cards show each community's own share image, loaded from that community's
+own site, and link to its home on GitHub. *What to do:* if a community moves its share image or renames
+its GitHub organization, update its card in `COMMUNITIES` in `src/pages/communities.astro` (a missing
+picture shows its description in the card's frame, and the layout holds).
 
 ### 🛡️ Branch protection
 

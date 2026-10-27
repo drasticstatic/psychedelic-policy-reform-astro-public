@@ -21,10 +21,15 @@ has endorsed this initiative or speaks for it.
 
 ## ✅ Just landed
 
-- **Where the conversation happens, for now**: the Community window lists two Facebook groups
-  Christopher W manages, Pennsylvania Psychedelic Reform and Pennsylvania RFRA, and two related NORML
-  groups (NORML Southern PA, and NORML's Lebanon Valley College chapter), labelled as related, not
-  partners.
+- **Every community Christopher W serves, on one page**: the
+  [Communities page](https://drasticstatic.github.io/psychedelic-policy-reform-astro-public/communities)
+  has a card for each of the four healing communities' homes on GitHub (Psanctuary has two), and for
+  this initiative, each in its own words and opening its home on GitHub. The Community link leads there now, and the Facebook groups have a
+  section of their own on it.
+- **Where the conversation happens, for now**: the Community window (now the Communities page) lists
+  two Facebook groups Christopher W manages, Pennsylvania Psychedelic Reform and Pennsylvania RFRA,
+  and two related NORML groups (NORML Southern PA, and NORML's Lebanon Valley College chapter),
+  labelled as related, not partners.
 - **The four communities at its heart, named** (Christopher's decision): PIR®, Psanctuary, ORG and
   The Holy Earth Foundation, below, with the line that naming them isn't an endorsement.
 - **Arrival kit 1.4** on both sites: the welcome guide everywhere, and on this AstroLog a bottom

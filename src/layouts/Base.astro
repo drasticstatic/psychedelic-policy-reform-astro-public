@@ -7,7 +7,7 @@ interface Props {
   description: string;
   filename?: string;
   /** The nav item this page belongs to (an id from org.js nav.items); otherwise it's matched from the URL. */
-  active?: "porch" | "changelog" | "library" | "ledger" | "map" | "roadmap" | "sustainability";
+  active?: "porch" | "changelog" | "library" | "ledger" | "map" | "roadmap" | "sustainability" | "community";
   /** false on the 404: no first-visit splash on a wrong turn. */
   splash?: boolean;
   /** Absolute URL of a 1200×630 JPEG for link previews; defaults to the porch's card. */
@@ -59,6 +59,15 @@ const dapp = `${SITE}/psychedelic-policy-reform-dapp-public-preview`;
     <!-- The arrival kit (v1.2.1), served from this site's own /arrival/ folder (the initiative has no
          portal, so the AstroLog hosts it; the dApp preview loads the same files). Load order matters:
          kit CSS, the family's org.css, then ours (imported above, so Astro injects it after these). -->
+    <!-- The Community window became the Communities page (2026-10-27): an old …/#community link
+         (the dApp preview's included) goes on to it, before anything draws. -->
+    <script is:inline define:vars={{ communities: `${base}/communities` }}>
+      var toCommunities = function () {
+        if (location.hash === "#community") location.replace(communities);
+      };
+      toCommunities();
+      window.addEventListener("hashchange", toCommunities);
+    </script>
     <link rel="stylesheet" href={`${KIT}/arrival.css`} />
     <link rel="stylesheet" href={`${KIT}/org.css`} />
     <script is:inline src={`${KIT}/org.js`}></script>
@@ -90,7 +99,7 @@ const dapp = `${SITE}/psychedelic-policy-reform-dapp-public-preview`;
         <a href={`${base}/ledger`}><i class="ph ph-scroll" aria-hidden="true"></i> Ledger</a>
         <a href={`${base}/map`}><i class="ph ph-map-trifold" aria-hidden="true"></i> Map</a>
         <a href={`${dapp}/`}><i class="ph ph-cube" aria-hidden="true"></i> dApp<span class="long"> preview</span></a>
-        <a href={`${base}/#community`} data-arrival-open="community"><i class="ph ph-users-three" aria-hidden="true"></i> Community</a>
+        <a href={`${base}/communities`}><i class="ph ph-users-three" aria-hidden="true"></i> Communities</a>
         <a href="https://github.com/drasticstatic" data-arrival-open="contact"><i class="ph ph-envelope-simple" aria-hidden="true"></i> Reach out</a>
         <a href="#welcome" data-arrival-open="guide"><i class="ph ph-signpost" aria-hidden="true"></i> Welcome<span class="long"> guide</span></a>
       </div>

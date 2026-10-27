@@ -1,0 +1,556 @@
+---
+// /communities: every community Christopher W serves (Christopher, 2026-10-27), and the Facebook groups
+// where people following this work gather. It's where the kit's Community link leads now (org.js
+// `community.href`), in place of the window that listed only the Facebook groups; everything that
+// window held is here, in the same words.
+//
+// One raster card per community, like /map: each card's picture is that community's own share image
+// (its portal's live og:image, loaded from there), its one line is quoted from its own public GitHub
+// profile, and its main link is its home on github.com, where its profile README greets visitors
+// first. Named as communities Christopher W serves, never as partners or affiliates, always with the
+// "doesn't speak for them" line. People: first name and last initial.
+//
+// Languages (kit 1.5): every string marked data-t is translated in place from org.js's i18n block
+// (exact match, English as the key), when the visitor chooses Español. Names and the communities' own
+// quoted words stay as written (the kit's rule), marked lang="en".
+import Base from "../layouts/Base.astro";
+import { LOG, NAME } from "../data/site";
+import { pageCardUrl } from "../og/pages";
+
+const base = import.meta.env.BASE_URL;
+
+type Community = {
+  id: string;
+  name: string;
+  kind: string;
+  quote: string;
+  source: string;
+  github: string;
+  site: string;
+  img: { src: string; w: number; h: number; alt: string };
+  here?: boolean;
+};
+
+// Quotes: each community's own GitHub profile (its profile README, or for Psanctuary Church its
+// profile description), read 2026-10-27; the initiative's is its own motto. Pictures and their alt
+// text: each portal's og:image and og:image:alt, read the same day (curl, all 200, sizes checked).
+const FROM_PROFILE = "In its own words, from its GitHub profile";
+const COMMUNITIES: Community[] = [
+  {
+    id: "pir",
+    name: "Psychedelics In Recovery™ – PIR®",
+    kind: "A 12-step fellowship",
+    quote: "A safe, sacred space to integrate and discuss the role of psychedelics in your recovery journey.",
+    source: FROM_PROFILE,
+    github: "https://github.com/psychedelicsinrecovery",
+    site: "https://www.psychedelicsinrecovery.org/",
+    img: { src: "https://psychedelicsinrecovery.github.io/social-card.jpg", w: 1200, h: 629, alt: "PIR®, Psychedelics In Recovery™: the fellowship's mark over a night sky." },
+  },
+  {
+    id: "thef",
+    name: "The Holy Earth Foundation",
+    kind: "Home of Plants & Miracles",
+    quote: "The Holy Earth Foundation bridges A Course in Miracles (The Eagle) with Plant Medicine traditions (The Condor) in a teaching called Plants & Miracles.",
+    source: FROM_PROFILE,
+    github: "https://github.com/theholyearthfoundation",
+    site: "https://theholyearthfoundation.github.io/",
+    img: { src: "https://theholyearthfoundation.github.io/social-card.jpg", w: 1200, h: 630, alt: "The Holy Earth Foundation on GitHub: the foundation's mark and its twin vine of sky and gold, on the canopy's deep green." },
+  },
+  {
+    id: "org",
+    name: "Octagon Religious-Research Group (ORG)",
+    kind: "A spiritual and research community",
+    quote: "ORG is a member-governed spiritual and research community.",
+    source: FROM_PROFILE,
+    github: "https://github.com/Octagon-Religious-Research-Group-ORG",
+    site: "https://orgspirituality.org/",
+    img: { src: "https://octagon-religious-research-group-org.github.io/social-card.jpg", w: 1200, h: 630, alt: "Octagon Religious-Research Group: Where science and spirituality meet. ORG's octagon over marbled ink." },
+  },
+  {
+    id: "psanctuary",
+    name: "Psanctuary",
+    kind: "The church's playful side on GitHub",
+    quote: "The decentralized, playful dimension: experiments in tools the community can own, a little more color, and an open record of how it's all built.",
+    source: FROM_PROFILE,
+    github: "https://github.com/psanctuary",
+    site: "https://psanctuary.github.io/",
+    img: { src: "https://psanctuary.github.io/social-card.jpg", w: 1200, h: 630, alt: "Psanctuary on GitHub: the playful side, beside an iridescent spore print." },
+  },
+  {
+    id: "psanctuarychurch",
+    name: "Psanctuary Church",
+    kind: "The church's official home on GitHub",
+    quote: "A space for community growth built on sincere practice & rooted in spiritual autonomy",
+    source: FROM_PROFILE,
+    github: "https://github.com/psanctuarychurch",
+    site: "https://www.psanctuary.org/",
+    img: { src: "https://psanctuarychurch.github.io/social-card.jpg", w: 1200, h: 630, alt: "Psanctuary Church on GitHub, in a gold frame beside a spore print with a golden stem ring." },
+  },
+  {
+    id: "initiative",
+    name: NAME,
+    kind: "This initiative",
+    quote: "Religious freedom for sincere sacramental practice, seen from Pennsylvania.",
+    source: "In its own words",
+    github: "https://github.com/drasticstatic/psychedelic-policy-reform-astro-public",
+    site: `${LOG}/`,
+    img: { src: pageCardUrl("porch"), w: 1200, h: 630, alt: `${NAME} AstroLog: a stone arch with its keystone set and a sprout beneath it, in a gold frame.` },
+    here: true,
+  },
+];
+
+// The Facebook groups: the Community window's four, in its own words (org.js keeps their addresses
+// for "/" search; Christopher's decision, 2026-10-22).
+const GROUPS = [
+  {
+    name: "Pennsylvania Psychedelic Reform",
+    kind: "A group Christopher W manages",
+    text: "A group Christopher W manages, for anyone following psychedelic law and policy reform in Pennsylvania.",
+    href: "https://www.facebook.com/groups/pennsylvaniapsychedelicreform",
+  },
+  {
+    name: "Pennsylvania RFRA",
+    kind: "A group Christopher W manages",
+    text: "A group Christopher W manages, on religious-freedom law in Pennsylvania (the state's Religious Freedom Protection Act and the federal RFRA) and what it means for sincere sacramental practice.",
+    href: "https://www.facebook.com/groups/pennsylvaniarfra",
+  },
+  {
+    name: "NORML Southern PA",
+    kind: "Related group",
+    text: "A related Facebook group for southern Pennsylvania, in the circle of NORML (the National Organization for the Reform of Marijuana Laws). Not part of this initiative.",
+    href: "https://www.facebook.com/groups/normlsouthernpa",
+  },
+  {
+    name: "NORML - Lebanon Valley College Chapter",
+    kind: "Related group",
+    text: "A related Facebook group: NORML's Lebanon Valley College chapter. Not part of this initiative.",
+    href: "https://www.facebook.com/groups/normllvc",
+  },
+];
+
+const S = {
+  eyebrow: "Communities",
+  title: "The communities Christopher W serves",
+  lede: "Christopher W, who started this initiative, also serves four life-changing healing communities, helping tend their homes on GitHub (Psanctuary has two). Each card below opens a community's GitHub home, where its own welcome greets you first, and each is described in its own public words.",
+  path: "This initiative walks one path among several. It serves through sincere religious freedom, cultural history and community health, while others carry the decentralization, medical and lobbying efforts already underway. Every one of those efforts helps, and this path walks alongside them, not in competition with them.",
+  review: "Translation in review",
+  servesH: "Where Christopher W serves",
+  servesNote: "Four communities on five GitHub homes (Psanctuary has two), and this initiative itself. The pictures are each home's own share card.",
+  github: "Open on GitHub",
+  website: "Website",
+  here: "You are here",
+  fine: "Naming a community here describes where Christopher W serves. It doesn't mean any of them has endorsed this initiative or taken a position on it, and nothing here speaks for any of them. PIR®, as a 12-step fellowship, keeps to its own traditions.",
+  gatherH: "Where we gather",
+  gatherNote: "For now, people following this work gather in Facebook groups in Pennsylvania. Two are groups Christopher W manages; two are related groups run by others. Facebook may ask you to sign in.",
+  openGroup: "Open the group",
+  emailName: "Updates by email",
+  soon: "Coming soon",
+  emailText: "News when something changes, and nothing else.",
+  aheadTitle: "Looking ahead: a supporters' network of our own",
+  aheadTag: "Sneak peek",
+  aheadText: "In time, supporters could sign a pledge with a wallet signature and gather in a small network that belongs to them rather than to one company.",
+  aheadPoints: [
+    "Pledges signed with a wallet signature: no gas, and no personal details needed. The dApp preview lets you try one today, and nothing is recorded.",
+    "Tokens of gratitude, later: soulbound thank-yous that stay in the wallet they're given to, a deeper commitment beyond a signed pledge (a sneak peek on the pledge page).",
+    "Profiles and posts on open protocols like Lens and Farcaster, paired with a DAO where supporters propose ideas and decide together.",
+    "Privacy first: everyone chooses what's public.",
+  ],
+  aheadNote: "No dates, and nothing to sign up for yet. This is a direction, not a promise.",
+  groupsFine: "The NORML groups are related, not partners: this initiative doesn't speak for them, and they don't speak for it. Please don't share personal legal details in any group; this initiative can't give legal advice.",
+  more: `Want to know when a space of our own opens? The <a href="${LOG}/changelog">changelog</a> will say so first.`,
+};
+
+const hostOf = (href: string) => {
+  const u = new URL(href);
+  return (u.host.replace(/^www\./, "") + u.pathname).replace(/\/+$/, "");
+};
+---
+
+<Base
+  title={`Communities — ${NAME} AstroLog`}
+  description="The communities Christopher W serves, each in its own words and at its home on GitHub: PIR®, The Holy Earth Foundation, ORG, Psanctuary and Psanctuary Church, and the Facebook groups where people gather."
+  active="community"
+  ogImage={pageCardUrl("communities")}
+  ogAlt={`${NAME}: the communities Christopher W serves, beside a stone arch with its keystone set.`}
+>
+  <section class="cm-page">
+    <p class="cm-eyebrow"><i class="ph ph-users-three" aria-hidden="true"></i> <span data-t={S.eyebrow}>{S.eyebrow}</span></p>
+    <h1 data-t={S.title}>{S.title}</h1>
+    <p class="cm-lede" data-t={S.lede}>{S.lede}</p>
+    <p class="cm-path"><i class="ph ph-path" aria-hidden="true"></i> <span data-t={S.path}>{S.path}</span></p>
+    <p class="cm-review arr-shape" data-cm-review hidden><i class="ph ph-seal-question" aria-hidden="true"></i> <span data-t={S.review}>{S.review}</span></p>
+
+    <section class="cm-group" aria-labelledby="cm-serves">
+      <h2 class="arr-map-h" id="cm-serves"><i class="ph ph-hand-heart" aria-hidden="true"></i> <span data-t={S.servesH}>{S.servesH}</span></h2>
+      <p class="arr-map-note" data-t={S.servesNote}>{S.servesNote}</p>
+      <ul class="cm-grid" role="list">
+        {
+          COMMUNITIES.map((c) => (
+            <li class={`cm-card arr-shape${c.here ? " is-here" : ""}`}>
+              <div class="cm-thumb">
+                <img src={c.img.src} width={c.img.w} height={c.img.h} alt={c.img.alt} loading="lazy" decoding="async" />
+                {c.here && (
+                  <span class="arr-map-here arr-shape">
+                    <i class="ph ph-map-pin" aria-hidden="true" />
+                    <span data-t={S.here}>{S.here}</span>
+                  </span>
+                )}
+              </div>
+              <div class="cm-body">
+                <span class="cm-kind" data-t={c.kind}>{c.kind}</span>
+                <h3 class="cm-name" id={`cm-${c.id}`} translate="no">{c.name}</h3>
+                <blockquote class="cm-quote" lang="en">
+                  <p>“{c.quote}”</p>
+                </blockquote>
+                <p class="cm-source" data-t={c.source}>{c.source}</p>
+                <div class="cm-links">
+                  <a class="arr-btn arr-btn-primary arr-shape" href={c.github} aria-describedby={`cm-${c.id}`}>
+                    <i class="ph ph-github-logo" aria-hidden="true" />
+                    <span data-t={S.github}>{S.github}</span>
+                  </a>
+                  <a class="arr-btn arr-shape" href={c.site} aria-describedby={`cm-${c.id}`}>
+                    <i class="ph ph-globe-simple" aria-hidden="true" />
+                    <span data-t={S.website}>{S.website}</span>
+                  </a>
+                </div>
+                <span class="arr-map-url" translate="no">{hostOf(c.github)}</span>
+              </div>
+            </li>
+          ))
+        }
+      </ul>
+      <p class="cm-fine" data-t={S.fine}>{S.fine}</p>
+    </section>
+
+    <section class="cm-group cm-gather" aria-labelledby="cm-gather">
+      <h2 class="arr-map-h" id="cm-gather"><i class="ph ph-facebook-logo" aria-hidden="true"></i> <span data-t={S.gatherH}>{S.gatherH}</span></h2>
+      <p class="arr-map-note" data-t={S.gatherNote}>{S.gatherNote}</p>
+      <ul class="cm-groups" role="list">
+        {
+          GROUPS.map((g, i) => (
+            <li class="cm-fb arr-shape">
+              <div class="cm-fb-head">
+                <span class="cm-fb-icon arr-shape"><i class="ph ph-facebook-logo" aria-hidden="true" /></span>
+                <div>
+                  <h3 class="cm-fb-name" id={`cm-fb-${i}`} translate="no">{g.name}</h3>
+                  <span class="cm-fb-kind" data-t={g.kind}>{g.kind}</span>
+                </div>
+              </div>
+              <p data-t={g.text}>{g.text}</p>
+              <div class="cm-fb-links">
+                <a class="arr-btn arr-shape" href={g.href} rel="noopener" aria-describedby={`cm-fb-${i}`}>
+                  <i class="ph ph-sign-in" aria-hidden="true" />
+                  <span data-t={S.openGroup}>{S.openGroup}</span>
+                </a>
+                <span class="arr-map-url" translate="no">{hostOf(g.href)}</span>
+              </div>
+            </li>
+          ))
+        }
+        <li class="cm-fb arr-shape is-soon">
+          <div class="cm-fb-head">
+            <span class="cm-fb-icon arr-shape"><i class="ph ph-envelope-simple" aria-hidden="true"></i></span>
+            <div>
+              <h3 class="cm-fb-name" data-t={S.emailName}>{S.emailName}</h3>
+              <span class="cm-fb-kind"><span class="arr-soon" data-t={S.soon}>{S.soon}</span></span>
+            </div>
+          </div>
+          <p data-t={S.emailText}>{S.emailText}</p>
+        </li>
+      </ul>
+
+      <div class="cm-ahead arr-shape">
+        <div class="cm-fb-head">
+          <span class="cm-fb-icon arr-shape"><i class="ph ph-graph" aria-hidden="true"></i></span>
+          <div>
+            <h3 class="cm-fb-name" data-t={S.aheadTitle}>{S.aheadTitle}</h3>
+            <span class="cm-fb-kind"><span class="arr-soon" data-t={S.aheadTag}>{S.aheadTag}</span></span>
+          </div>
+        </div>
+        <p data-t={S.aheadText}>{S.aheadText}</p>
+        <ul class="cm-ticks">
+          {
+            S.aheadPoints.map((p) => (
+              <li>
+                <i class="ph ph-sparkle" aria-hidden="true" />
+                <span data-t={p}>{p}</span>
+              </li>
+            ))
+          }
+        </ul>
+        <p class="cm-fine" data-t={S.aheadNote}>{S.aheadNote}</p>
+      </div>
+      <p class="cm-fine" data-t={S.groupsFine}>{S.groupsFine}</p>
+      <p class="cm-fine" data-t={S.more} set:html={S.more} />
+    </section>
+  </section>
+</Base>
+
+<!-- English first; with Español chosen, each data-t element takes its translation from org.js's
+     i18n block (an exact match on the English, which stays the key), and goes back to English when
+     the visitor does. Nothing here needs the kit's language pack, so it switches at once. -->
+<script is:inline>
+  (function () {
+    var els = [].slice.call(document.querySelectorAll("[data-t]"));
+    els.forEach(function (el) {
+      el._en = el.innerHTML;
+    });
+    var mark = document.querySelector("[data-cm-review]");
+    function apply() {
+      var lang = window.Arrival && window.Arrival.lang ? window.Arrival.lang() : "en";
+      var mine = (window.ARRIVAL && window.ARRIVAL.i18n && window.ARRIVAL.i18n[lang]) || null;
+      var T = (mine && mine.text) || {};
+      els.forEach(function (el) {
+        var tr = lang !== "en" && Object.prototype.hasOwnProperty.call(T, el.getAttribute("data-t")) ? T[el.getAttribute("data-t")] : null;
+        var html = tr == null ? el._en : tr;
+        if (el.innerHTML !== html) el.innerHTML = html;
+        if (tr == null) el.removeAttribute("lang");
+        else el.setAttribute("lang", lang);
+      });
+      if (mark) mark.hidden = !(lang !== "en" && mine && mine.reviewed === false);
+    }
+    apply();
+    window.addEventListener("arrival:change", apply);
+  })();
+</script>
+
+<style>
+  .cm-page {
+    max-width: 72rem;
+    margin: 0 auto;
+    padding: 2.75rem 1.25rem 2rem;
+  }
+  .cm-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin: 0 0 0.6rem;
+    font: 600 0.82rem/1.2 var(--font-body);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--stone);
+  }
+  h1 {
+    max-width: 44rem;
+    font-size: clamp(2.1rem, 5vw, 2.6rem);
+    line-height: 1.1;
+    text-wrap: balance;
+    margin: 0 0 0.9rem;
+  }
+  .cm-lede {
+    max-width: 44rem;
+    margin: 0 0 1rem;
+    font-size: 1.08rem;
+  }
+  .cm-path {
+    position: relative;
+    max-width: 44rem;
+    margin: 0 0 1.5rem;
+    padding: 0.9rem 1rem 0.9rem 2.6rem;
+    border-left: 3px solid var(--accent);
+    border-radius: 12px;
+    background: color-mix(in srgb, var(--accent) 11%, var(--surface));
+    line-height: 1.6;
+  }
+  .cm-path > .ph {
+    position: absolute;
+    left: 0.95rem;
+    top: 1.15rem;
+    color: var(--accent);
+  }
+  h1,
+  .cm-eyebrow,
+  .cm-lede {
+    text-shadow: 0 0 14px var(--background), 0 0 3px var(--background);
+  }
+  .cm-review {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin: 0 0 1.5rem;
+    padding: 0.3rem 0.7rem;
+    background: var(--surface-muted);
+    font-size: 0.85rem;
+    color: var(--muted);
+  }
+  .cm-review[hidden] {
+    display: none;
+  }
+  .cm-group {
+    margin: 2rem 0 0;
+  }
+  .cm-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 19rem), 1fr));
+    gap: 1rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .cm-card {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background: color-mix(in srgb, var(--surface) 90%, transparent);
+    box-shadow: inset 0 0 0 1px var(--border);
+    transition: box-shadow 0.2s ease, transform 0.2s ease;
+  }
+  .cm-card:hover,
+  .cm-card:focus-within {
+    box-shadow: inset 0 0 0 2px var(--accent);
+  }
+  .cm-card.is-here {
+    box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--accent) 70%, var(--border));
+  }
+  :root:not([data-motion="still"]) .cm-card:hover {
+    transform: translateY(-2px);
+  }
+  .cm-thumb {
+    position: relative;
+    display: block;
+    aspect-ratio: 1200 / 630;
+    background: var(--surface-muted);
+    overflow: hidden;
+  }
+  .cm-thumb img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .cm-body {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 0.35rem;
+    padding: 0.95rem 1rem 1rem;
+  }
+  .cm-kind,
+  .cm-fb-kind {
+    font: 600 0.76rem/1.3 var(--font-body);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .cm-name {
+    margin: 0;
+    font-size: 1.2rem;
+    line-height: 1.25;
+  }
+  .cm-quote {
+    margin: 0.25rem 0 0;
+    padding: 0 0 0 0.8rem;
+    border-left: 2px solid var(--stone);
+  }
+  .cm-quote p {
+    margin: 0;
+    font-family: var(--font-heading);
+    font-size: 1rem;
+    line-height: 1.5;
+    color: var(--foreground);
+  }
+  .cm-source {
+    margin: 0 0 0.35rem;
+    font-size: 0.8rem;
+    color: var(--muted);
+  }
+  .cm-links,
+  .cm-fb-links {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: auto;
+    padding-top: 0.35rem;
+  }
+  .cm-links .arr-btn,
+  .cm-fb-links .arr-btn {
+    padding: 0.55rem 0.9rem;
+    font-size: 0.9rem;
+  }
+  .cm-body .arr-map-url {
+    margin-top: 0.15rem;
+  }
+  .cm-fine {
+    max-width: 48rem;
+    margin: 1rem 0 0;
+    font-size: 0.88rem;
+    line-height: 1.55;
+    color: var(--muted);
+  }
+  .cm-gather {
+    margin-top: 3rem;
+  }
+  .cm-groups {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 16.5rem), 1fr));
+    gap: 0.85rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .cm-fb,
+  .cm-ahead {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 0.95rem 1rem 1rem;
+    background: color-mix(in srgb, var(--surface) 88%, transparent);
+    box-shadow: inset 0 0 0 1px var(--border);
+  }
+  .cm-fb p,
+  .cm-ahead p {
+    margin: 0;
+    font-size: 0.92rem;
+    line-height: 1.55;
+  }
+  .cm-fb.is-soon {
+    background: color-mix(in srgb, var(--surface) 60%, transparent);
+  }
+  .cm-fb-head {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+  }
+  .cm-fb-icon {
+    display: grid;
+    place-items: center;
+    flex: none;
+    width: 2.4rem;
+    height: 2.4rem;
+    background: var(--surface-muted);
+    color: var(--accent);
+    font-size: 1.25rem;
+  }
+  .cm-fb-name {
+    margin: 0;
+    font-size: 1.05rem;
+    line-height: 1.25;
+  }
+  .cm-fb-links .arr-map-url {
+    flex-basis: 100%;
+  }
+  .cm-ahead {
+    max-width: 48rem;
+    margin: 1rem 0 0;
+    background: linear-gradient(150deg, color-mix(in srgb, var(--stone) 10%, var(--surface)), var(--surface));
+  }
+  .cm-ticks {
+    display: grid;
+    gap: 0.4rem;
+    margin: 0.2rem 0 0;
+    padding: 0;
+    list-style: none;
+  }
+  .cm-ticks li {
+    display: flex;
+    gap: 0.5rem;
+    font-size: 0.92rem;
+    line-height: 1.5;
+  }
+  .cm-ticks .ph {
+    flex: none;
+    margin-top: 0.2rem;
+    color: var(--stone);
+  }
+</style>

@@ -34,7 +34,7 @@ export const SITE_MAP: SiteMap = {
     { id: "start", label: "Start here", icon: "signpost", note: "Two front doors: the record, and the dApp preview." },
     { id: "record", label: "The record", icon: "clock-counter-clockwise", note: "What changed, the explainers, every public change, and where it's all headed." },
     { id: "dapp", label: "In the dApp preview", icon: "cube", note: "The evidence library's shelves, a pledge you can try, and the latest news." },
-    { id: "involved", label: "Get involved", icon: "hand-heart", note: "How to reach the initiative, and where people following it gather." },
+    { id: "involved", label: "Get involved", icon: "hand-heart", note: "How to reach the initiative, the communities Christopher W serves, and where people following it gather." },
     { id: "beyond", label: "The code", icon: "code", note: "The public repositories behind these pages." },
   ],
   nodes: [
@@ -55,7 +55,7 @@ export const SITE_MAP: SiteMap = {
     { id: "dapp-map", group: "dapp", name: "The dApp's map", line: "This same map, inside the preview.", href: `${DAPP}/map`, og: pageCardUrl("map"), icon: "map-trifold", self: "dapp-map" },
 
     { id: "contact", group: "involved", name: "Reach out", line: "Every way to reach the initiative, in one place.", href: `${GH}`, open: "contact", og: pageCardUrl("contact"), icon: "envelope-simple" },
-    { id: "community", group: "involved", name: "Community", line: "Facebook groups in Pennsylvania: two Christopher W manages, two related.", href: `${LOG}/#community`, open: "community", og: pageCardUrl("community"), icon: "users-three" },
+    { id: "community", group: "involved", name: "Communities", line: "Every community Christopher W serves, and the Facebook groups where people gather.", href: `${LOG}/communities`, og: pageCardUrl("communities"), icon: "users-three", self: "communities" },
 
     { id: "astro-src", group: "beyond", name: "AstroLog on GitHub", line: "The published record's public repository.", href: `${GH}/psychedelic-policy-reform-astro-public`, og: pageCardUrl("github"), icon: "github-logo", external: true },
     { id: "dapp-src", group: "beyond", name: "dApp preview on GitHub", line: "The preview's public repository.", href: `${GH}/psychedelic-policy-reform-dapp-public-preview`, og: pageCardUrl("github"), icon: "github-logo", external: true },

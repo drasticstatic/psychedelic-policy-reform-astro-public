@@ -141,7 +141,7 @@
           priority: 3,
           items: [
             { id: "pledge-preview", label: "Pledge (preview)", icon: "signature", href: DAPP + "/pledge", sites: ["astrolog"], note: "Try a wallet-signed pledge. Nothing is recorded" },
-            { id: "community", label: "Community", icon: "users-three", href: LOG + "/#community", open: "community", note: "Facebook groups for Pennsylvania, for now" },
+            { id: "community", label: "Communities", icon: "users-three", href: LOG + "/communities", note: "Every community Christopher W serves" },
             { id: "contact", label: "Reach out", icon: "envelope-simple", href: GH, open: "contact", note: "Every way to reach the initiative" },
           ],
         },
@@ -184,10 +184,10 @@
     // intercept: false, so a plain link to Christopher's GitHub profile (the ledger's names link
     // there) stays a link rather than opening this window. The two Facebook groups Christopher W
     // manages are ways in too (Christopher, 2026-10-27: "reach out"); the two related NORML groups
-    // stay in the Community window only, since they aren't the initiative's to answer for.
+    // stay on the Communities page only, since they aren't the initiative's to answer for.
     contact: {
       title: "Reach out",
-      intro: 'Every way to reach the initiative. It\'s young, so for now the way in is one of the two Facebook groups Christopher W manages (Facebook may ask you to sign in) or his GitHub; an address and a form come later. Two related NORML groups are in the <a href="' + LOG + '/#community" data-arrival-open="community">Community window</a>.',
+      intro: 'Every way to reach the initiative. It\'s young, so for now the way in is one of the two Facebook groups Christopher W manages (Facebook may ask you to sign in) or his GitHub; an address and a form come later. Two related NORML groups are on the <a href="' + LOG + '/communities">Communities page</a>, with every community Christopher W serves.',
       intercept: false,
       paths: [
         {
@@ -227,66 +227,20 @@
       fine: "Please don't send personal legal details through any of these. This initiative works on policy and evidence and can't give legal advice.",
     },
 
-    // ── where supporters gather: for now, Facebook groups in Pennsylvania (two Christopher W manages,
-    //    two related ones), an email slot still to come, and a sneak peek at a network of our own.
-    //    One link per group (org.css hides the kit's empty second slot on a live card). ──────────
+    // ── Community is a page now (Christopher, 2026-10-27): every community Christopher W serves, one
+    //    card each opening its home on GitHub, with the Facebook groups (the two he manages, the two
+    //    related NORML groups), the email slot and the sneak peek in a section of their own, in the
+    //    very words this window used to hold. With no `platforms`, the kit draws no Community
+    //    window: whatever would open it (the nav, the guide's button, a [data-arrival-open=
+    //    "community"] link such as the dApp preview's) follows `href` to the page instead, and the
+    //    guide's Community step shows `text` with a button there. Base.astro sends an old
+    //    …/#community link on to the page. The page: src/pages/communities.astro. ──────────────
     community: {
-      name: "Facebook groups in Pennsylvania",
+      name: "Communities",
       icon: "users-three",
-      label: "See every way in",
-      title: "Where we gather",
-      eyebrow: "Community",
-      text: "For now, the conversation happens in Facebook groups in Pennsylvania: two that Christopher W manages, and two related NORML groups. A space of the initiative's own comes later.",
-      intro: "For now, people following this work gather in Facebook groups in Pennsylvania. Two are groups Christopher W manages; two are related groups run by others. Facebook may ask you to sign in.",
-      platforms: [
-        {
-          id: "fb-reform",
-          kind: "Facebook group",
-          icon: "facebook-logo",
-          name: "Pennsylvania Psychedelic Reform",
-          text: "A group Christopher W manages, for anyone following psychedelic law and policy reform in Pennsylvania.",
-          join: { href: FB_REFORM, label: "Open the group", note: "facebook.com/groups/pennsylvaniapsychedelicreform" },
-        },
-        {
-          id: "fb-rfra",
-          kind: "Facebook group",
-          icon: "facebook-logo",
-          name: "Pennsylvania RFRA",
-          text: "A group Christopher W manages, on religious-freedom law in Pennsylvania (the state's Religious Freedom Protection Act and the federal RFRA) and what it means for sincere sacramental practice.",
-          join: { href: FB_RFRA, label: "Open the group", note: "facebook.com/groups/pennsylvaniarfra" },
-        },
-        {
-          id: "fb-norml-spa",
-          kind: "Related group",
-          icon: "facebook-logo",
-          name: "NORML Southern PA",
-          text: "A related Facebook group for southern Pennsylvania, in the circle of NORML (the National Organization for the Reform of Marijuana Laws). Not part of this initiative.",
-          join: { href: FB_NORML_SPA, label: "Open the group", note: "facebook.com/groups/normlsouthernpa" },
-        },
-        {
-          id: "fb-norml-lvc",
-          kind: "Related group",
-          icon: "facebook-logo",
-          name: "NORML - Lebanon Valley College Chapter",
-          text: "A related Facebook group: NORML's Lebanon Valley College chapter. Not part of this initiative.",
-          join: { href: FB_NORML_LVC, label: "Open the group", note: "facebook.com/groups/normllvc" },
-        },
-        { id: "updates", kind: "email", name: "Updates by email", status: "soon", text: "News when something changes, and nothing else." },
-      ],
-      bespoke: {
-        title: "Looking ahead: a supporters' network of our own",
-        tag: "Sneak peek",
-        icon: "graph",
-        text: "In time, supporters could sign a pledge with a wallet signature and gather in a small network that belongs to them rather than to one company.",
-        points: [
-          "Pledges signed with a wallet signature: no gas, and no personal details needed. The dApp preview lets you try one today, and nothing is recorded.",
-          "Tokens of gratitude, later: soulbound thank-yous that stay in the wallet they're given to, a deeper commitment beyond a signed pledge (a sneak peek on the pledge page).",
-          "Profiles and posts on open protocols like Lens and Farcaster, paired with a DAO where supporters propose ideas and decide together.",
-          "Privacy first: everyone chooses what's public.",
-        ],
-        note: "No dates, and nothing to sign up for yet. This is a direction, not a promise.",
-      },
-      fine: "The NORML groups are related, not partners: this initiative doesn't speak for them, and they don't speak for it. Please don't share personal legal details in any group; this initiative can't give legal advice.",
+      href: LOG + "/communities",
+      label: "See every community",
+      text: "Christopher W, who started this initiative, also serves four healing communities: PIR®, The Holy Earth Foundation, ORG and Psanctuary, with Psanctuary Church. The Communities page has a card for each of their homes on GitHub, beside the Facebook groups in Pennsylvania where people following this work gather for now.",
       more: ['Want to know when a space of our own opens? The <a href="' + LOG + '/changelog">changelog</a> will say so first.'],
     },
 
@@ -346,6 +300,8 @@
         text: "Every entry credits whoever did the work, by first name and last initial.",
         fine: "Pictures come from public GitHub profiles. Anyone without one linked gets a small keystone with their initials.",
       },
+      // Its words are community.text and its button leads to the Communities page.
+      community: { title: "Every community Christopher W serves", icon: "users-three" },
     },
     guideFinale: "You've set every stone in the arch. Welcome to Psychedelic Policy Reform.",
 
@@ -356,6 +312,8 @@
       pause: "Let the stones rest",
       play: "Let the light move",
       searchTip: "Anywhere on the initiative's pages, any time: every change, explainer, person and page, from the AstroLog or the dApp preview.",
+      // The guide's search step: "Pages and links, like The dApp preview or the Communities page."
+      searchPagesCommunity: " or the {name} page",
     },
 
     search: {
@@ -368,6 +326,7 @@
         { t: "Evidence library (coming soon)", k: "dApp", i: "folder-open", h: DAPP + "/evidence", x: "sources law statutes court decisions research practice pennsylvania" },
         { t: "Pledge of support (preview)", k: "dApp", i: "signature", h: DAPP + "/pledge", x: "sign wallet signature support pledge web3 reown" },
         { t: "Updates", k: "dApp", i: "newspaper", h: DAPP + "/updates", x: "news latest follow" },
+        { t: "Communities: everywhere Christopher W serves", k: "page", i: "users-three", h: LOG + "/communities", pin: true, x: "community communities serve pir psychedelics in recovery holy earth foundation plants miracles org octagon religious research group psanctuary church github facebook groups" },
         { t: "Pennsylvania Psychedelic Reform", k: "Facebook group", i: "facebook-logo", h: FB_REFORM, x: "community facebook group pennsylvania psychedelic reform discuss" },
         { t: "Pennsylvania RFRA", k: "Facebook group", i: "facebook-logo", h: FB_RFRA, x: "community facebook group pennsylvania rfra religious freedom protection act" },
         { t: "NORML Southern PA", k: "Facebook group, related", i: "facebook-logo", h: FB_NORML_SPA, x: "norml southern pennsylvania cannabis marijuana related group" },
@@ -391,7 +350,16 @@
 (function () {
   var A = window.ARRIVAL;
   if (!A) return;
-  A.languages = { list: [{ id: "en", name: "English" }, { id: "es", name: "Español" }], start: "en" };
+  A.languages = {
+    list: [{ id: "en", name: "English" }, { id: "es", name: "Español" }],
+    start: "en",
+    // The Communities page translates its own words in place (its data-t strings, from `text`
+    // below), so it is its own twin in every language: the kit's honest "this page's words are
+    // still in English" note stays off there, and stays on everywhere else (no route: null).
+    route: function (lang, path) {
+      return /\/psychedelic-policy-reform-astro-public\/communities\/?$/.test(path || "") ? path : null;
+    },
+  };
   A.i18n = {
     es: {
       reviewed: false,
@@ -442,7 +410,8 @@
         "Pledge (preview)": "Compromiso (vista previa)",
         "Try a wallet-signed pledge. Nothing is recorded": "Prueba un compromiso firmado con billetera. No se registra nada",
         "Community": "Comunidad",
-        "Facebook groups for Pennsylvania, for now": "Grupos de Facebook de Pensilvania, por ahora",
+        "Communities": "Comunidades",
+        "Every community Christopher W serves": "Cada comunidad a la que sirve Christopher W",
         "Reach out": "Ponte en contacto",
         "Every way to reach the initiative": "Todas las formas de contactar a la iniciativa",
         "About": "Acerca de",
@@ -462,7 +431,7 @@
         "AstroLog source": "Código del AstroLog",
         "dApp source": "Código de la dApp",
         "Not legal advice. Code here is MIT licensed and the words are CC BY-SA 4.0.": "No es asesoría legal. El código aquí tiene licencia MIT y los textos, CC BY-SA 4.0.",
-        "Every way to reach the initiative. It's young, so for now the way in is one of the two Facebook groups Christopher W manages (Facebook may ask you to sign in) or his GitHub; an address and a form come later. Two related NORML groups are in the <a href=\"https://drasticstatic.github.io/psychedelic-policy-reform-astro-public/#community\" data-arrival-open=\"community\">Community window</a>.": "Todas las formas de contactar a la iniciativa. Es joven, así que por ahora la puerta de entrada es uno de los dos grupos de Facebook que administra Christopher W (Facebook puede pedirte que inicies sesión) o su GitHub; una dirección y un formulario vendrán después. Dos grupos relacionados de NORML están en la <a href=\"https://drasticstatic.github.io/psychedelic-policy-reform-astro-public/#community\" data-arrival-open=\"community\">ventana de Comunidad</a>.",
+        "Every way to reach the initiative. It's young, so for now the way in is one of the two Facebook groups Christopher W manages (Facebook may ask you to sign in) or his GitHub; an address and a form come later. Two related NORML groups are on the <a href=\"https://drasticstatic.github.io/psychedelic-policy-reform-astro-public/communities\">Communities page</a>, with every community Christopher W serves.": "Todas las formas de contactar a la iniciativa. Es joven, así que por ahora la puerta de entrada es uno de los dos grupos de Facebook que administra Christopher W (Facebook puede pedirte que inicies sesión) o su GitHub; una dirección y un formulario vendrán después. Dos grupos relacionados de NORML están en la <a href=\"https://drasticstatic.github.io/psychedelic-policy-reform-astro-public/communities\">página de Comunidades</a>, junto con cada comunidad a la que sirve Christopher W.",
         "A Facebook group Christopher W manages, for anyone following psychedelic law and policy reform in Pennsylvania. Questions and hellos are welcome there.": "Un grupo de Facebook que administra Christopher W, para quien siga la reforma de leyes y políticas sobre psicodélicos en Pensilvania. Ahí son bienvenidas las preguntas y los saludos.",
         "A Facebook group Christopher W manages, on religious-freedom law in Pennsylvania and what it means for sincere sacramental practice.": "Un grupo de Facebook que administra Christopher W, sobre las leyes de libertad religiosa en Pensilvania y lo que significan para la práctica sacramental sincera.",
         "Christopher W on GitHub": "Christopher W en GitHub",
@@ -473,10 +442,36 @@
         "A contact form": "Un formulario de contacto",
         "Coming with the initiative's own website, once it has one.": "Llegará con el sitio web propio de la iniciativa, cuando lo tenga.",
         "Please don't send personal legal details through any of these. This initiative works on policy and evidence and can't give legal advice.": "Por favor, no envíes detalles legales personales por ninguno de estos medios. Esta iniciativa trabaja en políticas y evidencia y no puede dar asesoría legal.",
-        "Facebook groups in Pennsylvania": "Grupos de Facebook en Pensilvania",
-        "See every way in": "Ver todas las formas de entrar",
+        // The Community link and the guide's Community step (2026-10-27: they lead to the page).
+        "See every community": "Ver cada comunidad",
+        "Christopher W, who started this initiative, also serves four healing communities: PIR®, The Holy Earth Foundation, ORG and Psanctuary, with Psanctuary Church. The Communities page has a card for each of their homes on GitHub, beside the Facebook groups in Pennsylvania where people following this work gather for now.": "Christopher W, quien inició esta iniciativa, también sirve a cuatro comunidades de sanación: PIR®, The Holy Earth Foundation, ORG y Psanctuary, con Psanctuary Church. La página de Comunidades tiene una tarjeta para cada uno de sus hogares en GitHub, junto a los grupos de Facebook de Pensilvania donde, por ahora, se reúnen quienes siguen este trabajo.",
+        "Communities: everywhere Christopher W serves": "Comunidades: todos los lugares donde sirve Christopher W",
+        "Facebook group": "Grupo de Facebook",
+        // The Communities page (src/pages/communities.astro), translated in place; the communities'
+        // names and their own quoted words stay as written.
+        "The communities Christopher W serves": "Las comunidades a las que sirve Christopher W",
+        "Christopher W, who started this initiative, also serves four life-changing healing communities, helping tend their homes on GitHub (Psanctuary has two). Each card below opens a community's GitHub home, where its own welcome greets you first, and each is described in its own public words.": "Christopher W, quien inició esta iniciativa, también sirve a cuatro comunidades de sanación que transforman vidas, y ayuda a cuidar sus hogares en GitHub (Psanctuary tiene dos). Cada tarjeta de abajo abre el hogar en GitHub de una comunidad, donde su propia bienvenida te recibe primero, y cada una se describe con sus propias palabras públicas.",
+        "This initiative walks one path among several. It serves through sincere religious freedom, cultural history and community health, while others carry the decentralization, medical and lobbying efforts already underway. Every one of those efforts helps, and this path walks alongside them, not in competition with them.": "Esta iniciativa recorre un camino entre varios. Sirve a través de la libertad religiosa para la práctica sincera, la historia cultural y la salud comunitaria, mientras otras personas llevan adelante los esfuerzos de descentralización, médicos y de cabildeo que ya están en marcha. Cada uno de esos esfuerzos ayuda, y este camino va junto a ellos, no en competencia con ellos.",
+        "Translation in review": "Traducción en revisión",
+        "Where Christopher W serves": "Donde sirve Christopher W",
+        "Four communities on five GitHub homes (Psanctuary has two), and this initiative itself. The pictures are each home's own share card.": "Cuatro comunidades en cinco hogares de GitHub (Psanctuary tiene dos), y esta misma iniciativa. Las imágenes son la tarjeta para compartir de cada hogar.",
+        "A 12-step fellowship": "Una fraternidad de 12 pasos",
+        "Home of Plants & Miracles": "El hogar de Plants & Miracles",
+        "A spiritual and research community": "Una comunidad espiritual y de investigación",
+        "The church's playful side on GitHub": "El lado lúdico de la iglesia en GitHub",
+        "The church's official home on GitHub": "El hogar oficial de la iglesia en GitHub",
+        "This initiative": "Esta iniciativa",
+        "In its own words, from its GitHub profile": "En sus propias palabras, de su perfil de GitHub",
+        "In its own words": "En sus propias palabras",
+        "Open on GitHub": "Abrir en GitHub",
+        "Website": "Sitio web",
+        "You are here": "Estás aquí",
+        "Naming a community here describes where Christopher W serves. It doesn't mean any of them has endorsed this initiative or taken a position on it, and nothing here speaks for any of them. PIR®, as a 12-step fellowship, keeps to its own traditions.": "Nombrar aquí a una comunidad describe dónde sirve Christopher W. No significa que alguna de ellas haya respaldado esta iniciativa ni tomado una postura sobre ella, y nada de lo que hay aquí habla por ninguna de ellas. PIR®, como fraternidad de 12 pasos, se mantiene fiel a sus propias tradiciones.",
+        "A group Christopher W manages": "Un grupo que administra Christopher W",
+        "Related group": "Grupo relacionado",
+        "Coming soon": "Muy pronto",
+        // The Facebook groups section: the Community window's own words, unchanged.
         "Where we gather": "Donde nos reunimos",
-        "For now, the conversation happens in Facebook groups in Pennsylvania: two that Christopher W manages, and two related NORML groups. A space of the initiative's own comes later.": "Por ahora, la conversación ocurre en grupos de Facebook de Pensilvania: dos que administra Christopher W y dos grupos relacionados de NORML. Un espacio propio de la iniciativa vendrá después.",
         "For now, people following this work gather in Facebook groups in Pennsylvania. Two are groups Christopher W manages; two are related groups run by others. Facebook may ask you to sign in.": "Por ahora, quienes siguen este trabajo se reúnen en grupos de Facebook de Pensilvania. Dos son grupos que administra Christopher W; dos son grupos relacionados que administran otras personas. Facebook puede pedirte que inicies sesión.",
         "A group Christopher W manages, for anyone following psychedelic law and policy reform in Pennsylvania.": "Un grupo que administra Christopher W, para quien siga la reforma de leyes y políticas sobre psicodélicos en Pensilvania.",
         "Open the group": "Abrir el grupo",
@@ -530,6 +525,7 @@
         "AstroLog on GitHub": "AstroLog en GitHub",
         "dApp preview on GitHub": "Vista previa de la dApp en GitHub",
       },
+      words: { searchPagesCommunity: " o la página de {name}" },
     },
   };
 })();
