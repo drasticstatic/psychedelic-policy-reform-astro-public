@@ -1,6 +1,6 @@
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="public/brand/readme-banner-dark.svg">
-  <img alt="Psychedelic Policy Reform. Religious freedom for sincere sacramental practice, seen from Pennsylvania: a quiet docket page breathing behind a stone arch with a glowing golden keystone." src="public/brand/readme-banner-light.svg" width="100%">
+  <img alt="Psychedelic Policy Reform. Religious freedom for sincere sacramental practice, seen from Pennsylvania: a quiet docket page behind a stone arch, where light travels the stones, each catching it in turn, to a glowing golden keystone." src="public/brand/readme-banner-light.svg" width="100%">
 </picture>
 
 # Psychedelic Policy Reform
