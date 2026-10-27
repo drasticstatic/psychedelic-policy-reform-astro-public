@@ -182,12 +182,30 @@
 
     // ── kit 1.2: one modal for every way to reach the initiative ─────────────────────────────────
     // intercept: false, so a plain link to Christopher's GitHub profile (the ledger's names link
-    // there) stays a link rather than opening this window.
+    // there) stays a link rather than opening this window. The two Facebook groups Christopher W
+    // manages are ways in too (Christopher, 2026-10-27: "reach out"); the two related NORML groups
+    // stay in the Community window only, since they aren't the initiative's to answer for.
     contact: {
       title: "Reach out",
-      intro: "Every way to reach the initiative. It's young, so for now GitHub is the way in; the other paths are placeholders, ready for when they exist.",
+      intro: 'Every way to reach the initiative. It\'s young, so for now the way in is one of the two Facebook groups Christopher W manages (Facebook may ask you to sign in) or his GitHub; an address and a form come later. Two related NORML groups are in the <a href="' + LOG + '/#community" data-arrival-open="community">Community window</a>.',
       intercept: false,
       paths: [
+        {
+          kind: "page",
+          icon: "facebook-logo",
+          label: "Pennsylvania Psychedelic Reform",
+          href: FB_REFORM,
+          action: "Open the group",
+          note: "A Facebook group Christopher W manages, for anyone following psychedelic law and policy reform in Pennsylvania. Questions and hellos are welcome there.",
+        },
+        {
+          kind: "page",
+          icon: "facebook-logo",
+          label: "Pennsylvania RFRA",
+          href: FB_RFRA,
+          action: "Open the group",
+          note: "A Facebook group Christopher W manages, on religious-freedom law in Pennsylvania and what it means for sincere sacramental practice.",
+        },
         {
           kind: "github",
           label: "Christopher W on GitHub",
@@ -444,7 +462,9 @@
         "AstroLog source": "Código del AstroLog",
         "dApp source": "Código de la dApp",
         "Not legal advice. Code here is MIT licensed and the words are CC BY-SA 4.0.": "No es asesoría legal. El código aquí tiene licencia MIT y los textos, CC BY-SA 4.0.",
-        "Every way to reach the initiative. It's young, so for now GitHub is the way in; the other paths are placeholders, ready for when they exist.": "Todas las formas de contactar a la iniciativa. Es joven, así que por ahora GitHub es la puerta de entrada; los otros caminos están por completar, listos para cuando existan.",
+        "Every way to reach the initiative. It's young, so for now the way in is one of the two Facebook groups Christopher W manages (Facebook may ask you to sign in) or his GitHub; an address and a form come later. Two related NORML groups are in the <a href=\"https://drasticstatic.github.io/psychedelic-policy-reform-astro-public/#community\" data-arrival-open=\"community\">Community window</a>.": "Todas las formas de contactar a la iniciativa. Es joven, así que por ahora la puerta de entrada es uno de los dos grupos de Facebook que administra Christopher W (Facebook puede pedirte que inicies sesión) o su GitHub; una dirección y un formulario vendrán después. Dos grupos relacionados de NORML están en la <a href=\"https://drasticstatic.github.io/psychedelic-policy-reform-astro-public/#community\" data-arrival-open=\"community\">ventana de Comunidad</a>.",
+        "A Facebook group Christopher W manages, for anyone following psychedelic law and policy reform in Pennsylvania. Questions and hellos are welcome there.": "Un grupo de Facebook que administra Christopher W, para quien siga la reforma de leyes y políticas sobre psicodélicos en Pensilvania. Ahí son bienvenidas las preguntas y los saludos.",
+        "A Facebook group Christopher W manages, on religious-freedom law in Pennsylvania and what it means for sincere sacramental practice.": "Un grupo de Facebook que administra Christopher W, sobre las leyes de libertad religiosa en Pensilvania y lo que significan para la práctica sacramental sincera.",
         "Christopher W on GitHub": "Christopher W en GitHub",
         "Open the profile": "Abrir el perfil",
         "The initiative's maintainer. His GitHub profile lists the ways he can be reached.": "Quien mantiene la iniciativa. Su perfil de GitHub indica las formas de contactarlo.",
