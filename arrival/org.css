@@ -1,0 +1,190 @@
+/* Psychedelic Policy Reform's look for the arrival kit, shared by every page of the initiative (this
+   AstroLog and, by absolute URL, the dApp preview). Load after arrival.css, before the site's own CSS.
+
+   The look is a record kept with care: ink-blue slate or warm parchment, Source Serif 4 with Public
+   Sans (the typeface the U.S. government designed for its own sites), a sage leaf for what's growing
+   and a keystone in gold, because Pennsylvania is the Keystone State and an arch only stands once its
+   keystone is set.
+
+   Modes are set on attribute selectors, so a card in the splash can preview a mode by carrying
+   data-theme itself. --leaf and --stone are this family's own tokens (the sprout and the keystone);
+   the porch's arch and the dApp's figures read them. */
+
+:root,
+[data-theme="docket"] {
+  --background: #0e151c;
+  --foreground: #e3e9ee;
+  --heading: #f3f6f8;
+  --muted: #9aa9b5;
+  --surface: #141e28;
+  --surface-muted: #1b2734;
+  --border: #273746;
+  --accent: #84d1a5;
+  --accent-strong: #aee3c5;
+  --on-accent: #06281a;
+  --leaf: #84d1a5;
+  --stone: #e0b65e;
+  --scrim: rgba(14, 21, 28, 0.62);
+  --arr-backdrop: rgba(6, 10, 14, 0.66);
+  color-scheme: dark;
+}
+
+[data-theme="parchment"] {
+  --background: #f5f1e6;
+  --foreground: #1b2229;
+  --heading: #121820;
+  --muted: #55606b;
+  --surface: #fffdf6;
+  --surface-muted: #ece6d6;
+  --border: #dcd3bf;
+  --accent: #1d6a45;
+  --accent-strong: #145236;
+  --on-accent: #ffffff;
+  --leaf: #2f7d55;
+  --stone: #a87412;
+  --scrim: rgba(245, 241, 230, 0.72);
+  --arr-backdrop: rgba(27, 34, 41, 0.34);
+  color-scheme: light;
+}
+
+[data-theme="capitol"] {
+  --background: #0c1630;
+  --foreground: #e6eaf5;
+  --heading: #f6f8fd;
+  --muted: #a3adcf;
+  --surface: #12203f;
+  --surface-muted: #192a50;
+  --border: #2a3b68;
+  --accent: #f0c45c;
+  --accent-strong: #f7d98e;
+  --on-accent: #2a1d00;
+  --leaf: #84d1a5;
+  --stone: #f0c45c;
+  --scrim: rgba(12, 22, 48, 0.62);
+  --arr-backdrop: rgba(5, 10, 24, 0.66);
+  color-scheme: dark;
+}
+
+/* Shared by every mode: the family's type, and a preview strip ruled like a ledger page with a
+   keystone of gold at its top edge. */
+:root,
+[data-theme] {
+  --font-heading: "Source Serif 4", Georgia, "Times New Roman", serif;
+  --font-body: "Public Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --heading-settings: normal;
+  --body-leading: 1.65;
+  --perf: color-mix(in srgb, var(--leaf) 45%, transparent);
+  --ink: linear-gradient(90deg, transparent 43%, var(--stone) 43% 57%, transparent 57%) top / 100% 28% no-repeat,
+    repeating-linear-gradient(180deg, transparent 0 9px, color-mix(in srgb, var(--leaf) 30%, transparent) 9px 10px),
+    linear-gradient(180deg, color-mix(in srgb, var(--leaf) 14%, var(--surface)), var(--surface));
+}
+
+/* ── shape: squared off, with a softened corner, like a cut stone ─────────────────────────────── */
+:root {
+  --arr-radius: 10px;
+}
+.arr-card-ink {
+  transition: filter 0.4s ease;
+}
+.arr-card:hover .arr-card-ink {
+  filter: brightness(1.12) saturate(1.08);
+}
+/* Panels catch gold at one corner and the leaf at the other. */
+.arr-frame.arr-panel {
+  background: linear-gradient(150deg, color-mix(in srgb, var(--stone) 55%, var(--border)) 0%, var(--border) 34%, var(--border) 68%, color-mix(in srgb, var(--leaf) 50%, var(--border)) 100%);
+}
+
+/* ── ruled lines, like a ledger page ──────────────────────────────────────────────────────────── */
+.arr-rule {
+  height: 3px;
+  background: linear-gradient(90deg, var(--stone) 0 18px, transparent 18px 24px, var(--perf) 24px) 0 50% / 100% 1px no-repeat;
+}
+.arr-people:not(.arr-people-compact),
+.arr-latest {
+  border: 1px solid var(--border);
+  border-radius: var(--arr-radius);
+  background: color-mix(in srgb, var(--surface) 82%, transparent);
+  overflow: hidden;
+}
+.arr-latest a:hover {
+  background: var(--surface-muted);
+}
+
+/* ── the guide's progress glyph: each step sets a stone ───────────────────────────────────────── */
+.arr-glyph .arr-wedge {
+  stroke: var(--surface);
+  stroke-width: 1.6px;
+  opacity: 0.18;
+}
+.arr-glyph .arr-wedge.is-lit {
+  opacity: 1;
+}
+
+/* ── the arch on the porch and in the dApp: stones catch the light one by one, unless motion is still ── */
+@keyframes ks-glint {
+  0%, 100% {
+    fill-opacity: 0;
+  }
+  12% {
+    fill-opacity: 0.22;
+  }
+  30% {
+    fill-opacity: 0;
+  }
+}
+.ks-figure .ks-stone {
+  fill: var(--leaf);
+  fill-opacity: 0;
+  stroke: color-mix(in srgb, var(--foreground) 34%, transparent);
+}
+.ks-figure .ks-stone.ks-lit {
+  fill-opacity: 0.12;
+}
+.ks-figure .ks-key {
+  fill: var(--stone);
+  stroke: var(--stone);
+}
+.ks-figure .ks-pier {
+  fill: color-mix(in srgb, var(--foreground) 4%, transparent);
+  stroke: color-mix(in srgb, var(--foreground) 34%, transparent);
+}
+.ks-figure .ks-ground {
+  stroke: color-mix(in srgb, var(--foreground) 22%, transparent);
+}
+.ks-figure .ks-sprout {
+  stroke: var(--leaf);
+}
+.ks-figure .ks-leaf {
+  fill: var(--leaf);
+}
+:root:not([data-motion="still"]) .ks-figure .ks-stone {
+  animation: ks-glint 9s ease-in-out infinite;
+}
+:root:not([data-motion="still"]) .ks-figure .ks-stone:nth-of-type(2) { animation-delay: 1s; }
+:root:not([data-motion="still"]) .ks-figure .ks-stone:nth-of-type(3) { animation-delay: 2s; }
+:root:not([data-motion="still"]) .ks-figure .ks-stone:nth-of-type(4) { animation-delay: 3s; }
+:root:not([data-motion="still"]) .ks-figure .ks-stone:nth-of-type(5) { animation-delay: 5s; }
+:root:not([data-motion="still"]) .ks-figure .ks-stone:nth-of-type(6) { animation-delay: 6s; }
+:root:not([data-motion="still"]) .ks-figure .ks-stone:nth-of-type(7) { animation-delay: 7s; }
+:root:not([data-motion="still"]) .ks-figure .ks-stone:nth-of-type(8) { animation-delay: 8s; }
+[data-motion="lively"] .ks-figure .ks-stone {
+  animation-duration: 5s;
+}
+@media (prefers-reduced-motion: reduce) {
+  :root:not([data-motion]) .ks-figure .ks-stone {
+    animation: none;
+  }
+}
+
+/* ── reading mode: the figures fade back, so nothing competes with the words ──────────────────── */
+:root[data-reading="on"] .ks-figure {
+  opacity: 0.45;
+  transition: opacity 0.3s ease;
+}
+
+/* ── the community window (2026-10-22): a live card with one door shows just that door. The kit
+   always draws a public slot and a join slot; each Facebook group has one link, so an empty
+   "coming soon" slot beside it would be untrue. ─────────────────────────────────────────────── */
+.arr-plat:not(.is-soon) .arr-plat-link.is-off {
+  display: none;
+}
