@@ -1,19 +1,28 @@
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="public/brand/readme-banner-dark.svg">
-  <img alt="Psychedelic Policy Reform. Religious freedom for sincere sacramental practice, seen from Pennsylvania: a quiet docket page behind a stone arch, where light travels the stones, each catching it in turn, to a glowing golden keystone." src="public/brand/readme-banner-light.svg" width="100%">
-</picture>
+<!-- readme-standard: 2026-11-02 -->
+<div align="center">
+
+<img src="public/brand/banner.svg" width="100%" alt="Psychedelic Policy Reform AstroLog: a constellation of entries joined into one sky, for a changelog and library kept in the open.">
 
 # Psychedelic Policy Reform
 
-> The open record of an RFRA-based psychedelic policy reform initiative, seen from Pennsylvania.
+*The open record of an RFRA-based psychedelic policy reform initiative, seen from Pennsylvania.*
 
+![For](https://img.shields.io/badge/For-Anyone_following_the_initiative-64748b?style=flat-square)
 [![License: MIT](https://img.shields.io/badge/code-MIT-lightgrey?style=flat)](https://github.com/drasticstatic/psychedelic-policy-reform-astro-public/blob/main/LICENSE)
 [![Content: CC BY-SA 4.0](https://img.shields.io/badge/words-CC%20BY--SA%204.0-lightgrey?style=flat)](https://github.com/drasticstatic/psychedelic-policy-reform-astro-public/blob/main/LICENSE-CONTENT)
 [![Live Site](https://img.shields.io/badge/%F0%9F%8C%90%20Live-AstroLog-84D1A5)](https://drasticstatic.github.io/psychedelic-policy-reform-astro-public/)
 [![dApp preview](https://img.shields.io/badge/%F0%9F%A7%AA%20dApp-preview-E0B65E)](https://drasticstatic.github.io/psychedelic-policy-reform-dapp-public-preview/)
 [![Built with Claude Code](https://img.shields.io/badge/Built%20with-Claude%20Code%20CLI-blueviolet)](https://code.claude.com/docs/en/overview)
 
----
+<img src="public/brand/icons/map-pin.svg" width="16" height="16" alt=""> **You are here:** drasticstatic lab › `psychedelic-policy-reform-astro` · private source · `main` is the working branch · public twin `psychedelic-policy-reform-astro-public`
+
+</div>
+
+## <img src="public/brand/icons/compass.svg" width="24" height="24" alt=""> TL;DR
+
+1. <img src="public/brand/icons/sprout.svg" width="16" height="16" alt=""> **What this is.** The source of the AstroLog, the initiative's open record. General information, not legal advice.
+2. <img src="public/brand/icons/users-round.svg" width="16" height="16" alt=""> **Who it is for.** Readers of the record, and anyone adding an entry to it.
+3. <img src="public/brand/icons/footprints.svg" width="16" height="16" alt=""> **Do this first.** Read it [live](https://drasticstatic.github.io/psychedelic-policy-reform-astro-public/), or see [Adding an entry](#️-adding-an-entry).
 
 <strong><i class="ph ph-door-open"></i> <a href="https://drasticstatic.github.io/psychedelic-policy-reform-astro-public/">The AstroLog</a></strong> · <a href="https://drasticstatic.github.io/psychedelic-policy-reform-astro-public/changelog"><i class="ph ph-clock-counter-clockwise"></i> Changelog</a> · <a href="https://drasticstatic.github.io/psychedelic-policy-reform-astro-public/library"><i class="ph ph-books"></i> Library</a> · <a href="https://drasticstatic.github.io/psychedelic-policy-reform-astro-public/ledger"><i class="ph ph-scroll"></i> Ledger</a> · <a href="https://drasticstatic.github.io/psychedelic-policy-reform-astro-public/map"><i class="ph ph-map-trifold"></i> Map</a> · <a href="https://drasticstatic.github.io/psychedelic-policy-reform-astro-public/roadmap"><i class="ph ph-path"></i> Roadmap</a> · <a href="https://drasticstatic.github.io/psychedelic-policy-reform-astro-public/sustainability"><i class="ph ph-plant"></i> Sustainability</a> · <a href="https://drasticstatic.github.io/psychedelic-policy-reform-dapp-public-preview/"><i class="ph ph-cube"></i> dApp preview</a>
 
@@ -104,3 +113,9 @@ Requires Node.js `>=22.12.0`.
 ---
 
 *Kept by Christopher W ([drasticstatic](https://github.com/drasticstatic)) with Alfred, using Anthropic's Claude Code CLI.*
+
+## <img src="public/brand/icons/git-pull-request.svg" width="24" height="24" alt=""> Suggest a change
+
+Noticed something? Open an [issue](../../issues) or a pull request against `main`; Christopher reads them and a person with the role merges. Not on GitHub? Reach Christopher through [his contact page](https://drasticstatic.github.io/resume/pages/contact.html).
+
+<sub>The front door follows the living [README standard](https://github.com/drasticstatic/my-template/blob/main/README-STANDARD.md). Copy it, improve it.</sub>
