@@ -1,0 +1,4211 @@
+/*! Arrival kit v1 · core script · https://github.com/drasticstatic/my-template (changelog-template/arrival)
+ *
+ * The same file in every org. Tailor it through org.js (window.ARRIVAL) and org.css, not by editing
+ * this file, so a fix here can be copied to every org unchanged.
+ *
+ * Load it in <head>, after org.js, so the visitor's choices apply before the first paint:
+ *   <link rel="stylesheet" href="https://<org>.github.io/arrival/arrival.css">
+ *   <link rel="stylesheet" href="https://<org>.github.io/arrival/org.css">
+ *   <script src="https://<org>.github.io/arrival/org.js"></script>
+ *   <script src="https://<org>.github.io/arrival/arrival.js"></script>
+ * and name the page's site: <html data-arrival-site="portal">  (a key of ARRIVAL.sites).
+ *
+ * What a page gets:
+ *   <html data-light data-theme data-motion data-contrast>, remembered in localStorage. Every read
+ *     and write is wrapped in try/catch; with storage blocked, the defaults apply and the splash is
+ *     skipped (there would be no way to remember the answer).
+ *   <arrival-controls>   search button, minimalist light swatches + motion toggle, and the dropdown
+ *                        drawer (light, motion, contrast, a link to the welcome guide)
+ *   first-visit splash    "Choose how you arrive". Off for a page with data-arrival-splash="off".
+ *   welcome guide         the onboarding panel. Opens from the drawer, "?", #welcome, or any
+ *                         [data-arrival-open="guide"] element.
+ *   "/" or Ctrl/⌘ K       quick search over ARRIVAL.search.sources (search.json files) plus links
+ *                         and actions. [data-arrival-open="search"] opens it too.
+ *   [data-arrival-open="copy"]  copies the page's link and says it shares with its own card.
+ *   <arrival-avatar name github email size>   GitHub picture, else Gravatar for an org-domain role
+ *                         address only, else the org's initials SVG
+ *   <arrival-people>, <arrival-latest limit>  rendered from the search.json people and entries
+ *   window.Arrival        { get, set, open, close, index, initials, reading(on?), news(), version }
+ *   <html data-cursor="on|off">: cursor effects (the kit's trail; sites key their own pointer effects
+ *                        on it). Off when the visitor turns them off or motion is still.
+ *   window "arrival:change" event whenever a choice changes
+ *
+ * Wave 5 (v1.1, 2026-10-12), all additive; an org.js written for v1.0 keeps working unchanged:
+ *   Reading mode          one tap for the calmest page: ARRIVAL.reading.light (or the first mode
+ *                         marked calm: true), still motion, more contrast, cursor effects off. Tap
+ *                         again to restore what the visitor had. Persisted; <html data-reading="on|off">.
+ *                         Any other change while it's on simply leaves reading mode. ARRIVAL.reading
+ *                         = false hides it.
+ *   What's new            on a return visit, a quiet count in the header of entries, write-ups and
+ *                         ledger items newer than the last visit (ARRIVAL.news.sources, e.g. the
+ *                         AstroLog's latest.json; default: the search sources). Matching links on
+ *                         the page get data-arr-new (and fill any [data-arr-new-tag] slot inside).
+ *                         Opening the count, or the new page itself, clears it. First visits show
+ *                         nothing. ARRIVAL.news = false hides it.
+ *   record.ledger         a third box in the guide's "Changelog and library" step.
+ *
+ * Wave 6 (v1.2, 2026-10-13), the interface half; additive again, so a v1.1 org.js keeps working:
+ *   <arrival-nav>         the page's navbar, from ARRIVAL.nav: links and dropdown groups, every one
+ *                         with an icon. When the bar runs out of room, items fold into a "More"
+ *                         dropdown (lowest priority first), so it never wraps; below nav.fold (1100px)
+ *                         the whole bar folds into a Menu button and panel. Keyboard: arrows inside
+ *                         a dropdown, Esc closes and returns focus. <html data-arr-nav="bar|menu">.
+ *   <arrival-footer>      link groups (ARRIVAL.footer.groups, or derived from the nav), icon on every
+ *                         link: e.g. Explore, Get involved, About this build (roadmap, sustainability).
+ *   Contact modal         one dialog listing every way to reach the org (ARRIVAL.contact.paths: a
+ *                         form, a CONTACTS.md, role emails; placeholders say so). Opens from any
+ *                         [data-arrival-open="contact"], and any link to one of those paths.
+ *   Community modal       every platform the org has (ARRIVAL.community.platforms), each with a public
+ *                         link and a sign-up link, "coming soon" for placeholders, plus a sneak-peek
+ *                         card for the bespoke network (community.bespoke). [data-arrival-open="community"].
+ *   What's new, louder    a filled, counted pill with a gentle halo (none when motion is still or in
+ *                         reading mode), a one-time tip under it, a count on the Menu button and a
+ *                         row at the top of the Menu.
+ *   Reading, round 2      text size steps (ARRIVAL.reading.sizes) and a comfortable line length,
+ *                         in the drawer, the guide and "/" search. <html data-text data-measure>.
+ *   <arrival-donate>      the donate page body from ARRIVAL.donate: giving paths, a disclaimer slot,
+ *                         an opt-in contribution ledger (a JSON file) and an empty "crypto, coming
+ *                         soon" slot ([data-arr-wallet-slot]) for a later wallet module.
+ *   <arrival-map src>     the site map from a map.json (version 2): every destination as a card with
+ *                         its share image as the thumbnail, grouped, "You are here" on this site.
+ *
+ * Wave 7 (v1.3, 2026-10-14), give with crypto; additive, so a v1.2 org.js keeps working:
+ *   ARRIVAL.give          fills the donate page's crypto slot with the wallet module. arrival.js draws
+ *                         the section at first paint (coins, "Treasury address coming soon" for any
+ *                         coin without one, a Connect button, a "New to wallets?" guide) and loads
+ *                         give/give.js, next to this file, when the section nears the screen or on
+ *                         the first click. give.js loads Reown AppKit (pinned, from a CDN) only when
+ *                         the visitor asks to connect. No address in org.js means no address on the
+ *                         page, ever: connecting is then a labelled preview. give: { enabled: false }
+ *                         keeps the empty slot (PIR).
+ *   window.Arrival.dialog({ title, eyebrow, html, cls })  a kit dialog (focus trap, Esc, backdrop,
+ *                         focus return) for modules: { el, show(focusEl?), hide() }.
+ *   window.Arrival.toast(text)  the kit's quiet status toast.
+ *
+ * Wave 8 (v1.4, 2026-10-22); additive, so a v1.3 org.js keeps working. Only the first item shows up
+ * without new org.js keys; everything else waits until it's configured:
+ *   Essentials            Donate and the welcome guide are always in the footer, the More dropdown
+ *                         and the Menu (ARRIVAL.essentials; false, or { donate: false } etc. opts out).
+ *                         The More button now stays in the bar to hold them. Donate links the nav's
+ *                         own donate item, else donate.href, else <portal>/donate/ (beside this file).
+ *   The footer            scoped against host CSS (a site's `section`, `footer a` or `ul` rules no
+ *                         longer reach it), columns balanced (2 + 2, never 3 + 1), and an optional
+ *                         card look: <arrival-footer frame>.
+ *   Grouped dropdowns     a dropdown can have `groups: [{ label, icon, items }]`: a heading and a
+ *                         divider per group, in the dropdown, the More panel and the Menu.
+ *   Scroll strips         a one-row strip that scrolls sideways (the bottom dock) gets edge fades and
+ *                         chevron buttons, only on the side with more to show (ARRIVAL.dock, or
+ *                         data-arr-scroll on any strip).
+ *   <arrival-pledge>      a pledge of support signed with a wallet (ARRIVAL.pledge): free, nothing
+ *                         sent, nothing recorded, no counts. Drawn here at first paint; pledge/pledge.js
+ *                         (beside this file) loads when it nears the screen and borrows give.js's
+ *                         wallet layer. A "verify a signature" tool checks any pledge in the browser.
+ *   donate.tax            a calm "Receipts and taxes" section on the donate page that claims nothing
+ *                         the org's own config doesn't say.
+ *
+ * Wave 9 (v1.5, 2026-10-26), languages; additive, so a v1.4 org.js keeps working exactly as before
+ * (English only, no new step, <html lang> left alone). Nothing changes until org.js lists two or
+ * more languages:
+ *   ARRIVAL.languages     { list: [{ id: "en", name: "English" }, { id: "es", name: "Español" }],
+ *                         base?: "en" (the language org.js is written in), start?: "browser" | an id
+ *                         (the default before the visitor chooses), route?: fn(lang, path) → href
+ *                         (for a site with real translated pages), contentNote?: true, packs?: { es: url } }
+ *   ARRIVAL.i18n          { es: { reviewed?, words?, pledge?, give?, modes?, motions?, sizes?, text?,
+ *                         config? } }: the org's own words in each language. `text` maps any English
+ *                         string in org.js to its translation (matched exactly); `config` is merged
+ *                         over org.js for that language (arrays replace); words/pledge/give re-voice
+ *                         the kit and its modules; modes/motions/sizes rename by id.
+ *   The language step     the splash opens with "Your language · Tu idioma": one door per language,
+ *                         each written in its own language. Choosing one redraws the splash in it at
+ *                         once. The drawer has the same row, so it can change any time. Stored with
+ *                         the other choices (`lang`); data-lang on <html> follows it, while <html lang>
+ *                         keeps describing the page's own words (the kit's parts carry their own lang).
+ *   The kit's own words   every string the kit draws is in WORDS below. A language pack beside this
+ *                         file (i18n/es.js) translates them all, and the give and pledge modules too.
+ *                         It loads only when the language isn't the base one. reviewed: false shows
+ *                         a small "Translation in review" until the org's own i18n says reviewed: true.
+ *   Honest content        a page without a translated twin keeps its own words, and the visitor is
+ *                         told so in one quiet line (no machine-translation widget): in the splash,
+ *                         the drawer, once per visit as a toast, and wherever <arrival-langnote> sits.
+ *                         Names and marks carry translate="no".
+ *   Dates                 every date follows the chosen language (Intl), not a fixed "en-US".
+ *   A lineage note        if one is waiting (<html data-lineage-pending>, or an open
+ *                         dialog[data-lineage]), the splash waits for its "lineage:ack" event.
+ *   window.Arrival.lang() / .lang(id) / .words(section, orgWords) for modules and pages.
+ */
+(function () {
+  "use strict";
+  if (window.Arrival) return;
+
+  var VERSION = "1.5.2";
+  // C0 is org.js as written; C is the same config in the visitor's language (v1.5: localize()).
+  var C0 = window.ARRIVAL || {};
+  var C = C0;
+  var doc = document;
+  // Where this file was loaded from, so modules beside it (give/give.js) load from the same place,
+  // on the portal and on any other origin that loads the kit by full URL.
+  var KIT_BASE = ((doc.currentScript && doc.currentScript.src) || "").replace(/[^/]*$/, "");
+  var root = doc.documentElement;
+  var siteId = root.getAttribute("data-arrival-site") || "site";
+  var site = assign({}, (C.sites || {})[siteId] || {}, window.ARRIVAL_SITE || {});
+  var org = C.org || {};
+
+  // The kit's own words, in English. Every string the kit draws is here, so an org can re-voice any
+  // of it (ARRIVAL.words) and a language pack (i18n/<lang>.js) can translate all of it. A {name} is
+  // filled in when it's drawn. Keys ending in Html may hold simple markup; the rest are plain text.
+  // verify-i18n.mjs reads this table between the WORDS markers, so keep it a plain object literal.
+  /* WORDS:begin */
+  var WORDS = {
+    arrive: "Choose how you arrive",
+    intro:
+      "Pick a light, how much movement you'd like, and how much contrast. Change any of it later from the light and motion controls in the header.",
+    enter: "Enter",
+    tour: "Take the tour",
+    saved: "Saved in this browser only.",
+    light: "Light",
+    motion: "Motion",
+    contrast: "Contrast",
+    moreContrast: "More contrast",
+    contrastNote: "Stronger text and edges, and a quieter background behind the words.",
+    pause: "Pause the motion",
+    play: "Let it move",
+    search: "Search",
+    searchPlaceholder: "Search changes, write-ups, people and pages",
+    searchTip: "Anywhere, any time: every change, write-up, person and page.",
+    drawer: "Light & motion",
+    guide: "Welcome guide",
+    openGuide: "Open the welcome guide",
+    searchAll: "Search everything",
+    reduced: "Your device asks for less motion, so Still is selected. You can still choose more.",
+    moreAsked: "Your device asks for more contrast, so it's switched on.",
+    nothing: "Nothing matches yet. Try a month, a name, or the word light.",
+    followNow: "Right now",
+    copied: "Link copied. It shares with its own preview card.",
+    cursor: "Cursor effects",
+    cursorNote: "A trail of light behind your pointer, and ink that stirs as you move. Off for anyone who'd rather not.",
+    cursorOn: "Turn cursor effects off",
+    cursorOff: "Turn cursor effects on",
+    reading: "Reading mode",
+    readingNote: "One tap for the calmest page: the {light} light, nothing moving, more contrast, and no cursor effects. Tap again to go back to how you had it.",
+    readingOn: "Leave reading mode",
+    readingOff: "Reading mode",
+    readEnter: "Just let me read",
+    newSince: "New since your last visit",
+    newBadge: "new",
+    newTag: "New",
+    newsGuide: "Coming back? A bright count in the header shows what's new since your last visit, and new things are marked where they appear. Opening it clears it.",
+    newsTip: "{n} new since your last visit. Take a look",
+    ledger: "The ledger",
+    // v1.2
+    menu: "Menu",
+    menuClose: "Close",
+    more: "More",
+    menuMain: "Pages",
+    nav: "Site",
+    footer: "More ways around",
+    textSize: "Text size",
+    measure: "Comfortable line length",
+    measureNote: "Shorter lines of text, with a little more room between them.",
+    contact: "Reach out",
+    contactIntro: "Every way to reach the people behind these pages. Pick whichever suits you.",
+    community: "Where we gather",
+    communityIntro: "Every place the community talks. Each one has a public link anyone can open, and a way to sign up.",
+    publicLink: "Public link",
+    joinLink: "Sign up",
+    soon: "Coming soon",
+    sneak: "Sneak peek",
+    close: "Close",
+    copyAddress: "Copy address",
+    addressCopied: "Address copied.",
+    writeEmail: "Write an email",
+    openLink: "Open",
+    youAreHere: "You are here",
+    mapLoading: "Drawing the map…",
+    // v1.4
+    donate: "Donate",
+    donateNote: "Ways to give",
+    guideNote: "A short tour of these pages",
+    involved: "Get involved",
+    scrollLeft: "Show earlier links",
+    scrollRight: "Show more links",
+    // v1.5: languages
+    language: "Language",
+    languageAction: "Language: {name}",
+    contentNote: "Menus in {lang}; this page's words are still in {base} for now.",
+    inReview: "Translation in review",
+    reviewNote: "Translated with care. The people of this organization haven't checked it yet.",
+    // Shown only in a language other than English, under the review mark. {reachOut} becomes the link.
+    helpTranslate: "Spot a better way to say something? If you can help with translation, please {reachOut}. It's a lovely way to be of service, and it gives the next person a more accurate, tailored welcome.",
+    helpReachOut: "reach out",
+    // v1.5: the rest of the kit's words, moved here from where they're drawn
+    searchPress: "Press / to search.",
+    searchTry: "Try it now: press {key}.",
+    searchPhone: "On a phone, tap the magnifier in the header.",
+    searchAria: "{search} (press /)",
+    restingStill: " (resting while motion is still)",
+    placeholderTag: "Placeholder.",
+    welcomeTitle: "Welcome to {site}",
+    theSite: "the site",
+    recordTitle: "Changelog and library",
+    changelogName: "The changelog",
+    changelogText: "What changed, when, and who did it. Short dated entries, newest first, each with a one-line summary and the full story folded underneath.",
+    changelogLink: "Read the changelog",
+    libraryName: "The library",
+    libraryText: "How things work. Longer write-ups that stay true over time, rather than news of one change.",
+    libraryLink: "Open the library",
+    ledgerText: "Every public change to the code, in plain words, grouped by day and by kind, each one linked to the change itself. For anyone who'd rather not open GitHub.",
+    ledgerLink: "Open the ledger",
+    searchTitle: "Press / to search",
+    searchHowHtml: "Press <kbd>/</kbd> on any page, or <kbd>Ctrl</kbd> <kbd>K</kbd> (<kbd>⌘</kbd> <kbd>K</kbd> on a Mac). On a phone, tap the magnifier in the header. Like Discord's quick switcher: start typing and jump.",
+    searchEntries: "Every changelog entry, by title, month, area, or who made it.",
+    searchWriteups: "Every library write-up.",
+    searchPages: "Pages and links, like {home}{community}.",
+    searchPagesCommunity: " or the {name} group",
+    mainSite: "the main site",
+    searchActionsHtml: "Actions: type <em>light</em>, <em>still</em> or <em>contrast</em> to change how the page looks.",
+    tryNow: "Try it now",
+    lightTitle: "Pick a light",
+    motionTitle: "Motion and contrast",
+    motionFine: "In the header, the pause button switches motion off and on in one click, the pointer button does the same for cursor effects{reading}.",
+    motionFineReading: ", and the book button is reading mode",
+    peopleTitle: "Who made the changes",
+    peopleText: "Every entry credits whoever did the work.",
+    peopleFine: "Pictures come from public GitHub profiles. Anyone without one gets their initials instead.",
+    communityTitle: "Where the community talks",
+    communityNone: "This org hasn't named its community space here yet.",
+    bespokeTitle: "A network of our own",
+    seeEveryWay: "See every way in",
+    openNamed: "Open {name}",
+    communityMissing: "The {name} link still needs to be added.",
+    homeTitle: "The main site",
+    visitNamed: "Visit {name}",
+    stepOf: "{n} of {total}",
+    done: "Done",
+    next: "Next",
+    back: "Back",
+    arrowsMove: "{keys} to move",
+    guideFinale: "You've lit every wedge. Welcome in.",
+    guideAgain: "You can open this guide again any time from the light and motion drawer, or by pressing ?",
+    closeGuide: "Close the guide",
+    guideSteps: "Guide steps",
+    onOrOff: "{what}: on or off",
+    readingBack: "{what}: off, back to how I had it",
+    readingOnAct: "{what}: on",
+    larger: "{what}: larger",
+    smaller: "{what}: smaller",
+    contactAct: "{what}: every way to reach us",
+    communityAct: "{what}: the community",
+    pledgeAct: "{what}: sign it with a wallet",
+    copyLink: "Copy a link to this page",
+    kwMotion: "pause animation",
+    kwContrast: "accessibility readable",
+    kwCursor: "trail pointer mouse sparkle effects",
+    kwReading: "calm read quiet focus still contrast accessibility dyslexia simple plain",
+    kwLarger: "bigger zoom font size read accessibility",
+    kwSmaller: "zoom font size read",
+    kwMeasure: "line width measure narrow column read accessibility",
+    kwContact: "contact email form message question help reach out",
+    kwCommunity: "community chat talk join sign up members discord telegram mighty",
+    kwGuide: "help onboarding tour welcome how",
+    kwPledge: "pledge support sign signature wallet verify check",
+    kwCopy: "share url card preview telegram",
+    kwLanguage: "language translate",
+    closeSearch: "Close search",
+    results: "Results",
+    keyMove: "move",
+    keyOpen: "open",
+    keyClose: "close",
+    keyGuide: "guide",
+    jumpTo: "Jump to",
+    latestChanges: "Latest changes",
+    tryGroup: "Try",
+    loadingIndex: "Loading the index…",
+    resultOne: "{n} result",
+    resultMany: "{n} results",
+    gatheringPeople: "Gathering who made the changes…",
+    entryOne: "{n} entry",
+    entryMany: "{n} entries",
+    byWho: "by {who}",
+    platformBespoke: "Our own network",
+    platformForum: "Forum",
+    platformEmail: "Email list",
+    communityEyebrow: "Community",
+    notSetUp: "This way in isn't set up yet.",
+    kindGift: "Gift",
+    kindSponsor: "Sponsor",
+    kindTime: "Time and skills",
+    kindInKind: "In kind",
+    kindFounding: "Founding",
+    sepolia: "Sepolia (a test network)",
+    us: "us",
+    treasurySoon: "Treasury address coming soon",
+    onNets: "On {nets}",
+    addressLabel: "{coin} address {address}",
+    sendWithWallet: "Send with your wallet",
+    copy: "Copy",
+    showQr: "Show QR code",
+    openWalletApp: "Open in a wallet app",
+    giveText: "Copy an address or scan its QR code with your wallet app, or connect a wallet and send from this page. Your wallet shows you exactly what you're approving before anything moves.",
+    givePreviewText: "One button connects a browser wallet, a phone wallet (by QR code) or an email sign-in. No treasury address is published yet, so for now connecting is a preview of how giving will work: nothing can be sent.",
+    giveSafety: "Send only to an address on this page, and check its first and last characters in your wallet before you approve. No one from {who} will ever ask for your recovery phrase.",
+    givePreviewSafety: "No wallet address is published here yet. If you see one anywhere claiming to be ours, please check with us first. No one from {who} will ever ask for your recovery phrase.",
+    giveTitle: "Give with crypto",
+    previewTag: "Preview",
+    connectWallet: "Connect a wallet",
+    newToWallets: "New to wallets?",
+    practiceGift: "Try a practice gift",
+    practiceGiftHint: "A practice gift walks through giving with no wallet and no money: nothing is sent.",
+    walletLoadFailed: "The wallet part of this page didn't load. Check your connection, then try again.",
+    waysToGive: "Ways to give",
+    give: "Give",
+    giveNotSetUp: "This way to give isn't set up yet.",
+    pleaseNote: "Please note",
+    placeholderBadge: "Placeholder",
+    contribTitle: "Contribution ledger",
+    gatheringNames: "Gathering the names…",
+    cryptoSoonText: "A way to give with a crypto wallet is on its way. It isn't open yet.",
+    cryptoSoonNote: "No wallet address is published here yet. If you see one anywhere claiming to be ours, please check with us first.",
+    contribEmpty: "No names here yet. People who'd like to be thanked by name are listed here, only with their permission. Giving without a name is just as welcome.",
+    sinceKind: " · since {month}",
+    since: "Since {month}",
+    updatedOn: "Updated {date}.",
+    reachOut: "reach out",
+    taxReceipts: "Ask us for a receipt: {reach} and say what you gave and when.",
+    taxMay: "{who} says gifts to it may be tax-deductible. How much, if at all, depends on your own situation.",
+    taxNot: "Gifts to {who} aren't tax-deductible.",
+    taxDepends: "Whether a gift is tax-deductible depends on the organization's status and your own situation.",
+    taxTitle: "Receipts and taxes",
+    taxReceiptsLabel: "Receipts",
+    taxStatusLabel: "Status",
+    taxDeductibleLabel: "Tax-deductible?",
+    taxAdvice: "This isn't tax advice. For your own situation, ask a tax professional.",
+    mapFailed: "The map couldn't be drawn just now. Try again in a moment, or use the links in the menu.",
+    notThisTime: "Not this time.",
+  };
+  /* WORDS:end */
+  var W = assign({}, WORDS, C.words || {});
+
+  var KIT_MODES = [
+    { id: "dark", name: "Dark", swatch: ["#111318", "#8ab4ff"], dark: true },
+    { id: "light", name: "Light", swatch: ["#ffffff", "#2f5bd3"] },
+  ];
+  var KIT_MOTIONS = [
+    { id: "still", name: "Still", note: "Nothing moves." },
+    { id: "gentle", name: "Gentle", note: "Slow, soft movement." },
+  ];
+  // Reading, round 2 (v1.2): text size steps (a scale on the root font size, so every rem grows) and
+  // a comfortable line length. Both are settings of their own, kept beside the reading switch.
+  var KIT_SIZES = [
+    { id: "standard", name: "Standard", scale: 1 },
+    { id: "large", name: "Large", scale: 1.125 },
+    { id: "larger", name: "Larger", scale: 1.25 },
+    { id: "largest", name: "Largest", scale: 1.4 },
+  ];
+  var MODES, MOTIONS, SIZES, RD;
+  // The lights, motions and text sizes, named in the visitor's language (v1.5: lists() runs again
+  // whenever the language changes; the ids never change).
+  function lists() {
+    RD = C.reading && typeof C.reading === "object" ? C.reading : {};
+    MODES = named(C.modes && C.modes.length ? C.modes : KIT_MODES, "modes", !(C.modes && C.modes.length));
+    MOTIONS = named(C.motions && C.motions.length ? C.motions : KIT_MOTIONS, "motions", !(C.motions && C.motions.length));
+    SIZES = named(RD.sizes && RD.sizes.length ? RD.sizes : KIT_SIZES, "sizes", !(RD.sizes && RD.sizes.length));
+  }
+  lists();
+  var STILL = C.stillMotion || "still";
+  var hasContrast = C.contrast !== false;
+  var hasCursor = C.cursor !== false; // the cursor-effects switch (trail + anything a site keys on data-cursor)
+  var hasReading = C.reading !== false; // the one-tap reading-mode preset
+  var hasMeasure = hasReading && RD.measure !== false;
+
+  /* ── helpers ───────────────────────────────────────────────────────────────────────────── */
+  function assign(t) {
+    for (var i = 1; i < arguments.length; i++) {
+      var s = arguments[i];
+      if (s) for (var k in s) if (Object.prototype.hasOwnProperty.call(s, k)) t[k] = s[k];
+    }
+    return t;
+  }
+  function byId(list, id) {
+    for (var i = 0; i < list.length; i++) if (list[i].id === id) return list[i];
+    return null;
+  }
+  function esc(s) {
+    return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  }
+  function media(q) {
+    try {
+      return !!(window.matchMedia && window.matchMedia(q).matches);
+    } catch (e) {
+      return false;
+    }
+  }
+  function icon(name) {
+    return '<i class="ph ph-' + esc(name) + '" aria-hidden="true"></i>';
+  }
+  // A word with its {slots} filled in. fillH escapes the word first, then drops markup into it.
+  function fill(s, o) {
+    return String(s == null ? "" : s).replace(/\{(\w+)\}/g, function (m, k) {
+      return o && o[k] != null ? o[k] : m;
+    });
+  }
+  function fillH(s, o) {
+    return fill(esc(s), o);
+  }
+  function fmtDate(d, long) {
+    if (!d) return "";
+    try {
+      return new Date(d + "T12:00:00Z").toLocaleDateString(locale(), { year: "numeric", month: long ? "long" : "short", day: "numeric", timeZone: "UTC" });
+    } catch (e) {
+      return d;
+    }
+  }
+  function emit(name, detail) {
+    try {
+      window.dispatchEvent(new CustomEvent(name, { detail: detail }));
+    } catch (e) {}
+  }
+  function idle(fn) {
+    if (window.requestIdleCallback) window.requestIdleCallback(fn, { timeout: 2500 });
+    else setTimeout(fn, 1200);
+  }
+
+  /* ── v1.5 · languages ─────────────────────────────────────────────────────────────────────
+     Nothing here runs for an org.js without ARRIVAL.languages (two or more): `hasLangs` stays false,
+     the kit draws its English words and never touches lang attributes. With languages, the kit
+     draws in `lang` (the visitor's choice, once its words are ready), keeps org.js's content in
+     its own language unless ARRIVAL.i18n translates it, and says so honestly. */
+  // How each language asks "your language?" and says welcome, in its own words, and its locale.
+  var LANG_META = {
+    en: { ask: "Your language", hello: "Welcome", locale: "en-US" },
+    es: { ask: "Tu idioma", hello: "Te damos la bienvenida", locale: "es-419" },
+    pt: { ask: "Seu idioma", hello: "Boas-vindas", locale: "pt-BR" },
+    fr: { ask: "Votre langue", hello: "Bienvenue", locale: "fr-FR" },
+    de: { ask: "Deine Sprache", hello: "Willkommen", locale: "de-DE" },
+  };
+  // Language names in English (a pack carries its own: langNames).
+  var NAMES_EN = { en: "English", es: "Spanish", pt: "Portuguese", fr: "French", de: "German" };
+  var LC = C0.languages && C0.languages.list && C0.languages.list.length > 1 ? C0.languages : null;
+  var LANGS = LC
+    ? LC.list.filter(function (l) { return l && l.id; }).map(function (l) { return assign({}, LANG_META[primary(l.id)] || {}, l); })
+    : [];
+  var hasLangs = LANGS.length > 1;
+  var BASE = hasLangs ? (byId(LANGS, LC.base) ? LC.base : byId(LANGS, "en") ? "en" : LANGS[0].id) : "en";
+  var I18N = C0.i18n || {};
+  var lang = BASE; // the language the kit is drawn in right now
+  var held = null; // while a pack loads at first paint, the kit's elements wait (briefly) to render
+
+  function primary(id) {
+    return String(id || "").toLowerCase().split(/[-_]/)[0];
+  }
+  function langOf(id) {
+    return byId(LANGS, id);
+  }
+  function startLang() {
+    var s = LC && LC.start;
+    if (s && s !== "browser" && langOf(s)) return s;
+    var asked = [];
+    try {
+      asked = navigator.languages && navigator.languages.length ? navigator.languages : [navigator.language || ""];
+    } catch (e) {}
+    for (var i = 0; i < asked.length; i++) {
+      var a = String(asked[i] || "").toLowerCase();
+      for (var j = 0; j < LANGS.length; j++) if (LANGS[j].id.toLowerCase() === a) return LANGS[j].id;
+      for (j = 0; j < LANGS.length; j++) if (primary(LANGS[j].id) === primary(a)) return LANGS[j].id;
+    }
+    return BASE;
+  }
+  function locale() {
+    if (!hasLangs) return "en-US";
+    var m = langOf(lang);
+    return (m && m.locale) || lang;
+  }
+  function pack(l) {
+    var P = window.ARRIVAL_I18N;
+    return (P && (P[l] || P[primary(l)])) || null;
+  }
+  // The org's own words (its English overrides from org.js) that its `text` translates into l, by exact
+  // match. Without this the kit's generic pack would win over them ("Enter ORG" became plain "Entrar").
+  function ownIn(l, words) {
+    var T = (I18N[l] || {}).text || {};
+    var out = {};
+    for (var k in words || {}) if (own(words, k) && typeof words[k] === "string" && own(T, words[k])) out[k] = T[words[k]];
+    return out;
+  }
+  // One section of words for a language: the kit's pack, then the org's own on top (the words its
+  // `text` translates, then its i18n section).
+  function langSec(l, section, orgWords) {
+    return assign({}, (pack(l) || {})[section] || {}, ownIn(l, orgWords), (I18N[l] || {})[section] || {});
+  }
+  function wordsFor(l) {
+    return l === BASE ? assign({}, WORDS, C0.words || {}) : assign({}, WORDS, C0.words || {}, langSec(l, "words", C0.words));
+  }
+  function named(list, kind, kitList) {
+    if (!hasLangs || lang === BASE) return list;
+    var o = assign({}, kitList ? (pack(lang) || {})[kind] || {} : {}, (I18N[lang] || {})[kind] || {});
+    return list.map(function (m) {
+      return o[m.id] ? assign({}, m, o[m.id]) : m;
+    });
+  }
+  // org.js in another language: every string that `text` names is swapped (an exact match), then
+  // `config` is merged over it. Functions, and the languages and i18n keys, are kept as they are.
+  function plain(o) {
+    if (!o || typeof o !== "object") return false;
+    var p = Object.getPrototypeOf(o);
+    return p === Object.prototype || p === null;
+  }
+  function own(o, k) {
+    return Object.prototype.hasOwnProperty.call(o, k);
+  }
+  function mapText(v, T, depth) {
+    if (typeof v === "string") return own(T, v) ? T[v] : v;
+    if (depth > 24) return v;
+    if (Array.isArray(v)) return v.map(function (x) { return mapText(x, T, depth + 1); });
+    if (!plain(v)) return v;
+    var o = {};
+    for (var k in v) if (own(v, k)) o[k] = depth === 0 && (k === "i18n" || k === "languages") ? v[k] : mapText(v[k], T, depth + 1);
+    return o;
+  }
+  function mergeIn(t, s) {
+    for (var k in s) {
+      if (!own(s, k)) continue;
+      if (plain(s[k]) && plain(t[k])) mergeIn(t[k], s[k]);
+      else t[k] = s[k];
+    }
+    return t;
+  }
+  function localize(l) {
+    if (!hasLangs || l === BASE) return C0;
+    var L = I18N[l] || {};
+    var out = mapText(C0, L.text || {}, 0);
+    if (plain(L.config)) mergeIn(out, L.config);
+    return out;
+  }
+  function langName(id) {
+    var names = lang === "en" ? NAMES_EN : (pack(lang) || {}).langNames || {};
+    return names[id] || (langOf(id) || {}).name || id;
+  }
+  // A translated twin of this page, when the org has them (languages.route).
+  function routeFor(l) {
+    if (!LC || typeof LC.route !== "function") return null;
+    try {
+      return LC.route(l, location.pathname) || null;
+    } catch (e) {
+      return null;
+    }
+  }
+  function noteWanted() {
+    return hasLangs && lang !== BASE && LC.contentNote !== false && !routeFor(lang);
+  }
+  function noteText() {
+    return fill(W.contentNote, { lang: langName(lang), base: langName(BASE) });
+  }
+  function inReview() {
+    if (!hasLangs || lang === BASE) return false;
+    var mine = I18N[lang] || {};
+    if (mine.reviewed === false) return true;
+    var p = pack(lang);
+    return !!(p && p.reviewed === false && mine.reviewed !== true);
+  }
+  // ' lang="es"' on the kit's own chrome, so a screen reader voices each part in its language, while
+  // <html lang> keeps describing the page's own words. Empty without languages (v1.4 markup).
+  function langAt() {
+    return hasLangs ? ' lang="' + esc(lang) + '"' : "";
+  }
+  function tagLang(el) {
+    if (hasLangs && el && el.setAttribute) el.setAttribute("lang", lang);
+  }
+  function noTr() {
+    return hasLangs ? ' translate="no"' : "";
+  }
+  var packP = {};
+  function loadPack(l) {
+    if (pack(l)) return Promise.resolve(pack(l));
+    var src = LC && LC.packs && LC.packs[l];
+    if (src === false || (!src && !KIT_BASE)) return Promise.resolve(null);
+    if (packP[l]) return packP[l];
+    packP[l] = new Promise(function (resolve) {
+      var s = doc.createElement("script");
+      s.src = src || KIT_BASE + "i18n/" + encodeURIComponent(primary(l)) + ".js?v=" + VERSION;
+      s.async = true;
+      s.onload = function () { resolve(pack(l)); };
+      s.onerror = function () {
+        packP[l] = null;
+        resolve(null);
+      };
+      (doc.head || root).appendChild(s);
+    });
+    return packP[l];
+  }
+
+  /* ── storage: every access guarded ─────────────────────────────────────────────────────── */
+  var S = C.storage || {};
+  var KEY = S.key || "arrival";
+  var store = {
+    ok: (function () {
+      try {
+        var t = "__arrival__";
+        localStorage.setItem(t, "1");
+        localStorage.removeItem(t);
+        return true;
+      } catch (e) {
+        return false;
+      }
+    })(),
+    get: function (k) {
+      try {
+        return localStorage.getItem(k);
+      } catch (e) {
+        return null;
+      }
+    },
+    set: function (k, v) {
+      try {
+        localStorage.setItem(k, v);
+        return true;
+      } catch (e) {
+        return false;
+      }
+    },
+  };
+
+  /* ── state ─────────────────────────────────────────────────────────────────────────────── */
+  var prefersLess = media("(prefers-reduced-motion: reduce)");
+  var prefersMore = media("(prefers-contrast: more)");
+
+  function movingDefault() {
+    var d = byId(MOTIONS, C.defaultMotion);
+    if (d && d.id !== STILL) return d.id;
+    for (var i = 0; i < MOTIONS.length; i++) if (MOTIONS[i].id !== STILL) return MOTIONS[i].id;
+    return MOTIONS[0].id;
+  }
+  function defaults() {
+    var d = {
+      light: byId(MODES, C.defaultMode) ? C.defaultMode : MODES[0].id,
+      motion: prefersLess && byId(MOTIONS, STILL) ? STILL : movingDefault(),
+      contrast: hasContrast && prefersMore ? "more" : "standard",
+      cursor: prefersLess || !hasCursor ? "off" : "on",
+      reading: "off",
+      text: SIZES[0].id,
+      measure: "full",
+      chosen: false,
+    };
+    if (hasLangs) d.lang = startLang();
+    return d;
+  }
+
+  // Reading mode's light: ARRIVAL.reading.light, else the first mode marked calm: true, else the
+  // first light (not dark, not time-following) mode, else the first mode.
+  function calmLight() {
+    if (RD.light && byId(MODES, RD.light)) return RD.light;
+    var i;
+    for (i = 0; i < MODES.length; i++) if (MODES[i].calm) return MODES[i].id;
+    for (i = 0; i < MODES.length; i++) if (!MODES[i].dark && !MODES[i].follows) return MODES[i].id;
+    return MODES[0].id;
+  }
+  function readingPreset() {
+    return {
+      light: calmLight(),
+      motion: byId(MOTIONS, STILL) ? STILL : MOTIONS[0].id,
+      contrast: hasContrast ? "more" : "standard",
+      cursor: "off",
+    };
+  }
+  function readingMatches(s) {
+    var p = readingPreset();
+    return s.light === p.light && s.motion === p.motion && s.contrast === p.contrast && s.cursor === p.cursor;
+  }
+  function read() {
+    var s = defaults();
+    var raw = store.get(KEY);
+    var saved = null;
+    if (raw) {
+      try {
+        saved = JSON.parse(raw);
+      } catch (e) {}
+    }
+    if (saved && typeof saved === "object") {
+      s = assign(s, saved);
+    } else if (S.legacy) {
+      // Keys a site used before the kit, e.g. { light: "org-light", motion: "org-motion" }.
+      var l = S.legacy.light && store.get(S.legacy.light);
+      var m = S.legacy.motion && store.get(S.legacy.motion);
+      if (l) s.light = l;
+      if (m) s.motion = m;
+      if (l || m) s.chosen = true;
+    }
+    if (!byId(MODES, s.light)) s.light = defaults().light;
+    if (!byId(MOTIONS, s.motion)) s.motion = defaults().motion;
+    if (s.contrast !== "more") s.contrast = "standard";
+    if (!hasContrast) s.contrast = "standard";
+    if (s.cursor !== "off" && s.cursor !== "on") s.cursor = defaults().cursor;
+    if (!hasCursor) s.cursor = "off";
+    if (s.reading !== "on" || !hasReading || !readingMatches(s)) s.reading = "off";
+    if (!s.before || typeof s.before !== "object") s.before = null;
+    if (!byId(SIZES, s.text) || !hasReading) s.text = SIZES[0].id;
+    if (s.measure !== "comfy" || !hasMeasure) s.measure = "full";
+    if (hasLangs && !langOf(s.lang)) s.lang = startLang();
+    return s;
+  }
+
+  var state = read();
+
+  function themeOf(lightId) {
+    var m = byId(MODES, lightId);
+    if (m && typeof m.follows === "function") {
+      try {
+        var t = m.follows(new Date());
+        if (byId(MODES, t)) return t;
+      } catch (e) {}
+    }
+    return m ? m.id : MODES[0].id;
+  }
+  function attr(name, value) {
+    if (root.getAttribute(name) !== value) root.setAttribute(name, value);
+  }
+  function apply() {
+    var theme = themeOf(state.light);
+    attr("data-light", state.light);
+    attr("data-theme", theme);
+    attr("data-motion", state.motion);
+    attr("data-contrast", state.contrast);
+    // "off" whenever the visitor switched cursor effects off or chose a still page. Sites key their
+    // own pointer effects on it (ORG's marbled ink stops stirring).
+    attr("data-cursor", state.cursor === "on" && state.motion !== STILL ? "on" : "off");
+    attr("data-reading", state.reading === "on" ? "on" : "off");
+    var sz = byId(SIZES, state.text) || SIZES[0];
+    attr("data-text", sz.id);
+    attr("data-measure", state.measure === "comfy" ? "comfy" : "full");
+    if (hasLangs) attr("data-lang", state.lang);
+    try {
+      root.style.setProperty("--arr-text-scale", String(+sz.scale || 1));
+    } catch (e) {}
+    var m = byId(MODES, theme);
+    var bg = m && (m.bg || (m.swatch && m.swatch[0]));
+    if (bg && doc.head) {
+      var meta = doc.querySelector('meta[name="theme-color"]');
+      if (!meta) {
+        meta = doc.createElement("meta");
+        meta.name = "theme-color";
+        doc.head.appendChild(meta);
+      }
+      meta.content = bg;
+    }
+  }
+  apply(); // before first paint
+
+  // tentative: a choice made inside the splash, which counts as "chosen" only once it closes.
+  function set(patch, tentative) {
+    var was = state.lang;
+    state = assign({}, state, patch || {});
+    if (hasLangs && !langOf(state.lang)) state.lang = was;
+    if (state.motion !== STILL) state.moving = state.motion;
+    // Reading mode is a preset, not a fifth setting: any change that breaks it leaves it, and the
+    // visitor keeps what they just chose (nothing is restored behind their back).
+    if (state.reading === "on" && !readingMatches(state)) {
+      state.reading = "off";
+      state.before = null;
+    }
+    if (!tentative) state.chosen = true;
+    apply();
+    store.set(KEY, JSON.stringify(state));
+    sync();
+    if (hasLangs && state.lang !== was) switchLang(state.lang);
+    emit("arrival:change", get());
+  }
+  function get() {
+    var g = {
+      light: state.light, theme: themeOf(state.light), motion: state.motion, contrast: state.contrast,
+      cursor: state.cursor, reading: state.reading === "on", text: state.text, measure: state.measure, chosen: !!state.chosen,
+    };
+    if (hasLangs) g.lang = state.lang;
+    return g;
+  }
+  // One tap: save what the visitor has, apply the calmest preset; tap again to restore it. The
+  // preset also turns on the comfortable line length (and restores it after); text size is left alone.
+  function toggleReading(tentative) {
+    if (!hasReading) return;
+    if (state.reading === "on") {
+      var b = state.before || {};
+      var d = defaults();
+      set({
+        reading: "off",
+        before: null,
+        light: byId(MODES, b.light) ? b.light : d.light,
+        motion: byId(MOTIONS, b.motion) ? b.motion : movingDefault(),
+        contrast: b.contrast === "more" ? "more" : "standard",
+        cursor: b.cursor === "on" ? "on" : "off",
+        measure: b.measure === "comfy" ? "comfy" : "full",
+      }, tentative);
+    } else {
+      set(assign({ reading: "on", before: { light: state.light, motion: state.motion, contrast: state.contrast, cursor: state.cursor, measure: state.measure } }, readingPreset(), hasMeasure ? { measure: "comfy" } : {}), tentative);
+    }
+  }
+  function stepText(d) {
+    var i = 0;
+    for (var k = 0; k < SIZES.length; k++) if (SIZES[k].id === state.text) i = k;
+    set({ text: SIZES[Math.max(0, Math.min(SIZES.length - 1, i + d))].id });
+  }
+
+  window.addEventListener("storage", function (e) {
+    if (e.key !== KEY) return;
+    state = read();
+    apply();
+    sync();
+    if (hasLangs && state.lang !== lang) switchLang(state.lang); // chosen in another tab
+  });
+  setInterval(function () {
+    var m = byId(MODES, state.light);
+    if (m && m.follows) {
+      apply();
+      sync();
+    }
+  }, 5 * 60 * 1000);
+
+  /* ── markup builders shared by the drawer, splash and guide ───────────────────────────── */
+  var uid = 0;
+  function swatchBg(m) {
+    if (m.ink) return m.ink; // any CSS background, set per mode in org.js
+    if (m.follows && m.shows) {
+      var cols = m.shows.map(function (id) {
+        var x = byId(MODES, id);
+        return x && x.swatch ? x.swatch[0] : "#888";
+      });
+      var step = 100 / cols.length;
+      return "linear-gradient(90deg," + cols.map(function (c, i) {
+        return c + " " + (i * step).toFixed(2) + "% " + ((i + 1) * step).toFixed(2) + "%";
+      }).join(",") + ")";
+    }
+    var sw = m.swatch || ["#888", "#ccc"];
+    return "linear-gradient(135deg," + sw[0] + " 55%," + (sw[1] || sw[0]) + " 55%)";
+  }
+  function lightRadios(name, rich) {
+    return MODES.map(function (m) {
+      return (
+        '<label class="arr-opt">' +
+        '<input class="arr-sr" type="radio" name="' + name + '" value="' + esc(m.id) + '" data-arr-light>' +
+        '<span class="arr-dot arr-shape" style="background:' + swatchBg(m) + '"></span>' +
+        '<span class="arr-opt-text"><span class="arr-opt-name">' + esc(m.name) + "</span>" +
+        (rich && m.note ? '<span class="arr-opt-note">' + esc(m.note) + "</span>" : "") +
+        (m.follows ? '<span class="arr-opt-note" data-arr-now></span>' : "") +
+        "</span></label>"
+      );
+    }).join("");
+  }
+  function lightCards(name) {
+    var sample = esc(org.motto || org.name || "");
+    return MODES.map(function (m) {
+      var follow = !!m.follows;
+      return (
+        '<label class="arr-card' + (follow ? " arr-card-follow" : "") + '"' + (follow ? "" : ' data-theme="' + esc(m.id) + '"') + ">" +
+        '<input class="arr-sr" type="radio" name="' + name + '" value="' + esc(m.id) + '" data-arr-light>' +
+        '<span class="arr-frame arr-shape"><span class="arr-in arr-shape">' +
+        '<span class="arr-card-ink arr-shape"' + (follow ? ' style="background:' + swatchBg(m) + '"' : "") + "></span>" +
+        '<span class="arr-card-name">' + esc(m.name) + "</span>" +
+        (m.note ? '<span class="arr-card-note">' + esc(m.note) + "</span>" : "") +
+        (follow ? '<span class="arr-card-note arr-card-now" data-arr-now></span>' : sample ? '<span class="arr-card-sample">' + sample + "</span>" : "") +
+        '<span class="arr-card-check" aria-hidden="true">' + icon("check") + "</span>" +
+        "</span></span></label>"
+      );
+    }).join("");
+  }
+  function motionRadios(name) {
+    return MOTIONS.map(function (m) {
+      return (
+        '<label class="arr-seg-opt">' +
+        '<input class="arr-sr" type="radio" name="' + name + '" value="' + esc(m.id) + '" data-arr-motion>' +
+        '<span class="arr-shape">' + (m.icon ? icon(m.icon) : "") + esc(m.name) + "</span></label>"
+      );
+    }).join("");
+  }
+  function contrastSwitch() {
+    if (!hasContrast) return "";
+    return (
+      '<label class="arr-switch"><input class="arr-sr" type="checkbox" role="switch" data-arr-contrast>' +
+      '<span class="arr-switch-track" aria-hidden="true"><span></span></span>' +
+      '<span class="arr-switch-label">' + esc(W.moreContrast) + "</span></label>" +
+      '<p class="arr-note">' + esc(W.contrastNote) + "</p>"
+    );
+  }
+  function cursorSwitch() {
+    if (!hasCursor) return "";
+    return (
+      '<label class="arr-switch arr-switch-cursor"><input class="arr-sr" type="checkbox" role="switch" data-arr-cursor>' +
+      '<span class="arr-switch-track" aria-hidden="true"><span></span></span>' +
+      '<span class="arr-switch-label">' + esc(W.cursor) + "</span></label>" +
+      '<p class="arr-note">' + esc(W.cursorNote) + "</p>"
+    );
+  }
+  function readingNote() {
+    var m = byId(MODES, calmLight());
+    return W.readingNote.replace("{light}", m ? m.name : "calmest");
+  }
+  function readingSwitch() {
+    if (!hasReading) return "";
+    return (
+      '<label class="arr-switch arr-switch-reading"><input class="arr-sr" type="checkbox" role="switch" data-arr-reading>' +
+      '<span class="arr-switch-track" aria-hidden="true"><span></span></span>' +
+      '<span class="arr-switch-label">' + icon("book-open-text") + esc(W.reading) + "</span></label>" +
+      '<p class="arr-note">' + esc(readingNote()) + "</p>" + readingExtras()
+    );
+  }
+  // Text size steps (a segmented row of growing A's) and the line-length switch, under the reading
+  // switch wherever it appears. `name` keeps each copy's radio group separate.
+  var rxUid = 0;
+  function readingExtras() {
+    if (!hasReading) return "";
+    var n = ++rxUid;
+    return (
+      '<fieldset class="arr-field arr-field-size"><legend>' + esc(W.textSize) + '</legend><div class="arr-seg arr-seg-size">' +
+      SIZES.map(function (s, i) {
+        return (
+          '<label class="arr-seg-opt" title="' + esc(s.name) + '"><input class="arr-sr" type="radio" name="arr-tx-' + n + '" value="' + esc(s.id) +
+          '" data-arr-text aria-label="' + esc(s.name) + '"><span class="arr-shape"><span class="arr-size-a" aria-hidden="true" style="font-size:' +
+          (0.78 + i * 0.17).toFixed(2) + 'rem">A</span></span></label>'
+        );
+      }).join("") +
+      "</div></fieldset>" +
+      (hasMeasure
+        ? '<label class="arr-switch arr-switch-measure"><input class="arr-sr" type="checkbox" role="switch" data-arr-measure>' +
+          '<span class="arr-switch-track" aria-hidden="true"><span></span></span>' +
+          '<span class="arr-switch-label">' + icon("text-align-left") + esc(W.measure) + "</span></label>" +
+          '<p class="arr-note">' + esc(W.measureNote) + "</p>"
+        : "")
+    );
+  }
+  function notices() {
+    var out = "";
+    if (prefersLess) out += '<p class="arr-notice">' + icon("hand-palm") + esc(W.reduced) + "</p>";
+    if (prefersMore && hasContrast) out += '<p class="arr-notice">' + icon("circle-half") + esc(W.moreAsked) + "</p>";
+    return out;
+  }
+  // v1.5: "Your language · Tu idioma", every language asking in its own words.
+  function langLegend() {
+    return LANGS.map(function (l) {
+      return '<span lang="' + esc(l.id) + '">' + esc(l.ask || l.name) + "</span>";
+    }).join('<span class="arr-lang-dot" aria-hidden="true"> · </span>');
+  }
+  // The doors: each language's name and welcome, written in that language. rich: the splash's cards.
+  function langDoors(name, rich) {
+    return LANGS.map(function (l) {
+      // A door: closed until it's the one chosen, then open.
+      return rich
+        ? '<label class="arr-lang" lang="' + esc(l.id) + '">' +
+            '<input class="arr-sr" type="radio" name="' + name + '" value="' + esc(l.id) + '" data-arr-lang>' +
+            '<span class="arr-frame arr-shape"><span class="arr-in arr-shape">' +
+            '<span class="arr-lang-door" aria-hidden="true">' + icon("door") + icon("door-open") + "</span>" +
+            '<span class="arr-lang-name">' + esc(l.name) + "</span>" +
+            (l.hello ? '<span class="arr-lang-hello">' + esc(l.hello) + "</span>" : "") +
+            '<span class="arr-card-check" aria-hidden="true">' + icon("check") + "</span></span></span></label>"
+        : '<label class="arr-seg-opt" lang="' + esc(l.id) + '">' +
+            '<input class="arr-sr" type="radio" name="' + name + '" value="' + esc(l.id) + '" data-arr-lang>' +
+            '<span class="arr-shape">' + esc(l.name) + "</span></label>";
+    }).join("");
+  }
+  // The honest lines under the doors: which words are translated, and whether that's been reviewed.
+  function langNotes() {
+    return (
+      '<p class="arr-note arr-lang-note" data-arr-langnote' + (noteWanted() ? "" : " hidden") + ">" + icon("translate") + "<span>" + esc(noteText()) + "</span></p>" +
+      (inReview() ? '<p class="arr-note arr-lang-review" title="' + esc(W.reviewNote) + '">' + icon("seal-question") + "<span>" + esc(W.inReview) + "</span></p>" : "") +
+      helpNote()
+    );
+  }
+  // A warm invitation to help with the translation, in the visitor's language and never in English.
+  // "reach out" opens the org's contact window; without one it follows org.home, else stays plain text.
+  function helpNote() {
+    if (!hasLangs || lang === BASE || primary(lang) === "en") return "";
+    var parts = String(W.helpTranslate || "").split("{reachOut}");
+    var href = hasContact ? "#contact" : (org.home && org.home.href) || "";
+    var link = href
+      ? '<a href="' + esc(href) + '"' + (hasContact ? ' data-arrival-open="contact"' : "") + ">" + esc(W.helpReachOut) + "</a>"
+      : esc(W.helpReachOut);
+    return (
+      '<p class="arr-note arr-lang-help">' + icon("hand-heart") + "<span>" +
+      esc(parts[0]) + (parts.length > 1 ? link + esc(parts.slice(1).join("")) : "") + "</span></p>"
+    );
+  }
+  function langField(name, rich) {
+    if (!hasLangs) return "";
+    return (
+      // Both legends ask in every language, so someone who can't read the current one still finds it.
+      '<fieldset class="arr-field arr-field-lang"><legend>' + icon("translate") + langLegend() + "</legend>" +
+      '<div class="' + (rich ? "arr-langs" : "arr-seg arr-seg-lang") + '">' + langDoors(name, rich) + "</div>" + langNotes() + "</fieldset>"
+    );
+  }
+
+  /* ── keep every control in step with the state ────────────────────────────────────────── */
+  function sync() {
+    var theme = themeOf(state.light);
+    var all = function (sel, fn) {
+      var list = doc.querySelectorAll(sel);
+      for (var i = 0; i < list.length; i++) fn(list[i]);
+    };
+    all("[data-arr-swatch]", function (b) {
+      b.setAttribute("aria-pressed", String(b.getAttribute("data-arr-swatch") === state.light));
+    });
+    all("input[data-arr-light]", function (i) {
+      i.checked = i.value === state.light;
+    });
+    all("input[data-arr-motion]", function (i) {
+      i.checked = i.value === state.motion;
+    });
+    all("input[data-arr-contrast]", function (i) {
+      i.checked = state.contrast === "more";
+      i.setAttribute("aria-checked", String(i.checked));
+    });
+    all("input[data-arr-cursor]", function (i) {
+      i.checked = state.cursor === "on";
+      i.setAttribute("aria-checked", String(i.checked));
+    });
+    all("[data-arr-cursor-toggle]", function (b) {
+      var on = state.cursor === "on";
+      var label = on ? W.cursorOn : W.cursorOff;
+      b.setAttribute("aria-pressed", String(on));
+      b.setAttribute("aria-label", label);
+      b.setAttribute("title", label + (state.motion === STILL ? W.restingStill : ""));
+    });
+    var reading = state.reading === "on";
+    all("input[data-arr-reading]", function (i) {
+      i.checked = reading;
+      i.setAttribute("aria-checked", String(reading));
+    });
+    all("[data-arr-reading-toggle]", function (b) {
+      var label = reading ? W.readingOn : W.readingOff;
+      b.setAttribute("aria-pressed", String(reading));
+      b.setAttribute("aria-label", label);
+      b.setAttribute("title", label);
+    });
+    all("input[data-arr-text]", function (i) {
+      i.checked = i.value === state.text;
+    });
+    all("input[data-arr-measure]", function (i) {
+      i.checked = state.measure === "comfy";
+      i.setAttribute("aria-checked", String(i.checked));
+    });
+    if (hasLangs) {
+      all("input[data-arr-lang]", function (i) {
+        i.checked = i.value === state.lang;
+      });
+    }
+    syncNews();
+    var still = state.motion === STILL;
+    all("[data-arr-motion-toggle]", function (b) {
+      var label = still ? W.play : W.pause;
+      b.setAttribute("aria-pressed", String(still));
+      b.setAttribute("aria-label", label);
+      b.setAttribute("title", label);
+      b.innerHTML = icon(still ? "play" : "pause");
+    });
+    var mo = byId(MOTIONS, state.motion);
+    all("[data-arr-motion-note]", function (p) {
+      p.textContent = mo && mo.note ? mo.note : "";
+    });
+    var tm = byId(MODES, theme);
+    all("[data-arr-now]", function (s) {
+      s.textContent = W.followNow + ": " + (tm ? tm.name : theme);
+    });
+    syncTrail();
+  }
+
+  /* ── <arrival-controls>: search, minimalist swatches + motion, and the drawer ─────────── */
+  function renderControls(host) {
+    var n = ++uid;
+    var swatches = MODES.map(function (m) {
+      return (
+        '<button type="button" class="arr-swatch arr-shape" data-arr-swatch="' + esc(m.id) + '" title="' + esc(m.name) +
+        '" aria-label="' + esc(W.light + ": " + m.name) + '" style="background:' + swatchBg(m) + '"></button>'
+      );
+    }).join("");
+    host.innerHTML =
+      '<div class="arr-controls">' +
+      // What's new: hidden until a return visit finds something newer than the last one. Then it's a
+      // filled pill with a count, and (once per visit) a small tip underneath pointing at it.
+      (hasNews
+        ? '<span class="arr-news-wrap"><button type="button" class="arr-chip arr-shape arr-news" data-arr-news hidden>' + icon("sparkle") +
+          '<span class="arr-news-n" data-arr-news-n></span><span class="arr-chip-label">' + esc(W.newBadge) + "</span></button>" +
+          '<span class="arr-news-tip arr-shape" data-arr-news-tip aria-hidden="true" hidden></span></span>'
+        : "") +
+      '<button type="button" class="arr-chip arr-shape arr-chip-search" data-arrival-open="search" aria-label="' + esc(fill(W.searchAria, { search: W.search })) + '" title="' + esc(W.search) + ' (/)">' +
+      icon("magnifying-glass") + '<span class="arr-chip-label">' + esc(W.search) + "</span><kbd>/</kbd></button>" +
+      '<span class="arr-swatches" role="group" aria-label="' + esc(W.light) + '">' + swatches + "</span>" +
+      '<button type="button" class="arr-chip arr-shape arr-chip-icon" data-arr-motion-toggle></button>' +
+      (hasCursor ? '<button type="button" class="arr-chip arr-shape arr-chip-icon arr-cursor-btn" data-arr-cursor-toggle>' + icon("cursor-click") + "</button>" : "") +
+      (hasReading ? '<button type="button" class="arr-chip arr-shape arr-chip-icon arr-reading-btn" data-arr-reading-toggle>' + icon("book-open-text") + "</button>" : "") +
+      // v1.5: the language, one tap away (it opens the drawer at its language row).
+      (hasLangs
+        ? '<button type="button" class="arr-chip arr-shape arr-lang-chip" data-arr-lang-chip aria-label="' + esc(fill(W.languageAction, { name: (langOf(lang) || {}).name || lang })) +
+          '" title="' + esc(W.language) + '">' + icon("translate") + '<span class="arr-lang-code" translate="no">' + esc(primary(lang).toUpperCase()) + "</span></button>"
+        : "") +
+      '<span class="arr-drawer-wrap">' +
+      '<button type="button" class="arr-chip arr-shape" data-arr-drawer aria-label="' + esc(W.drawer) + '" aria-expanded="false" aria-controls="arr-drawer-' + n + '">' +
+      icon("sliders-horizontal") + '<span class="arr-chip-label">' + esc(W.drawer) + "</span>" + '<i class="ph ph-caret-down arr-caret" aria-hidden="true"></i></button>' +
+      '<div class="arr-drawer arr-lift" id="arr-drawer-' + n + '" hidden><div class="arr-frame arr-shape"><div class="arr-in arr-shape">' +
+      langField("arr-dlang-" + n, false) +
+      (hasReading ? '<div class="arr-field arr-field-reading">' + readingSwitch() + "</div>" : "") +
+      '<fieldset class="arr-field"><legend>' + esc(W.light) + '</legend><div class="arr-list">' + lightRadios("arr-dl-" + n, false) + "</div></fieldset>" +
+      '<fieldset class="arr-field"><legend>' + esc(W.motion) + '</legend><div class="arr-seg">' + motionRadios("arr-dm-" + n) + "</div>" +
+      '<p class="arr-note" data-arr-motion-note></p>' + cursorSwitch() + "</fieldset>" +
+      (hasContrast ? '<fieldset class="arr-field"><legend>' + esc(W.contrast) + "</legend>" + contrastSwitch() + "</fieldset>" : "") +
+      '<div class="arr-rule" role="presentation"></div>' +
+      '<a class="arr-link" href="#welcome" data-arrival-open="guide">' + icon("compass") + "<span>" + esc(W.openGuide) + "</span><kbd>?</kbd></a>" +
+      '<button type="button" class="arr-link" data-arrival-open="search">' + icon("magnifying-glass") + "<span>" + esc(W.searchAll) + "</span><kbd>/</kbd></button>" +
+      '<p class="arr-fine">' + esc(W.saved) + "</p>" +
+      "</div></div></div></span></div>";
+    tagLang(host);
+    sync();
+  }
+
+  function drawerOf(btn) {
+    return doc.getElementById(btn.getAttribute("aria-controls"));
+  }
+  // Every popup that hangs off the header (the drawer, the nav's dropdowns and the Menu) closes
+  // when another opens, so only one is ever open.
+  function closeDrawers(refocus) {
+    closeNavs(false);
+    var open = doc.querySelectorAll('[data-arr-drawer][aria-expanded="true"]');
+    for (var i = 0; i < open.length; i++) {
+      open[i].setAttribute("aria-expanded", "false");
+      var p = drawerOf(open[i]);
+      if (p) p.hidden = true;
+      if (refocus) open[i].focus();
+    }
+  }
+  function openDrawer(btn) {
+    closeDrawers(false);
+    var p = drawerOf(btn);
+    if (!p) return;
+    btn.setAttribute("aria-expanded", "true");
+    p.hidden = false;
+    p.style.top = "";
+    if (window.innerWidth < 560) {
+      var r = btn.getBoundingClientRect();
+      p.style.top = Math.round(r.bottom + 8) + "px";
+    }
+    sync();
+    var f = p.querySelector("input:checked") || p.querySelector("input, a, button");
+    if (f) f.focus();
+  }
+
+  /* ── dialogs (splash, guide, search) ───────────────────────────────────────────────────── */
+  var FOCUSABLE = 'a[href], button:not([disabled]), input:not([disabled]), select, textarea, [tabindex]:not([tabindex="-1"])';
+  function focusables(box) {
+    var list = box.querySelectorAll(FOCUSABLE);
+    var out = [];
+    for (var i = 0; i < list.length; i++) {
+      var el = list[i];
+      if (el.type === "radio" && !el.checked) {
+        var group = box.querySelectorAll('input[type="radio"][name="' + el.name + '"]');
+        var any = false;
+        for (var j = 0; j < group.length; j++) if (group[j].checked) any = true;
+        if (any) continue;
+      }
+      if (el.closest("[hidden]")) continue;
+      if (!el.getClientRects().length) continue;
+      out.push(el);
+    }
+    return out;
+  }
+  var stack = [];
+  function makeDialog(cls, labelId, onClose) {
+    var d = doc.createElement("dialog");
+    d.className = "arr-dialog " + cls;
+    d.setAttribute("aria-labelledby", labelId);
+    tagLang(d);
+    d._onClose = onClose;
+    d.addEventListener("cancel", function (e) {
+      e.preventDefault();
+      hide(d);
+    });
+    d.addEventListener("keydown", function (e) {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        e.stopPropagation();
+        hide(d);
+        return;
+      }
+      if (e.key !== "Tab") return;
+      var f = focusables(d);
+      if (!f.length) {
+        e.preventDefault();
+        return;
+      }
+      var first = f[0];
+      var last = f[f.length - 1];
+      var a = doc.activeElement;
+      if (!d.contains(a)) {
+        e.preventDefault();
+        first.focus();
+      } else if (e.shiftKey && a === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && a === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    });
+    d.addEventListener("mousedown", function (e) {
+      d._downOnBackdrop = e.target === d;
+    });
+    d.addEventListener("click", function (e) {
+      if (e.target === d && d._downOnBackdrop) hide(d);
+    });
+    doc.body.appendChild(d);
+    return d;
+  }
+  function show(d, focusEl) {
+    if (d.open) return;
+    d._return = doc.activeElement;
+    // Opened from inside a dropdown or the Menu, which closes now: return focus to its button.
+    var pop = d._return && d._return.closest && d._return.closest(".arr-nav-menu, .arr-menu-panel, .arr-drawer");
+    if (pop && pop.id) d._return = doc.querySelector('[aria-controls="' + pop.id + '"]') || d._return;
+    hideTip();
+    closeDrawers(false);
+    try {
+      d.showModal();
+    } catch (e) {
+      d.setAttribute("open", "");
+    }
+    stack.push(d);
+    root.classList.add("arr-locked");
+    var f = focusEl || focusables(d)[0];
+    if (f) f.focus();
+  }
+  function hide(d, keepFocus) {
+    if (!d || !d.open) return;
+    if (d._onClose) d._onClose();
+    try {
+      d.close();
+    } catch (e) {
+      d.removeAttribute("open");
+    }
+    stack = stack.filter(function (x) {
+      return x !== d;
+    });
+    if (!stack.length) root.classList.remove("arr-locked");
+    if (!keepFocus && d._return && d._return.focus && doc.contains(d._return)) d._return.focus();
+  }
+  function panel(inner, extra) {
+    return '<div class="arr-lift"><div class="arr-frame arr-shape arr-panel ' + (extra || "") + '"><div class="arr-in arr-shape">' + inner + "</div></div></div>";
+  }
+  function markHTML() {
+    var mk = org.mark;
+    return mk && mk.src ? '<img class="arr-mark" src="' + esc(mk.src) + '" alt="" width="40" height="40">' : "";
+  }
+
+  /* ── first-visit splash: "Choose how you arrive" ──────────────────────────────────────── */
+  var splashEl = null;
+  function splashWanted() {
+    return store.ok && !state.chosen && C.splash !== false && root.getAttribute("data-arrival-splash") !== "off";
+  }
+  function splashHTML() {
+    return panel(
+      '<div class="arr-head">' + markHTML() +
+      '<span class="arr-eyebrow"' + noTr() + ">" + esc(org.short || "") + (org.name ? '<span class="arr-eyebrow-full"> · ' + esc(org.name) + "</span>" : "") + "</span></div>" +
+      '<h2 class="arr-title" id="arr-splash-title">' + esc(W.arrive) + "</h2>" +
+      '<p class="arr-intro">' + esc(W.intro) + "</p>" +
+      notices() +
+      langField("arr-slang", true) + // v1.5: the language comes first, so everything after is in it
+      '<fieldset class="arr-field"><legend>' + esc(W.light) + '</legend><div class="arr-cards">' + lightCards("arr-sl") + "</div></fieldset>" +
+      '<div class="arr-split">' +
+      '<fieldset class="arr-field"><legend>' + esc(W.motion) + '</legend><div class="arr-seg">' + motionRadios("arr-sm") + "</div>" +
+      '<p class="arr-note" data-arr-motion-note aria-live="polite"></p>' + cursorSwitch() + "</fieldset>" +
+      (hasContrast ? '<fieldset class="arr-field"><legend>' + esc(W.contrast) + "</legend>" + contrastSwitch() + "</fieldset>" : "") +
+      "</div>" +
+      '<div class="arr-tip arr-shape"><kbd class="arr-kbd-big arr-shape">/</kbd><p><strong>' + esc(W.searchPress) + "</strong> " + esc(W.searchTip) +
+      ' <span class="arr-hover-only">' + fillH(W.searchTry, { key: "<kbd>/</kbd>" }) + '</span><span class="arr-touch-only">' + esc(W.searchPhone) + "</span></p></div>" +
+      '<div class="arr-actions">' +
+      '<button type="button" class="arr-btn arr-btn-primary arr-shape" data-arr-enter>' + esc(W.enter) + icon("arrow-right") + "</button>" +
+      '<button type="button" class="arr-btn arr-btn-quiet arr-shape" data-arr-tour>' + icon("compass") + esc(W.tour) + "</button>" +
+      (hasReading ? '<button type="button" class="arr-btn arr-btn-quiet arr-shape" data-arr-read-enter title="' + esc(readingNote()) + '">' + icon("book-open-text") + esc(W.readEnter) + "</button>" : "") +
+      '<span class="arr-fine">' + esc(W.saved) + "</span></div>"
+    );
+  }
+  function openSplash() {
+    if (!splashEl) {
+      splashEl = makeDialog("arr-splash", "arr-splash-title", function () {
+        set({}, false); // closing (Enter, Esc, backdrop, tour, "/") records the choice
+        followRoute(); // v1.5: a site with translated pages goes to this page's twin
+      });
+      splashEl.innerHTML = splashHTML();
+    }
+    sync();
+    show(splashEl, (hasLangs && splashEl.querySelector("input[data-arr-lang]:checked")) || splashEl.querySelector("input[data-arr-light]:checked") || splashEl.querySelector("[data-arr-enter]"));
+    if (noteWanted()) noteSeen(); // the splash has said it
+  }
+
+  /* ── the welcome guide (onboarding panel) ─────────────────────────────────────────────── */
+  var guideEl = null;
+  var step = 0;
+  var seen = {};
+
+  function link(href, label, ic, cls) {
+    if (!href) return "";
+    return '<a class="arr-btn arr-shape ' + (cls || "arr-btn-quiet") + '" href="' + esc(href) + '">' + (ic ? icon(ic) : "") + esc(label) + "</a>";
+  }
+  function placeholder(text) {
+    return '<p class="arr-placeholder arr-shape">' + icon("note-pencil") + "<span><strong>" + esc(W.placeholderTag) + "</strong> " + text + "</span></p>";
+  }
+  function para(text) {
+    return text ? "<p>" + text + "</p>" : "";
+  }
+
+  // Each step: { id, icon, title, html() }. Text comes from org.js (ARRIVAL.guide.<id> overrides
+  // any field; ARRIVAL.guide.order picks and orders the steps). Strings there may hold simple HTML.
+  function steps() {
+    var G = C.guide || {};
+    var rec = site.record || C.record || {};
+    var com = site.community || C.community || null;
+    var home = org.home || null;
+    var defs = {
+      welcome: {
+        icon: "hand-waving",
+        title: fill(W.welcomeTitle, { site: site.name || org.short || W.theSite }),
+        html: function () {
+          return (
+            (site.what ? '<p class="arr-lede">' + site.what + "</p>" : "") +
+            para(org.about) +
+            (org.welcomeNote ? '<blockquote class="arr-quote">' + org.welcomeNote + "</blockquote>" : org.welcomePlaceholder ? placeholder(org.welcomePlaceholder) : "") +
+            para((G.welcome || {}).more)
+          );
+        },
+      },
+      record: {
+        icon: "clock-counter-clockwise",
+        title: W.recordTitle,
+        html: function () {
+          var ch = rec.changelog || {};
+          var li = rec.library || {};
+          var lg = rec.ledger || null;
+          return (
+            para(rec.intro) +
+            '<div class="arr-two' + (lg ? " arr-three" : "") + '">' +
+            '<div class="arr-box arr-shape"><h3>' + icon("clock-counter-clockwise") + esc(ch.name || W.changelogName) + "</h3>" +
+            para(ch.text || W.changelogText) +
+            link(ch.href, ch.label || W.changelogLink, "arrow-right") + "</div>" +
+            '<div class="arr-box arr-shape"><h3>' + icon("books") + esc(li.name || W.libraryName) + "</h3>" +
+            para(li.text || W.libraryText) +
+            (li.href ? link(li.href, li.label || W.libraryLink, "arrow-right") : li.missing ? placeholder(li.missing) : "") + "</div>" +
+            (lg
+              ? '<div class="arr-box arr-shape arr-box-ledger"><h3>' + icon(lg.icon || "scroll") + esc(lg.name || W.ledger) + "</h3>" +
+                para(lg.text || W.ledgerText) +
+                link(lg.href, lg.label || W.ledgerLink, "arrow-right") + "</div>"
+              : "") +
+            "</div>" +
+            (rec.share ? '<p class="arr-notice">' + icon("share-network") + "<span>" + rec.share + "</span></p>" : "") +
+            (hasNews ? '<p class="arr-notice">' + icon("sparkle") + "<span>" + esc(W.newsGuide) + "</span></p>" : "")
+          );
+        },
+      },
+      search: {
+        icon: "magnifying-glass",
+        title: W.searchTitle,
+        html: function () {
+          return (
+            '<div class="arr-tip arr-shape"><kbd class="arr-kbd-big arr-shape">/</kbd><p>' + W.searchHowHtml + "</p></div>" +
+            "<ul class=\"arr-ticks\">" +
+            "<li>" + icon("sparkle") + esc(W.searchEntries) + "</li>" +
+            "<li>" + icon("book-open-text") + esc(W.searchWriteups) + "</li>" +
+            "<li>" + icon("signpost") + fillH(W.searchPages, { home: esc(home ? home.label : W.mainSite), community: com ? fillH(W.searchPagesCommunity, { name: esc(com.name) }) : "" }) + "</li>" +
+            "<li>" + icon("palette") + W.searchActionsHtml + "</li>" +
+            "</ul>" +
+            para((G.search || {}).more) +
+            '<p><button type="button" class="arr-btn arr-btn-primary arr-shape" data-arrival-open="search">' + icon("magnifying-glass") + esc(W.tryNow) + "</button></p>"
+          );
+        },
+      },
+      light: {
+        icon: "palette",
+        title: W.lightTitle,
+        html: function () {
+          return para((G.light || {}).text) + '<div class="arr-cards arr-cards-compact">' + lightCards("arr-gl") + "</div>";
+        },
+      },
+      motion: {
+        icon: "wind",
+        title: W.motionTitle,
+        html: function () {
+          return (
+            para((G.motion || {}).text) + notices() +
+            (hasReading ? '<div class="arr-field arr-field-reading">' + readingSwitch() + "</div>" : "") +
+            '<div class="arr-split">' +
+            '<fieldset class="arr-field"><legend>' + esc(W.motion) + '</legend><div class="arr-seg">' + motionRadios("arr-gm") + "</div>" +
+            '<p class="arr-note" data-arr-motion-note aria-live="polite"></p>' + cursorSwitch() + "</fieldset>" +
+            (hasContrast ? '<fieldset class="arr-field"><legend>' + esc(W.contrast) + "</legend>" + contrastSwitch() + "</fieldset>" : "") +
+            "</div>" +
+            '<p class="arr-fine">' + fillH(W.motionFine, { reading: hasReading ? esc(W.motionFineReading) : "" }) + "</p>"
+          );
+        },
+      },
+      people: {
+        icon: "users-three",
+        title: W.peopleTitle,
+        html: function () {
+          return (
+            para((G.people || {}).text || W.peopleText) +
+            "<arrival-people compact></arrival-people>" +
+            '<p class="arr-fine">' + ((G.people || {}).fine || W.peopleFine) + "</p>"
+          );
+        },
+      },
+      community: {
+        icon: "chats-circle",
+        title: W.communityTitle,
+        html: function () {
+          if (!com) return placeholder(W.communityNone);
+          // v1.2: with platforms configured, list them and offer the community modal.
+          if (com.platforms && com.platforms.length) {
+            return (
+              para(com.text) +
+              '<ul class="arr-ticks">' +
+              com.platforms.map(function (p) {
+                var k = platform(p.kind);
+                var soon = p.status === "soon" || (!(p.public && p.public.href) && !(p.join && p.join.href));
+                return "<li>" + icon(p.icon || k[1]) + "<span><strong>" + esc(p.name || k[0]) + "</strong>" + (soon ? " · " + esc(W.soon) : "") + "</span></li>";
+              }).join("") +
+              (com.bespoke ? "<li>" + icon(com.bespoke.icon || "graph") + "<span><strong>" + esc(com.bespoke.title || W.bespokeTitle) + "</strong> · " + esc(com.bespoke.tag || W.sneak) + "</span></li>" : "") +
+              "</ul>" +
+              '<p><button type="button" class="arr-btn arr-btn-primary arr-shape" data-arrival-open="community">' + icon(com.icon || "users-three") + esc(com.label || W.seeEveryWay) + "</button></p>" +
+              (com.more || []).map(function (x) { return '<p class="arr-fine">' + x + "</p>"; }).join("")
+            );
+          }
+          return (
+            para(com.text) +
+            (com.href ? link(com.href, com.label || fill(W.openNamed, { name: com.name }), com.icon || "chats-circle", "arr-btn-primary") : placeholder(fillH(W.communityMissing, { name: esc(com.name) }))) +
+            (com.more || []).map(function (x) {
+              return '<p class="arr-fine">' + x + "</p>";
+            }).join("")
+          );
+        },
+      },
+      home: {
+        icon: "globe-hemisphere-west",
+        title: home ? home.label : W.homeTitle,
+        html: function () {
+          return (
+            para(home && home.text) +
+            (home ? link(home.href, fill(W.visitNamed, { name: home.label }), "arrow-square-out", "arr-btn-primary") : "") +
+            para((G.home || {}).more) +
+            '<p class="arr-finale" data-arr-finale hidden>' + icon("seal-check") + "<span></span></p>"
+          );
+        },
+      },
+    };
+    var order = G.order || ["welcome", "record", "search", "light", "motion", "people", "community", "home"];
+    return order
+      .map(function (id) {
+        var d = defs[id] || (G[id] && G[id].html ? { icon: "info", title: id } : null);
+        if (!d) return null;
+        var o = G[id] || {};
+        return {
+          id: id,
+          icon: o.icon || d.icon,
+          title: o.title || d.title,
+          html: typeof o.html === "function" ? o.html : o.html ? function () { return o.html; } : d.html,
+        };
+      })
+      .filter(Boolean);
+  }
+
+  function glyph(n, cur, size) {
+    var cols = C.wedges && C.wedges.length ? C.wedges : ["var(--accent)"];
+    var a0 = -90 - 180 / n;
+    var pt = function (r, k) {
+      var a = ((a0 + (360 / n) * k) * Math.PI) / 180;
+      return (50 + r * Math.cos(a)).toFixed(2) + "," + (50 + r * Math.sin(a)).toFixed(2);
+    };
+    var s = '<svg class="arr-glyph" viewBox="0 0 100 100" width="' + size + '" height="' + size + '" aria-hidden="true">';
+    for (var k = 0; k < n; k++) {
+      s +=
+        '<polygon class="arr-wedge' + (seen[k] ? " is-lit" : "") + (k === cur ? " is-current" : "") +
+        '" points="50,50 ' + pt(46, k) + " " + pt(46, k + 1) + '" fill="' + cols[k % cols.length] + '"/>';
+    }
+    var ring = [];
+    for (var j = 0; j < n; j++) ring.push(pt(46, j));
+    return s + '<polygon points="' + ring.join(" ") + '" fill="none" stroke="currentColor" stroke-opacity=".5" stroke-width="3" stroke-linejoin="round"/></svg>';
+  }
+
+  var STEPS = null;
+  function renderStep() {
+    var s = STEPS[step];
+    var n = STEPS.length;
+    seen[step] = true;
+    var g = guideEl;
+    g.querySelector("[data-arr-glyph]").innerHTML = glyph(n, step, 56);
+    g.querySelector("[data-arr-count]").textContent = fill(W.stepOf, { n: step + 1, total: n });
+    g.querySelector("#arr-guide-title").innerHTML = icon(s.icon) + esc(s.title);
+    var body = g.querySelector("[data-arr-body]");
+    body.innerHTML = s.html();
+    body.scrollTop = 0;
+    var tabs = g.querySelectorAll("[data-arr-step]");
+    for (var i = 0; i < tabs.length; i++) {
+      if (+tabs[i].getAttribute("data-arr-step") === step) tabs[i].setAttribute("aria-current", "step");
+      else tabs[i].removeAttribute("aria-current");
+      tabs[i].classList.toggle("is-seen", !!seen[i]);
+    }
+    g.querySelector("[data-arr-prev]").disabled = step === 0;
+    var next = g.querySelector("[data-arr-next]");
+    next.innerHTML = step === n - 1 ? esc(W.done) + icon("check") : esc(W.next) + icon("arrow-right");
+    var fin = body.querySelector("[data-arr-finale]");
+    if (fin) {
+      var all = Object.keys(seen).length >= n;
+      fin.hidden = false;
+      fin.querySelector("span").textContent = all
+        ? (C.guideFinale || W.guideFinale)
+        : W.guideAgain;
+      if (all) g.querySelector(".arr-glyph").classList.add("is-whole");
+    }
+    sync();
+  }
+  function openGuide(at) {
+    if (!guideEl) {
+      STEPS = steps();
+      var colsN = C.wedges || [];
+      guideEl = makeDialog("arr-guide", "arr-guide-title", function () {
+        if (!state.chosen) set({}, false); // someone who took the tour has arrived
+        if (location.hash === "#welcome") {
+          try {
+            history.replaceState(null, "", location.pathname + location.search);
+          } catch (e) {}
+        }
+      });
+      guideEl.innerHTML = panel(
+        '<div class="arr-guide-head">' +
+        '<span class="arr-glyph-wrap" data-arr-glyph></span>' +
+        '<div class="arr-guide-heading"><p class="arr-eyebrow">' + esc(W.guide) + ' · <span data-arr-count></span></p>' +
+        '<h2 class="arr-title" id="arr-guide-title" aria-live="polite"></h2></div>' +
+        '<button type="button" class="arr-x arr-shape" data-arr-close aria-label="' + esc(W.closeGuide) + '">' + icon("x") + "</button></div>" +
+        '<div class="arr-guide-main">' +
+        '<nav class="arr-steps" aria-label="' + esc(W.guideSteps) + '"><ol>' +
+        STEPS.map(function (s, i) {
+          return (
+            '<li><button type="button" data-arr-step="' + i + '"><span class="arr-step-dot" style="--wedge:' +
+            (colsN.length ? colsN[i % colsN.length] : "var(--accent)") + '"></span>' + esc(s.title) + "</button></li>"
+          );
+        }).join("") +
+        "</ol></nav>" +
+        '<section class="arr-step" data-arr-body></section></div>' +
+        '<div class="arr-guide-foot">' +
+        '<button type="button" class="arr-btn arr-btn-quiet arr-shape" data-arr-prev>' + icon("arrow-left") + esc(W.back) + "</button>" +
+        '<span class="arr-fine arr-hover-only">' + fillH(W.arrowsMove, { keys: "<kbd>←</kbd> <kbd>→</kbd>" }) + "</span>" +
+        '<button type="button" class="arr-btn arr-btn-primary arr-shape" data-arr-next></button></div>',
+        "arr-guide-panel"
+      );
+    }
+    var idx = 0;
+    if (typeof at === "string") {
+      for (var i = 0; i < STEPS.length; i++) if (STEPS[i].id === at) idx = i;
+    } else if (typeof at === "number") idx = at;
+    step = Math.max(0, Math.min(STEPS.length - 1, idx));
+    renderStep();
+    show(guideEl, guideEl.querySelector("[data-arr-next]"));
+  }
+  function goStep(i) {
+    if (!STEPS) return;
+    if (i >= STEPS.length) {
+      hide(guideEl);
+      return;
+    }
+    step = Math.max(0, i);
+    renderStep();
+  }
+
+  /* ── "/" quick search ──────────────────────────────────────────────────────────────────── */
+  var indexP = null;
+  function index() {
+    if (indexP) return indexP;
+    // Org-wide sources first, then the site's; a site entry with the same url replaces the org's
+    // (that's how a site relabels or drops one: { url, label } or { url, skip: true }).
+    var byUrl = {};
+    var order = [];
+    [].concat((C.search && C.search.sources) || [], site.sources || []).forEach(function (src) {
+      if (typeof src === "string") src = { url: src };
+      if (!src || !src.url) return;
+      if (!byUrl[src.url]) order.push(src.url);
+      byUrl[src.url] = src;
+    });
+    var sources = order.map(function (u) { return byUrl[u]; }).filter(function (s) { return !s.skip; });
+    indexP = Promise.all(
+      sources.map(function (src) {
+        if (typeof src === "string") src = { url: src };
+        if (!window.fetch) return { items: [], people: [] };
+        return fetch(src.url, { credentials: "omit" })
+          .then(function (r) {
+            return r.ok ? r.json() : null;
+          })
+          .catch(function () {
+            return null;
+          })
+          .then(function (j) {
+            if (!j) return { items: [], people: [] };
+            var items = (j.items || []).map(function (it) {
+              return src.label ? assign({}, it, { from: src.label }) : it;
+            });
+            return { items: items, people: src.people === false ? [] : j.people || [] };
+          });
+      })
+    ).then(function (parts) {
+      var items = [];
+      var people = [];
+      var seenH = {};
+      var seenP = {};
+      parts.forEach(function (p) {
+        p.items.forEach(function (it) {
+          if (!it || !it.t) return;
+          if (it.h && seenH[it.h]) return;
+          if (it.h) seenH[it.h] = 1;
+          items.push(it);
+        });
+        p.people.forEach(function (x) {
+          if (!x || !x.name || seenP[x.name]) return;
+          seenP[x.name] = 1;
+          people.push(x);
+        });
+      });
+      return { items: items, people: people };
+    });
+    return indexP;
+  }
+
+  function actions() {
+    var out = [];
+    MODES.forEach(function (m) {
+      out.push({ t: W.light + ": " + m.name, k: "light", i: "palette", x: m.note || "", run: function () { set({ light: m.id }); } });
+    });
+    MOTIONS.forEach(function (m) {
+      out.push({ t: W.motion + ": " + m.name, k: "motion", i: m.icon || "wind", x: (m.note || "") + " " + W.kwMotion, run: function () { set({ motion: m.id }); } });
+    });
+    if (hasContrast) {
+      out.push({
+        t: fill(W.onOrOff, { what: W.moreContrast }), k: "contrast", i: "circle-half", x: W.kwContrast,
+        run: function () { set({ contrast: state.contrast === "more" ? "standard" : "more" }); },
+      });
+    }
+    if (hasCursor) {
+      out.push({
+        t: fill(W.onOrOff, { what: W.cursor }), k: "cursor", i: "cursor-click", x: W.kwCursor,
+        run: function () { set({ cursor: state.cursor === "on" ? "off" : "on" }); },
+      });
+    }
+    if (hasReading) {
+      out.push({
+        t: fill(state.reading === "on" ? W.readingBack : W.readingOnAct, { what: W.reading }), k: "reading", i: "book-open-text",
+        x: W.kwReading, run: function () { toggleReading(); },
+      });
+    }
+    if (hasReading) {
+      out.push({ t: fill(W.larger, { what: W.textSize }), k: "text", i: "text-aa", x: W.kwLarger, run: function () { stepText(1); } });
+      out.push({ t: fill(W.smaller, { what: W.textSize }), k: "text", i: "text-aa", x: W.kwSmaller, run: function () { stepText(-1); } });
+      if (hasMeasure) {
+        out.push({
+          t: fill(W.onOrOff, { what: W.measure }), k: "text", i: "text-align-left", x: W.kwMeasure,
+          run: function () { set({ measure: state.measure === "comfy" ? "full" : "comfy" }); },
+        });
+      }
+    }
+    if (hasContact) out.push({ t: fill(W.contactAct, { what: CONTACT.title || W.contact }), k: "contact", i: "envelope-simple", x: W.kwContact, run: openContact });
+    if (hasCommunity) out.push({ t: fill(W.communityAct, { what: COMM.title || W.community }), k: "community", i: COMM.icon || "users-three", x: W.kwCommunity, run: openCommunity });
+    out.push({ t: W.openGuide, k: "guide", i: "compass", x: W.kwGuide, run: function () { openGuide(); } });
+    // v1.5: every language, by its own name ("español" finds Español)
+    LANGS.forEach(function (l) {
+      if (l.id === state.lang) return;
+      out.push({ t: fill(W.languageAction, { name: l.name }), k: "language", i: "translate", x: W.kwLanguage + " " + l.id + " " + (l.ask || ""), run: function () { set({ lang: l.id }); followRoute(); } });
+    });
+    if (PLEDGE && PLEDGE.href) {
+      out.push({ t: fill(W.pledgeAct, { what: PLEDGE.title || PW.title }), k: "pledge", i: "handshake", x: W.kwPledge, run: function () { location.href = PLEDGE.href; } });
+    }
+    out.push({ t: W.copyLink, k: "action", i: "link", x: W.kwCopy, run: copyLink });
+    return out;
+  }
+  function staticItems() {
+    return [].concat((C.search && C.search.items) || [], site.items || []);
+  }
+  function norm(s) {
+    return String(s == null ? "" : s)
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[̀-ͯ]/g, "")
+      .replace(/[^a-z0-9]+/g, " ")
+      .trim();
+  }
+  function subseq(w, s) {
+    var i = 0;
+    for (var c = 0; c < s.length && i < w.length; c++) if (s[c] === w[i]) i++;
+    return i === w.length;
+  }
+  function rank(q, items) {
+    var words = norm(q).split(" ").filter(Boolean);
+    var out = [];
+    items.forEach(function (it) {
+      var t = norm(it.t);
+      var hay = norm([it.t, it.k, it.s, it.x, it.who, it.from, it.d, fmtDate(it.d, true)].join(" "));
+      var s = 0;
+      for (var i = 0; i < words.length; i++) {
+        var w = words[i];
+        if (t.indexOf(w) === 0) s += 8;
+        else if ((" " + t).indexOf(" " + w) >= 0) s += 6;
+        else if (t.indexOf(w) >= 0) s += 4;
+        else if ((" " + hay).indexOf(" " + w) >= 0) s += 3;
+        else if (hay.indexOf(w) >= 0) s += 2;
+        else if (w.length > 2 && subseq(w, t)) s += 1;
+        else return;
+      }
+      out.push({ it: it, s: s });
+    });
+    out.sort(function (a, b) {
+      return b.s - a.s || String(b.it.d || "").localeCompare(String(a.it.d || ""));
+    });
+    return out.slice(0, 40).map(function (x) {
+      return x.it;
+    });
+  }
+  function highlight(text, q) {
+    var h = esc(text);
+    norm(q).split(" ").filter(function (w) { return w.length > 1; }).forEach(function (w) {
+      var re = new RegExp("(" + w.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + ")", "i");
+      h = h.replace(re, "<mark>$1</mark>");
+    });
+    return h;
+  }
+
+  var pal = null;
+  var shown = [];
+  var sel = 0;
+  var loaded = null;
+
+  function openPalette() {
+    if (!pal) {
+      pal = makeDialog("arr-palette", "arr-pal-label");
+      pal.innerHTML = panel(
+        '<label class="arr-sr" id="arr-pal-label" for="arr-pal-input">' + esc(W.search) + "</label>" +
+        '<div class="arr-pal-bar">' + icon("magnifying-glass") +
+        '<input id="arr-pal-input" type="text" role="combobox" aria-expanded="true" aria-controls="arr-pal-list" aria-autocomplete="list" autocomplete="off" spellcheck="false" placeholder="' + esc(W.searchPlaceholder) + '">' +
+        '<kbd class="arr-hover-only">esc</kbd><button type="button" class="arr-x arr-shape arr-touch-only" data-arr-close aria-label="' + esc(W.closeSearch) + '">' + icon("x") + "</button></div>" +
+        '<ul class="arr-pal-list" id="arr-pal-list" role="listbox" aria-label="' + esc(W.results) + '"></ul>' +
+        '<div class="arr-pal-foot arr-hover-only"><span><kbd>↑</kbd><kbd>↓</kbd> ' + esc(W.keyMove) + "</span><span><kbd>↵</kbd> " + esc(W.keyOpen) + "</span><span><kbd>esc</kbd> " + esc(W.keyClose) +
+        "</span><span><kbd>?</kbd> " + esc(W.keyGuide) + '</span><span class="arr-pal-status" aria-live="polite"></span></div>',
+        "arr-pal-panel"
+      );
+      var inp = pal.querySelector("input");
+      inp.addEventListener("input", function () {
+        sel = 0;
+        renderPalette();
+      });
+      inp.addEventListener("keydown", function (e) {
+        if (e.key === "ArrowDown") {
+          e.preventDefault();
+          move(1);
+        } else if (e.key === "ArrowUp") {
+          e.preventDefault();
+          move(-1);
+        } else if (e.key === "Enter") {
+          e.preventDefault();
+          go(shown[sel], e.metaKey || e.ctrlKey);
+        }
+      });
+      var list = pal.querySelector("ul");
+      list.addEventListener("click", function (e) {
+        var li = e.target.closest("[data-i]");
+        if (li) go(shown[+li.getAttribute("data-i")], e.metaKey || e.ctrlKey);
+      });
+      list.addEventListener("mousemove", function (e) {
+        var li = e.target.closest("[data-i]");
+        if (li && +li.getAttribute("data-i") !== sel) {
+          sel = +li.getAttribute("data-i");
+          paintSel();
+        }
+      });
+    }
+    var input = pal.querySelector("input");
+    input.value = "";
+    sel = 0;
+    renderPalette();
+    show(pal, input);
+    if (!loaded) {
+      index().then(function (ix) {
+        loaded = ix;
+        if (pal.open) renderPalette();
+      });
+    }
+  }
+  function move(d) {
+    if (!shown.length) return;
+    sel = (sel + d + shown.length) % shown.length;
+    paintSel();
+  }
+  function paintSel() {
+    var opts = pal.querySelectorAll("[data-i]");
+    for (var i = 0; i < opts.length; i++) opts[i].setAttribute("aria-selected", String(+opts[i].getAttribute("data-i") === sel));
+    var input = pal.querySelector("input");
+    input.setAttribute("aria-activedescendant", shown.length ? "arr-opt-" + sel : "");
+    var on = pal.querySelector('[aria-selected="true"]');
+    if (on && on.scrollIntoView) on.scrollIntoView({ block: "nearest" });
+  }
+  function option(it, i, q) {
+    var meta = [isFresh(it) ? W.newTag : "", it.from, it.k].filter(Boolean).join(" · ");
+    return (
+      '<li role="option" class="arr-opt-row' + (isFresh(it) ? " arr-opt-new" : "") + '" id="arr-opt-' + i + '" data-i="' + i + '" aria-selected="false">' +
+      '<span class="arr-opt-icon">' + icon(it.i || (it.run ? "lightning" : "arrow-right")) + "</span>" +
+      '<span class="arr-opt-main"><span class="arr-opt-title">' + highlight(it.t, q) + "</span>" +
+      (it.s ? '<span class="arr-opt-sub">' + esc(it.s) + "</span>" : "") + "</span>" +
+      '<span class="arr-opt-meta">' + esc(meta) + (it.d ? "<time>" + esc(fmtDate(it.d)) + "</time>" : "") + "</span></li>"
+    );
+  }
+  function renderPalette() {
+    var q = pal.querySelector("input").value;
+    var list = pal.querySelector("ul");
+    var status = pal.querySelector(".arr-pal-status");
+    var content = loaded ? loaded.items : [];
+    var html = "";
+    if (!norm(q)) {
+      var groups = [];
+      if (fresh.length) groups.push([W.newSince + (visit && visit.since ? " · " + fmtTime(visit.since) : ""), fresh.slice(0, 12)]);
+      var pinH = {};
+      var pinned = content.concat(staticItems()).filter(function (x) {
+        if (!x.pin || (x.h && pinH[x.h])) return false;
+        if (x.h) pinH[x.h] = 1;
+        return true;
+      });
+      if (pinned.length) groups.push([W.jumpTo, pinned]);
+      var latest = content
+        .filter(function (x) { return x.type === "entry"; })
+        .sort(function (a, b) { return String(b.d || "").localeCompare(String(a.d || "")); })
+        .slice(0, 5);
+      if (latest.length) groups.push([W.latestChanges, latest]);
+      groups.push([W.tryGroup, actions().filter(function (a) { return a.k === "guide" || a.k === "contrast" || a.k === "reading" || a.k === "contact" || a.k === "community" || a.k === "language"; })]);
+      shown = [];
+      groups.forEach(function (g) {
+        html += '<li role="presentation" class="arr-pal-group">' + esc(g[0]) + "</li>";
+        g[1].forEach(function (it) {
+          html += option(it, shown.length, "");
+          shown.push(it);
+        });
+      });
+    } else {
+      var seenH = {};
+      var pool = content.concat(staticItems()).filter(function (it) {
+        if (!it.h) return true;
+        if (seenH[it.h]) return false;
+        seenH[it.h] = 1;
+        return true;
+      });
+      shown = rank(q, pool.concat(actions()));
+      html = shown.map(function (it, i) { return option(it, i, q); }).join("");
+      if (!shown.length) html = '<li role="presentation" class="arr-pal-empty">' + esc(loaded ? W.nothing : W.loadingIndex) + "</li>";
+    }
+    list.innerHTML = html;
+    if (status) status.textContent = norm(q) ? fill(shown.length === 1 ? W.resultOne : W.resultMany, { n: shown.length }) : "";
+    sel = Math.min(sel, Math.max(0, shown.length - 1));
+    paintSel();
+  }
+  function go(it, newTab) {
+    if (!it) return;
+    var via = it.open || (it.h && !newTab ? interceptOf(it.h) : null);
+    if (via && !canOpen(via)) via = null;
+    hide(pal, !!it.h && !via);
+    if (it.run) {
+      it.run();
+      return;
+    }
+    if (via) {
+      open(via);
+      return;
+    }
+    if (!it.h) return;
+    if (it.h.charAt(0) === "#") {
+      var t = doc.querySelector(it.h);
+      if (t) t.scrollIntoView({ behavior: state.motion === STILL ? "auto" : "smooth" });
+      return;
+    }
+    if (newTab) window.open(it.h, "_blank", "noopener");
+    else location.href = it.h;
+  }
+  function copyLink() {
+    var url = location.href.replace(/#welcome$/, "");
+    var done = function () { toast(W.copied); };
+    try {
+      navigator.clipboard.writeText(url).then(done, function () { toast(url); });
+    } catch (e) {
+      toast(url);
+    }
+  }
+  var toastEl = null;
+  var toastT = 0;
+  function toast(msg, ms) {
+    if (!toastEl) {
+      toastEl = doc.createElement("div");
+      toastEl.className = "arr-toast arr-shape";
+      toastEl.setAttribute("role", "status");
+      doc.body.appendChild(toastEl);
+    }
+    tagLang(toastEl);
+    toastEl.textContent = msg;
+    toastEl.classList.add("is-on");
+    clearTimeout(toastT);
+    toastT = setTimeout(function () { toastEl.classList.remove("is-on"); }, ms || 2200);
+  }
+
+  /* ── avatars ───────────────────────────────────────────────────────────────────────────── */
+  function initialsOf(name) {
+    var parts = String(name || "?").replace(/[^A-Za-z0-9À-ɏ\s'-]/g, " ").trim().split(/\s+/).filter(Boolean);
+    if (!parts.length) return "?";
+    var a = parts.length > 1 ? parts[0].charAt(0) + parts[parts.length - 1].charAt(0) : parts[0].slice(0, 2);
+    return a.toUpperCase();
+  }
+  function fnv(s) {
+    var h = 2166136261;
+    for (var i = 0; i < s.length; i++) h = Math.imul(h ^ s.charCodeAt(i), 16777619);
+    return h >>> 0;
+  }
+  function initials(name) {
+    var A = C.avatar || {};
+    var cols = A.colors || C.wedges || ["#5b6b8c", "#8c5b7a"];
+    var h = fnv(String(name || ""));
+    var c1 = cols[h % cols.length];
+    var c2 = cols[(h + Math.max(1, Math.floor(cols.length / 3))) % cols.length];
+    var ini = initialsOf(name);
+    var svg;
+    if (typeof A.svg === "function") {
+      svg = A.svg(ini, c1, c2, name);
+    } else {
+      var shape =
+        A.shape === "octagon"
+          ? '<polygon points="29.3,0 70.7,0 100,29.3 100,70.7 70.7,100 29.3,100 0,70.7 0,29.3" fill="url(#g)"/><polygon points="31,5 69,5 95,31 95,69 69,95 31,95 5,69 5,31" fill="none" stroke="#fff" stroke-opacity=".45" stroke-width="2"/>'
+          : A.shape === "square"
+          ? '<rect width="100" height="100" rx="20" fill="url(#g)"/>'
+          : '<circle cx="50" cy="50" r="50" fill="url(#g)"/>';
+      svg =
+        '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1">' +
+        '<stop offset="0" stop-color="' + c1 + '"/><stop offset="1" stop-color="' + c2 + '"/></linearGradient></defs>' + shape +
+        '<text x="50" y="50" dy=".35em" text-anchor="middle" font-family="' + esc(A.font || "system-ui, -apple-system, Segoe UI, sans-serif") +
+        '" font-size="' + (ini.length > 1 ? 38 : 46) + '" font-weight="700" fill="#fff" stroke="rgba(0,0,0,.28)" stroke-width="3" paint-order="stroke">' +
+        esc(ini) + "</text></svg>";
+    }
+    return "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg);
+  }
+  function roleAddress(email) {
+    var domains = (C.avatar && C.avatar.roleDomains) || [];
+    var at = String(email || "").trim().toLowerCase().split("@");
+    if (at.length !== 2) return false;
+    var ok = domains.some(function (d) { return at[1] === String(d).toLowerCase(); });
+    if (!ok && window.console) console.warn("[arrival] Gravatar is only used for org-domain role addresses; ignoring " + at[1]);
+    return ok;
+  }
+  function gravatar(email, size) {
+    if (!window.crypto || !crypto.subtle || !window.TextEncoder) return Promise.resolve(null);
+    return crypto.subtle.digest("SHA-256", new TextEncoder().encode(String(email).trim().toLowerCase())).then(function (buf) {
+      var hex = Array.prototype.map.call(new Uint8Array(buf), function (b) { return ("0" + b.toString(16)).slice(-2); }).join("");
+      return "https://gravatar.com/avatar/" + hex + "?s=" + size * 2 + "&d=404";
+    });
+  }
+  function renderAvatar(el) {
+    var name = el.getAttribute("name") || "";
+    var gh = el.getAttribute("github");
+    var email = el.getAttribute("email");
+    var size = +el.getAttribute("size") || 32;
+    var img = doc.createElement("img");
+    var fallback = initials(name);
+    img.className = "arr-avatar-img";
+    img.alt = el.hasAttribute("alt") ? el.getAttribute("alt") : "";
+    img.width = img.height = size;
+    img.decoding = "async";
+    img.referrerPolicy = "no-referrer";
+    img.onerror = function () {
+      img.onerror = null;
+      img.src = fallback;
+    };
+    if (gh) {
+      img.src = "https://github.com/" + encodeURIComponent(gh) + ".png?size=" + Math.min(460, size * 2);
+    } else {
+      img.src = fallback;
+      if (email && roleAddress(email)) {
+        gravatar(email, size).then(function (u) {
+          if (!u) return;
+          var probe = new Image();
+          probe.referrerPolicy = "no-referrer";
+          probe.onload = function () { img.src = u; };
+          probe.src = u;
+        });
+      }
+    }
+    el.style.setProperty("--arr-avatar", size + "px");
+    if (!el.title && name) el.title = name;
+    el.textContent = "";
+    el.appendChild(img);
+  }
+  function avatarTag(p, size) {
+    return (
+      '<arrival-avatar name="' + esc(p.name) + '"' + (p.github ? ' github="' + esc(p.github) + '"' : "") +
+      (p.email ? ' email="' + esc(p.email) + '"' : "") + ' size="' + (size || 40) + '"></arrival-avatar>'
+    );
+  }
+  function renderPeople(el) {
+    tagLang(el);
+    var compact = el.hasAttribute("compact");
+    el.innerHTML = '<p class="arr-fine">' + esc(W.gatheringPeople) + "</p>";
+    index().then(function (ix) {
+      if (!ix.people.length) {
+        el.innerHTML = "";
+        el.hidden = true;
+        return;
+      }
+      el.innerHTML =
+        '<ul class="arr-people' + (compact ? " arr-people-compact" : "") + '">' +
+        ix.people.map(function (p) {
+          // A GitHub handle gives the picture and the link; someone shown with a generated avatar can
+          // still have a profile link (search.json: profile), so their name links too.
+          var href = p.github ? "https://github.com/" + p.github : /^https:\/\//.test(p.profile || "") ? p.profile : "";
+          var name = href ? '<a href="' + esc(href) + '">' + esc(p.name) + "</a>" : esc(p.name);
+          return (
+            "<li>" + avatarTag(p, compact ? 36 : 48) +
+            '<span class="arr-person"><span class="arr-person-name">' + name + "</span>" +
+            (p.role ? '<span class="arr-person-role">' + esc(p.role) + "</span>" : "") + "</span>" +
+            (p.count != null ? '<span class="arr-person-count">' + esc(fill(p.count === 1 ? W.entryOne : W.entryMany, { n: p.count })) + "</span>" : "") +
+            "</li>"
+          );
+        }).join("") +
+        "</ul>";
+    });
+  }
+  function renderLatest(el) {
+    tagLang(el);
+    var limit = +el.getAttribute("limit") || 4;
+    index().then(function (ix) {
+      var list = ix.items
+        .filter(function (x) { return x.type === "entry"; })
+        .sort(function (a, b) { return String(b.d || "").localeCompare(String(a.d || "")); })
+        .slice(0, limit);
+      if (!list.length) {
+        el.hidden = true;
+        return;
+      }
+      el.innerHTML =
+        '<ul class="arr-latest">' +
+        list.map(function (it) {
+          return (
+            '<li><a href="' + esc(it.h) + '"><time datetime="' + esc(it.d) + '">' + esc(fmtDate(it.d)) + "</time>" +
+            '<span class="arr-latest-title">' + esc(it.t) + "</span>" +
+            '<span class="arr-latest-meta">' + esc([it.k, it.who ? fill(W.byWho, { who: it.who }) : ""].filter(Boolean).join(" · ")) + "</span></a></li>"
+          );
+        }).join("") +
+        "</ul>";
+      markNew(el);
+    });
+  }
+
+  /* ── what's new since your last visit ─────────────────────────────────────────────────────
+     A visit is a run of page views with no gap longer than news.gapMinutes (30). The visits record
+     lives under its own key (<storage key>:visits), every access guarded:
+       { since: when the previous visit ended, at: last activity, prev: [keys known at the previous
+         visit], seen: [keys known now], ack: when the count was opened, opened: [new pages visited] }
+     An item is new when its time is after `since` and the previous visit didn't already know it.
+     Items carry `ts` (ISO time, exact: ledger commits) or only `d` (a date, counted as the end of
+     that day; the `prev` list stops a same-day entry the visitor already saw from counting twice).
+     The first visit records the time and shows nothing; the splash covers first visits. */
+  var NEWS_CFG = site.news !== undefined ? site.news : C.news;
+  var hasNews = NEWS_CFG !== false && store.ok && !!window.fetch;
+  var NC = NEWS_CFG && typeof NEWS_CFG === "object" ? NEWS_CFG : {};
+  var VKEY = NC.key || KEY + ":visits";
+  var GAP = (NC.gapMinutes || 30) * 60000;
+  var NEWS_TYPES = NC.types || ["entry", "doc", "ledger"];
+  var DAY = 86400000;
+  var visit = null;
+  var fresh = [];
+  var freshKeys = {};
+  var newsP = null;
+
+  function fmtTime(ms) {
+    try {
+      return new Date(ms).toLocaleDateString(locale(), { month: "short", day: "numeric" });
+    } catch (e) {
+      return "";
+    }
+  }
+  function normUrl(h) {
+    if (!h) return "";
+    try {
+      var u = new URL(h, location.href);
+      return (u.origin + u.pathname).replace(/\/+$/, "").toLowerCase();
+    } catch (e) {
+      return String(h).replace(/[#?].*$/, "").replace(/\/+$/, "").toLowerCase();
+    }
+  }
+  function keyOf(it) {
+    return fnv(normUrl(it.h) || String(it.id || it.t || "")).toString(36);
+  }
+  function itemTime(it) {
+    if (it.ts) {
+      var t = Date.parse(it.ts);
+      if (!isNaN(t)) return t;
+    }
+    var m = /^(\d{4})-(\d{2})-(\d{2})/.exec(it.d || "");
+    return m ? new Date(+m[1], +m[2] - 1, +m[3], 23, 59, 59, 999).getTime() : NaN;
+  }
+  function uniqCap(list, n) {
+    var seenK = {};
+    var out = [];
+    for (var i = list.length - 1; i >= 0 && out.length < n; i--) {
+      if (seenK[list[i]]) continue;
+      seenK[list[i]] = 1;
+      out.unshift(list[i]);
+    }
+    return out;
+  }
+  function saveVisit() {
+    if (visit) store.set(VKEY, JSON.stringify(visit));
+  }
+  function startVisit() {
+    if (!hasNews) return;
+    var now = Date.now();
+    var v = null;
+    try {
+      v = JSON.parse(store.get(VKEY) || "null");
+    } catch (e) {}
+    if (!v || typeof v !== "object" || typeof v.at !== "number") {
+      visit = { first: true, since: now, at: now, prev: [], seen: [], ack: 0, opened: [] };
+    } else if (now - v.at > GAP || v.at > now) {
+      visit = { since: Math.min(v.at, now), at: now, prev: uniqCap([].concat(v.prev || [], v.seen || []), 400), seen: [], ack: 0, opened: [] };
+    } else {
+      visit = v;
+      visit.at = now;
+      visit.prev = visit.prev || [];
+      visit.seen = visit.seen || [];
+      visit.opened = visit.opened || [];
+    }
+    saveVisit();
+  }
+  function newsItems() {
+    var list = NC.sources;
+    if (!list || !list.length) return index().then(function (ix) { return ix.items; });
+    return Promise.all(
+      list.map(function (src) {
+        var url = typeof src === "string" ? src : src && src.url;
+        if (!url) return [];
+        return fetch(url, { credentials: "omit" })
+          .then(function (r) { return r.ok ? r.json() : null; })
+          .catch(function () { return null; })
+          .then(function (j) {
+            var items = (j && j.items) || [];
+            return src && src.label ? items.map(function (it) { return assign({}, it, { from: src.label }); }) : items;
+          });
+      })
+    ).then(function (parts) { return [].concat.apply([], parts); });
+  }
+  function loadNews() {
+    if (!hasNews || !visit) return Promise.resolve([]);
+    if (newsP) return newsP;
+    newsP = newsItems().then(function (items) {
+      var now = Date.now();
+      var prev = {};
+      visit.prev.forEach(function (k) { prev[k] = 1; });
+      var dup = {};
+      var out = [];
+      items.forEach(function (it) {
+        if (!it || !it.t || (it.type && NEWS_TYPES.indexOf(it.type) < 0)) return;
+        var t = itemTime(it);
+        if (isNaN(t)) return;
+        var k = keyOf(it);
+        if (dup[k]) return;
+        dup[k] = 1;
+        // What this visit knows, for the next one: recent items up to the end of today (a date-only
+        // item counts from the end of its day). Anything stamped later than that can't have been
+        // seen yet (a clock behind the server's), so it stays eligible to count as new.
+        if (t >= now - 3 * DAY && t <= now + DAY) visit.seen.push(k);
+        if (!visit.first && t > visit.since && !prev[k]) out.push(assign({}, it, { _k: k, _t: t }));
+      });
+      visit.seen = uniqCap(visit.seen, 400);
+      out.sort(function (a, b) { return b._t - a._t; });
+      fresh = out;
+      freshKeys = {};
+      fresh.forEach(function (x) { freshKeys[x._k] = x; });
+      // Opening one of the new pages counts as seeing it.
+      var here = fnv(normUrl(location.href)).toString(36);
+      if (freshKeys[here] && visit.opened.indexOf(here) < 0) visit.opened.push(here);
+      saveVisit();
+      syncNews();
+      markNew();
+      if (fresh.length) {
+        emit("arrival:news", { count: unread(), items: fresh.slice(), since: visit.since });
+        setTimeout(showTip, 700);
+      }
+      return fresh;
+    });
+    return newsP;
+  }
+  function isFresh(it) {
+    return !!(it && fresh.length && freshKeys[it._k || keyOf(it)]);
+  }
+  function unread() {
+    if (!visit || visit.ack) return 0;
+    return fresh.filter(function (x) { return visit.opened.indexOf(x._k) < 0; }).length;
+  }
+  function syncNews() {
+    var n = unread();
+    var nn = n > 99 ? "99+" : String(n);
+    var list = doc.querySelectorAll("[data-arr-news]");
+    for (var i = 0; i < list.length; i++) {
+      var b = list[i];
+      b.hidden = !n;
+      if (!n) continue;
+      var label = n + " " + W.newSince.charAt(0).toLowerCase() + W.newSince.slice(1) + (visit.since ? " (" + fmtTime(visit.since) + ")" : "");
+      b.setAttribute("aria-label", label);
+      b.setAttribute("title", label);
+      var c = b.querySelectorAll("[data-arr-news-n]");
+      for (var j = 0; j < c.length; j++) c[j].textContent = nn;
+    }
+    // The Menu button carries the count too, so a folded nav still shows it.
+    var dots = doc.querySelectorAll("[data-arr-news-dot]");
+    for (var k = 0; k < dots.length; k++) {
+      dots[k].hidden = !n;
+      dots[k].textContent = n ? nn : "";
+    }
+    if (!n) hideTip();
+  }
+  // Once per visit, a small tip under the count, so nobody misses it. It fades on its own.
+  var tipT = 0;
+  function showTip() {
+    if (!visit || visit.tipped || !unread()) return;
+    var tips = doc.querySelectorAll("[data-arr-news-tip]");
+    var shown = false;
+    for (var i = 0; i < tips.length; i++) {
+      var b = tips[i].parentNode && tips[i].parentNode.querySelector("[data-arr-news]");
+      if (!b || !b.getClientRects().length) continue;
+      tips[i].textContent = W.newsTip.replace("{n}", unread() > 99 ? "99+" : String(unread()));
+      tips[i].insertAdjacentHTML("beforeend", icon("arrow-right"));
+      tips[i].hidden = false;
+      // Keep it on screen: shift it right if it would start off the left edge, and move its arrow
+      // the other way so it still points at the count.
+      tips[i].style.right = "";
+      var r = tips[i].getBoundingClientRect();
+      var shift = r.left < 12 ? Math.ceil(12 - r.left) : 0;
+      if (shift) tips[i].style.right = -shift + "px";
+      tips[i].style.setProperty("--arr-tip-arrow", 18 + shift + "px");
+      shown = true;
+    }
+    if (!shown) return;
+    visit.tipped = true;
+    saveVisit();
+    clearTimeout(tipT);
+    tipT = setTimeout(hideTip, 9000);
+  }
+  function hideTip() {
+    var tips = doc.querySelectorAll("[data-arr-news-tip]");
+    for (var i = 0; i < tips.length; i++) tips[i].hidden = true;
+  }
+  // Mark links (and [data-arr-key] rows) that point at something new.
+  function markNew(scope) {
+    if (!fresh.length) return;
+    var list = (scope || doc).querySelectorAll("a[href], [data-arr-key]");
+    for (var i = 0; i < list.length; i++) {
+      var el = list[i];
+      if (el.closest(".arr-dialog, arrival-controls, .arr-drawer")) continue;
+      var raw = el.getAttribute("data-arr-key") || el.getAttribute("href");
+      if (!raw || raw.charAt(0) === "#") continue;
+      if (!freshKeys[fnv(normUrl(raw)).toString(36)]) continue;
+      el.setAttribute("data-arr-new", "");
+      var tag = el.querySelector("[data-arr-new-tag]");
+      if (tag && !tag.textContent) {
+        tag.textContent = W.newTag;
+        tag.hidden = false;
+      }
+    }
+  }
+  // The count was opened: it has done its job for this visit (the marks stay until the next one).
+  function ackNews() {
+    hideTip();
+    if (!visit || visit.ack) return;
+    visit.ack = Date.now();
+    saveVisit();
+    syncNews();
+  }
+
+  /* ── v1.2 · the navbar: <arrival-nav> ─────────────────────────────────────────────────────
+     ARRIVAL.nav = { items: [link | group], fold: 1100, menuLabel? }
+       link:  { id, label, icon, href, hrefs?: { <siteId>: href }, open?: "contact" | "community" |
+                "guide" | "search", exact?, priority? (lower folds first; default 2), keep?,
+                sites?: [siteIds], hideOn?: [siteIds], note? (a line under it in menus) }
+       group: { id, label, icon, items: [link…], priority?, keep? }   (a dropdown)
+       v1.4, a dropdown in sections: { id, label, icon, items?: [link…], groups: [{ label, icon?,
+              items: [link…] }] }: its loose items first, then each group under its own heading and
+              a divider, in the dropdown, the More panel and the Menu (e.g. "Committees", then
+              "Infrastructure"). The footer, search and "current" treat it as one flat list.
+     The bar shows every item it can fit; the rest move into a "More" dropdown, so the bar never
+     wraps. Below `fold` px the whole bar becomes a Menu button and panel. `current="<id>"` on the
+     element marks the current item; otherwise it's matched from the URL. v1.4: More stays in the
+     bar to hold Donate and the welcome guide (ARRIVAL.essentials, below). */
+  var NAV = C.nav && C.nav.items && C.nav.items.length ? C.nav : null;
+  function visibleOn(it) {
+    if (!it) return false;
+    if (it.sites && it.sites.indexOf(siteId) < 0) return false;
+    if (it.hideOn && it.hideOn.indexOf(siteId) >= 0) return false;
+    return true;
+  }
+  function isDrop(it) {
+    return !!(it && (it.items || it.groups));
+  }
+  // A dropdown's links in sections: its loose items (no heading), then each of its groups.
+  function sectionsOf(it) {
+    var out = [];
+    var loose = (it.items || []).filter(visibleOn);
+    if (loose.length) out.push({ links: loose });
+    (it.groups || []).forEach(function (g) {
+      var links = ((g && g.items) || []).filter(visibleOn);
+      if (links.length) out.push({ label: g.label, icon: g.icon, links: links });
+    });
+    return out;
+  }
+  function flatLinks(secs) {
+    var out = [];
+    secs.forEach(function (s) { out = out.concat(s.links); });
+    return out;
+  }
+  function navItems() {
+    if (!NAV) return [];
+    return NAV.items
+      .filter(visibleOn)
+      .map(function (it) {
+        if (!isDrop(it)) return it;
+        var secs = sectionsOf(it);
+        return assign({}, it, { sections: secs, items: flatLinks(secs) });
+      })
+      .filter(function (it) {
+        return !it.items || it.items.length;
+      });
+  }
+  // Every link the nav knows, dropdowns and their groups flattened, so the footer can name them by id.
+  function navLinks() {
+    var out = {};
+    ((NAV && NAV.items) || []).forEach(function (it) {
+      var list = [it];
+      if (isDrop(it)) {
+        list = (it.items || []).slice();
+        (it.groups || []).forEach(function (g) { list = list.concat((g && g.items) || []); });
+      }
+      list.forEach(function (x) {
+        if (x && x.id) out[x.id] = x;
+      });
+    });
+    return out;
+  }
+
+  /* ── v1.4 · essentials: Donate and the welcome guide, never forgotten ──────────────────────
+     ARRIVAL.essentials = { donate?: false | { label, href, icon, note }, guide?: false | {…} }, or
+     false for neither. Both appear in the footer, the More dropdown and the Menu, wherever the org's
+     own config doesn't already have them (a group holding contact or community takes them; else
+     they get a "Get involved" group of their own). Donate's link: essentials.donate.href, else the
+     nav's own "donate" item (or any nav link to …/donate/), else donate.href, else <portal>/donate/
+     (the folder above this file) when the org has a donate page (ARRIVAL.donate). A donate item
+     the org hides on a site (sites/hideOn) stays hidden there. */
+  var ESS = C.essentials === false ? { donate: false, guide: false } : C.essentials || {};
+  var PORTAL = /\/arrival\/$/.test(KIT_BASE) ? KIT_BASE.replace(/arrival\/$/, "") : "";
+  function only(o, keys) {
+    var r = {};
+    keys.forEach(function (k) {
+      if (o && o[k] != null) r[k] = o[k];
+    });
+    return r;
+  }
+  function essentials() {
+    var all = navLinks();
+    var out = [];
+    var find = function (test) {
+      for (var k in all) if (Object.prototype.hasOwnProperty.call(all, k) && test(all[k])) return all[k];
+      return null;
+    };
+    if (ESS.donate !== false) {
+      var o = typeof ESS.donate === "object" ? ESS.donate : {};
+      var d = all.donate || find(function (x) { return /\/donate\/?$/.test(hrefOf(x).split(/[?#]/)[0]); });
+      var href = o.href || (d && hrefOf(d)) || (C.donate ? C.donate.href || (PORTAL && PORTAL + "donate/") : "") || "";
+      if (href && (!d || visibleOn(d))) out.push(assign({ id: "donate", label: W.donate, icon: "heart", note: W.donateNote }, only(d, ["label", "icon", "note"]), o, { href: href }));
+    }
+    if (ESS.guide !== false) {
+      var og = typeof ESS.guide === "object" ? ESS.guide : {};
+      var g = all.guide || find(function (x) { return x.open === "guide"; });
+      out.push(assign({ id: "guide", label: W.guide, icon: "signpost", href: "#welcome", note: W.guideNote }, only(g, ["label", "icon", "note"]), og, { open: "guide" }));
+    }
+    return out;
+  }
+  function sameLink(a, b) {
+    if (!a || !b) return false;
+    if (a.id && a.id === b.id) return true;
+    if (a.open || b.open) return !!a.open && a.open === b.open;
+    return !!hrefOf(a) && normUrl(hrefOf(a)) === normUrl(hrefOf(b));
+  }
+  function involved(x) {
+    return !!x && (x.open === "contact" || x.open === "community" || x.id === "contact" || x.id === "community" || x.id === "donate");
+  }
+  // groups: [{ label, icon, links, secs? }]. Adds the essentials none of them holds yet.
+  function withEssentials(groups, makeGroup) {
+    var ess = essentials();
+    var missing = ess.filter(function (e) {
+      return !groups.some(function (g) { return g.links.some(function (x) { return sameLink(x, e); }); });
+    });
+    if (!missing.length) return groups;
+    var home = groups.filter(function (g) { return g.links.some(involved); })[0];
+    if (home) {
+      home.links = home.links.concat(missing);
+      if (home.secs) {
+        // Into the last plain list; after a labelled group, as a list of their own under a hairline.
+        var last = home.secs[home.secs.length - 1];
+        if (last && !last.label) home.secs = home.secs.slice(0, -1).concat([assign({}, last, { links: last.links.concat(missing) })]);
+        else home.secs = home.secs.concat([{ links: missing, ess: true }]);
+      }
+    } else {
+      groups.push(makeGroup(missing));
+    }
+    return groups;
+  }
+  function hrefOf(it) {
+    return (it.hrefs && it.hrefs[siteId]) || it.href || "";
+  }
+  function isCurrent(it, forced) {
+    if (forced) return it.id === forced;
+    if (it.open || !hrefOf(it)) return false;
+    var here = normUrl(location.href);
+    var h = normUrl(hrefOf(it));
+    if (here === h) return true;
+    if (it.exact) return false;
+    try {
+      if (new URL(hrefOf(it), location.href).pathname.replace(/\/+$/, "") === "") return false;
+    } catch (e) {}
+    return here.indexOf(h + "/") === 0;
+  }
+  function linkTag(it, cls, forced, withNote) {
+    var cur = isCurrent(it, forced);
+    var href = hrefOf(it) || "#";
+    return (
+      '<a class="' + cls + (cur ? " is-current" : "") + '" href="' + esc(href) + '"' +
+      (it.open ? ' data-arrival-open="' + esc(it.open) + '"' : "") + (cur ? ' aria-current="page"' : "") + ">" +
+      icon(it.icon || "arrow-right") +
+      '<span class="arr-nav-text"><span class="arr-nav-label">' + esc(it.label) + "</span>" +
+      (withNote && it.note ? '<span class="arr-nav-note">' + esc(it.note) + "</span>" : "") +
+      "</span></a>"
+    );
+  }
+  var navUid = 0;
+  var grpUid = 0;
+  var navHosts = [];
+  function rowsHTML(links, forced, extra) {
+    return '<ul class="arr-nav-rows' + (extra || "") + '">' + links.map(function (x) { return "<li>" + linkTag(x, "arr-nav-row", forced, true) + "</li>"; }).join("") + "</ul>";
+  }
+  // A dropdown's body: loose rows, then each group as a labelled group with a heading and a divider.
+  function sectionsHTML(secs, forced) {
+    return secs
+      .map(function (s) {
+        if (!s.label) return rowsHTML(s.links, forced, s.ess ? " arr-nav-ess-rows" : "");
+        var hid = "arr-nav-g" + ++grpUid;
+        return (
+          '<div class="arr-nav-grp" role="group" aria-labelledby="' + hid + '"><p class="arr-nav-grp-h" id="' + hid + '">' + (s.icon ? icon(s.icon) : "") +
+          "<span>" + esc(s.label) + "</span></p>" + rowsHTML(s.links, forced) + "</div>"
+        );
+      })
+      .join("");
+  }
+  function renderNav(host) {
+    var items = navItems();
+    if (!items.length) {
+      host.hidden = true;
+      return;
+    }
+    var n = ++navUid;
+    var forced = host.getAttribute("current");
+    var ess = essentials();
+    // Which essentials an item already holds (so More doesn't list Donate twice when "Get involved"
+    // has folded into it).
+    var holds = function (links) {
+      return ess.filter(function (e) { return links.some(function (x) { return sameLink(x, e); }); }).map(function (e) { return e.id; }).join(" ");
+    };
+    var bar = "";
+    var menus = "";
+    var more = "";
+    var mainLinks = [];
+    var groups = [];
+    items.forEach(function (it, k) {
+      var pri = it.priority == null ? 2 : +it.priority;
+      var li = '<li class="arr-nav-li" data-arr-nav-k="' + k + '" data-pri="' + pri + '"' + (it.keep ? " data-keep" : "") + ">";
+      if (it.items) {
+        var mid = "arr-nav-" + n + "-" + k;
+        var cur = it.items.some(function (x) { return isCurrent(x, forced); });
+        bar +=
+          li + '<button type="button" class="arr-nav-a arr-nav-btn' + (cur ? " is-current" : "") + '" data-arr-nav-toggle aria-expanded="false" aria-controls="' + mid + '">' +
+          icon(it.icon || "list") + '<span class="arr-nav-label">' + esc(it.label) + '</span><i class="ph ph-caret-down arr-caret" aria-hidden="true"></i></button></li>';
+        menus += '<div class="arr-nav-menu arr-lift" id="' + mid + '" hidden><div class="arr-frame arr-shape"><div class="arr-in arr-shape">' + sectionsHTML(it.sections, forced) + "</div></div></div>";
+        more +=
+          '<div class="arr-nav-more-group" data-arr-more-k="' + k + '" data-arr-holds="' + holds(it.items) + '" hidden><p class="arr-nav-more-h">' + icon(it.icon || "list") + esc(it.label) + "</p>" +
+          sectionsHTML(it.sections, forced) + "</div>";
+        groups.push({ label: it.label, icon: it.icon, links: it.items, secs: it.sections.slice() });
+      } else {
+        bar += li + linkTag(it, "arr-nav-a", forced) + "</li>";
+        more += '<div data-arr-more-k="' + k + '" data-arr-holds="' + holds([it]) + '" hidden>' + rowsHTML([it], forced) + "</div>";
+        mainLinks.push(it);
+      }
+    });
+    // v1.4: Donate and the welcome guide close the More panel (hidden there while a folded item
+    // already shows them), and join the Menu wherever it doesn't list them yet.
+    if (ess.length) {
+      more +=
+        '<div class="arr-nav-ess" data-arr-ess><ul class="arr-nav-rows">' +
+        ess.map(function (e) { return '<li data-arr-ess-id="' + esc(e.id) + '">' + linkTag(e, "arr-nav-row", forced, true) + "</li>"; }).join("") + "</ul></div>";
+    }
+    var moreId = "arr-nav-" + n + "-more";
+    var menuId = "arr-menu-" + n;
+    var sections = (mainLinks.length ? [{ label: NAV.menuMain || W.menuMain, icon: "compass", links: mainLinks, secs: [{ links: mainLinks }] }] : []).concat(groups);
+    sections = withEssentials(sections, function (missing) {
+      return { label: W.involved, icon: "hand-heart", links: missing, secs: [{ links: missing }] };
+    });
+    host.innerHTML =
+      '<nav class="arr-nav" aria-label="' + esc(NAV.label || W.nav) + '">' +
+      '<ul class="arr-nav-bar">' + bar +
+      '<li class="arr-nav-li arr-nav-more-li" data-arr-nav-more hidden><button type="button" class="arr-nav-a arr-nav-btn" data-arr-nav-toggle aria-expanded="false" aria-controls="' + moreId + '">' +
+      icon("dots-three-circle") + '<span class="arr-nav-label">' + esc(NAV.moreLabel || W.more) + '</span><i class="ph ph-caret-down arr-caret" aria-hidden="true"></i></button></li>' +
+      "</ul>" + menus +
+      '<div class="arr-nav-menu arr-nav-more arr-lift" id="' + moreId + '" hidden><div class="arr-frame arr-shape"><div class="arr-in arr-shape">' + more + "</div></div></div>" +
+      // Folded: one Menu button (it carries the what's-new count), and the panel it opens.
+      '<button type="button" class="arr-chip arr-shape arr-menu-btn" data-arr-menu aria-expanded="false" aria-controls="' + menuId + '">' +
+      '<span class="arr-menu-icon">' + icon("list") + '</span><span class="arr-menu-label">' + esc(NAV.menuLabel || W.menu) + "</span>" +
+      '<span class="arr-menu-count" data-arr-news-dot hidden></span></button>' +
+      '<div class="arr-menu-panel arr-lift" id="' + menuId + '" hidden><div class="arr-frame arr-shape"><div class="arr-in arr-shape">' +
+      (hasNews
+        ? '<button type="button" class="arr-menu-news arr-shape" data-arr-news hidden>' + icon("sparkle") + '<span><strong><span data-arr-news-n></span> ' +
+          esc(W.newBadge) + "</strong> " + esc(W.newSince.charAt(0).toLowerCase() + W.newSince.slice(1)) + "</span>" + icon("arrow-right") + "</button>"
+        : "") +
+      '<div class="arr-menu-grid">' +
+      sections.map(function (s) {
+        return '<section class="arr-menu-sec"><p class="arr-menu-h">' + icon(s.icon || "list") + esc(s.label) + "</p>" + sectionsHTML(s.secs, forced) + "</section>";
+      }).join("") +
+      "</div></div></div></div></nav>";
+    host.classList.add("arr-nav-host");
+    tagLang(host);
+    host._mode = null; // v1.5: drawn again (a language change), so measure it afresh
+    layoutNav(host);
+    if (!host._arrWatched) {
+      host._arrWatched = true;
+      navHosts.push(host);
+      if (window.ResizeObserver) {
+        var raf = 0;
+        new ResizeObserver(function () {
+          cancelAnimationFrame(raf);
+          raf = requestAnimationFrame(function () { layoutNav(host); });
+        }).observe(host);
+      }
+      if (doc.fonts && doc.fonts.ready) doc.fonts.ready.then(function () { layoutNav(host); });
+      // A web font can finish loading after fonts.ready resolves (THEF's Literata/PapyrusStd did), which
+      // widens the labels without resizing the host. Measure again whenever any font finishes loading.
+      if (doc.fonts && doc.fonts.addEventListener) doc.fonts.addEventListener("loadingdone", function () { layoutNav(host); });
+    }
+    syncNews();
+  }
+  function foldAt() {
+    return (NAV && +NAV.fold) || 1100;
+  }
+  function setNavMode(host, mode) {
+    if (host._mode !== mode) {
+      closeNavs(false);
+      host._mode = mode;
+      host.setAttribute("data-mode", mode);
+    }
+    attr("data-arr-nav", mode);
+  }
+  function layoutNav(host) {
+    setNavMode(host, window.innerWidth < foldAt() ? "menu" : "bar");
+    if (host._mode === "bar") fitNav(host);
+  }
+  function overflows(el) {
+    return el.scrollWidth > el.clientWidth + 1;
+  }
+  // Priority+: show everything, then fold the lowest-priority items (rightmost first among equals)
+  // into "More" until the bar fits. If even that can't fit, fold the whole bar into the Menu.
+  function fitNav(host) {
+    var bar = host.querySelector(".arr-nav-bar");
+    if (!bar) return;
+    var lis = [].slice.call(bar.querySelectorAll("[data-arr-nav-k]"));
+    var moreLi = bar.querySelector("[data-arr-nav-more]");
+    var copies = host.querySelectorAll("[data-arr-more-k]");
+    var ess = host.querySelector("[data-arr-ess]");
+    var i;
+    for (i = 0; i < lis.length; i++) lis[i].hidden = false;
+    for (i = 0; i < copies.length; i++) copies[i].hidden = true;
+    // v1.4: More stays whenever it holds Donate and the welcome guide, so it's measured in the fit.
+    moreLi.hidden = !ess;
+    if (overflows(bar)) {
+      moreLi.hidden = false;
+      var order = lis
+        .filter(function (li) { return !li.hasAttribute("data-keep"); })
+        .sort(function (a, b) {
+          return +a.getAttribute("data-pri") - +b.getAttribute("data-pri") || +b.getAttribute("data-arr-nav-k") - +a.getAttribute("data-arr-nav-k");
+        });
+      for (i = 0; i < order.length && overflows(bar); i++) {
+        order[i].hidden = true;
+        var c = host.querySelector('[data-arr-more-k="' + order[i].getAttribute("data-arr-nav-k") + '"]');
+        if (c) c.hidden = false;
+      }
+    }
+    syncEssentials(host, moreLi);
+    if (overflows(bar)) setNavMode(host, "menu");
+  }
+  // An essential already shown by a folded item hides from More's closing rows; More goes only
+  // when it would be empty.
+  function syncEssentials(host, moreLi) {
+    var box = host.querySelector("[data-arr-ess]");
+    if (!box) return;
+    var held = " ";
+    var shown = host.querySelectorAll("[data-arr-more-k]:not([hidden])");
+    for (var i = 0; i < shown.length; i++) held += (shown[i].getAttribute("data-arr-holds") || "") + " ";
+    var rows = box.querySelectorAll("[data-arr-ess-id]");
+    var left = 0;
+    for (i = 0; i < rows.length; i++) {
+      rows[i].hidden = held.indexOf(" " + rows[i].getAttribute("data-arr-ess-id") + " ") >= 0;
+      if (!rows[i].hidden) left++;
+    }
+    box.hidden = !left;
+    if (!left && !shown.length && moreLi) moreLi.hidden = true;
+  }
+  function panelOf(btn) {
+    return btn && doc.getElementById(btn.getAttribute("aria-controls"));
+  }
+  function closeNavs(refocus) {
+    var open = doc.querySelectorAll('[data-arr-nav-toggle][aria-expanded="true"], [data-arr-menu][aria-expanded="true"]');
+    for (var i = 0; i < open.length; i++) {
+      var b = open[i];
+      b.setAttribute("aria-expanded", "false");
+      var p = panelOf(b);
+      if (p) p.hidden = true;
+      if (b.hasAttribute("data-arr-menu")) {
+        var lab = b.querySelector(".arr-menu-label");
+        if (lab) lab.textContent = (NAV && NAV.menuLabel) || W.menu;
+        var ic = b.querySelector(".arr-menu-icon");
+        if (ic) ic.innerHTML = icon("list");
+      }
+      if (refocus) b.focus();
+    }
+  }
+  function placeDropdown(host, btn, p) {
+    p.style.left = "0px";
+    var hr = host.getBoundingClientRect();
+    var br = btn.getBoundingClientRect();
+    var w = p.offsetWidth;
+    var left = br.left - hr.left;
+    var max = window.innerWidth - 12 - w - hr.left;
+    p.style.left = Math.round(Math.max(12 - hr.left, Math.min(left, max))) + "px";
+  }
+  function placeMenu(btn, p) {
+    var head = btn.closest("header") || btn.closest("arrival-nav") || btn;
+    var top = Math.max(8, Math.round(head.getBoundingClientRect().bottom + 6));
+    p.style.top = top + "px";
+    p.style.maxHeight = Math.max(160, window.innerHeight - top - 12) + "px";
+  }
+  function openNav(btn) {
+    closeDrawers(false);
+    var p = panelOf(btn);
+    if (!p) return;
+    btn.setAttribute("aria-expanded", "true");
+    p.hidden = false;
+    var host = btn.closest("arrival-nav");
+    if (btn.hasAttribute("data-arr-menu")) {
+      var lab = btn.querySelector(".arr-menu-label");
+      if (lab) lab.textContent = (NAV && NAV.menuClose) || W.menuClose;
+      var ic = btn.querySelector(".arr-menu-icon");
+      if (ic) ic.innerHTML = icon("x");
+      placeMenu(btn, p);
+    } else if (host) {
+      placeDropdown(host, btn, p);
+    }
+    syncNews();
+  }
+  function navRows(p) {
+    var list = p.querySelectorAll("a[href], button:not([hidden])");
+    var out = [];
+    for (var i = 0; i < list.length; i++) if (list[i].getClientRects().length) out.push(list[i]);
+    return out;
+  }
+  window.addEventListener("resize", function () {
+    var b = doc.querySelector('[data-arr-menu][aria-expanded="true"]');
+    if (b) placeMenu(b, panelOf(b));
+  });
+  window.addEventListener(
+    "scroll",
+    function () {
+      var b = doc.querySelector('[data-arr-menu][aria-expanded="true"]');
+      if (b) placeMenu(b, panelOf(b));
+    },
+    { passive: true }
+  );
+
+  /* ── v1.2 · the footer: <arrival-footer> ──────────────────────────────────────────────────
+     ARRIVAL.footer = { label?, groups: [{ label, icon, items: [navId | link] }], note? }. Without
+     groups it repeats the nav: its links as one group, then each dropdown as its own.
+     v1.4: Donate and the welcome guide are added where the groups lack them (ARRIVAL.essentials);
+     the columns are balanced (four groups in a row of three become two rows of two); and the
+     kit's footer CSS is scoped so a site's own `section`, `footer a` or `ul` rules can't reach it.
+     <arrival-footer frame> draws it on the kit's card (a surface, padding, rounded corners). */
+  var footHosts = [];
+  function renderFooter(host) {
+    var F = C.footer || {};
+    var byNav = navLinks();
+    var groups;
+    if (F.groups) {
+      groups = F.groups.map(function (g) {
+        return { label: g.label, icon: g.icon, links: (g.items || []).map(function (x) { return typeof x === "string" ? byNav[x] : x; }).filter(visibleOn) };
+      });
+    } else {
+      var items = navItems();
+      groups = [{ label: (NAV && NAV.menuMain) || W.menuMain, icon: "compass", links: items.filter(function (x) { return !x.items; }) }].concat(
+        items.filter(function (x) { return x.items; }).map(function (g) { return { label: g.label, icon: g.icon, links: g.items }; })
+      );
+    }
+    groups = groups.filter(function (g) { return g.links.length; });
+    if (groups.length) groups = withEssentials(groups, function (missing) { return { label: W.involved, icon: "hand-heart", links: missing }; });
+    var html = groups
+      .map(function (g) {
+        return (
+          '<section class="arr-foot-group"><p class="arr-foot-h">' + icon(g.icon || "list") + "<span>" + esc(g.label) + '</span></p><ul class="arr-foot-list">' +
+          g.links.map(function (x) { return '<li class="arr-foot-li">' + linkTag(x, "arr-foot-a", host.getAttribute("current")) + "</li>"; }).join("") +
+          "</ul></section>"
+        );
+      })
+      .join("");
+    if (!html) {
+      host.hidden = true;
+      return;
+    }
+    host.innerHTML =
+      '<nav class="arr-foot" aria-label="' + esc(F.label || W.footer) + '"><div class="arr-foot-groups">' + html + "</div>" +
+      (F.note ? '<p class="arr-foot-note">' + F.note + "</p>" : "") + "</nav>";
+    tagLang(host);
+    balanceFoot(host);
+    if (!host._arrWatched) {
+      host._arrWatched = true;
+      footHosts.push(host);
+      if (window.ResizeObserver) new ResizeObserver(function () { balanceFoot(host); }).observe(host);
+    }
+    if (fresh.length) markNew(host);
+  }
+  // The most columns that fit (each at least 11.5rem), then evened out: 4 groups → 4, or 2 + 2,
+  // never 3 + 1; 5 → 5, 3 + 2 or 2 + 2 + 1. Without this the grid's auto-fit would orphan one.
+  function balanceFoot(host) {
+    var grid = host.querySelector(".arr-foot-groups");
+    if (!grid) return;
+    var n = grid.children.length;
+    var w = grid.clientWidth;
+    if (!n || !w) return;
+    var gap = parseFloat(getComputedStyle(grid).columnGap) || 0;
+    var min = 11.5 * (parseFloat(getComputedStyle(root).fontSize) || 16);
+    var fit = Math.max(1, Math.min(n, Math.floor((w + gap) / (min + gap))));
+    var cols = Math.ceil(n / Math.ceil(n / fit));
+    if (grid._cols !== cols) {
+      grid._cols = cols;
+      grid.style.setProperty("--arr-foot-cols", String(cols));
+    }
+  }
+  window.addEventListener("arrival:change", function () {
+    footHosts.forEach(balanceFoot); // text size changes the column width
+  });
+
+  /* ── v1.2 · contact and community modals ──────────────────────────────────────────────────
+     ARRIVAL.contact = { title?, intro?, paths: [{ kind: "form" | "email" | "page" | "github" | "chat",
+       label, href, note?, action?, icon?, placeholder? (text: shown instead of a link) }], fine?,
+       intercept? (default true: a click on a link to one of these paths opens the modal instead) }
+     ARRIVAL.community = { …v1.0 keys for the guide…, title?, intro?, platforms: [{ id, kind:
+       "discord" | "telegram" | "mighty" | "whatsapp" | "substack" | "bespoke" | …, name, text?,
+       status?: "live" | "soon", public?: { href, label, note }, join?: { href, label, note } }],
+       bespoke?: { title, tag?, text, points?: [], note? }, fine?, intercept? (default true) }
+     Placeholders never get a made-up link: a missing href renders as "coming soon". */
+  var CONTACT = site.contact !== undefined ? site.contact : C.contact || null;
+  var COMM = site.community !== undefined ? site.community : C.community || null;
+  var hasContact = !!(CONTACT && CONTACT.paths && CONTACT.paths.length);
+  var hasCommunity = !!(COMM && ((COMM.platforms && COMM.platforms.length) || COMM.bespoke));
+  var PLATFORM = {
+    discord: ["Discord", "discord-logo"],
+    telegram: ["Telegram", "telegram-logo"],
+    mighty: ["Mighty Networks", "users-three"],
+    whatsapp: ["WhatsApp", "whatsapp-logo"],
+    substack: ["Substack", "newspaper-clipping"],
+    bespoke: ["platformBespoke", "graph"],
+    forum: ["platformForum", "chats-teardrop"],
+    email: ["platformEmail", "envelope-simple"],
+  };
+  // [name, icon] for a platform kind; brand names stay as they are, the rest come from W.
+  function platform(kind) {
+    var k = PLATFORM[kind];
+    if (!k) return [kind || "", "chats-circle"];
+    return [W[k[0]] || k[0], k[1]];
+  }
+  function hostOf(href) {
+    try {
+      var u = new URL(href, location.href);
+      if (u.protocol === "mailto:") return decodeURIComponent(u.pathname);
+      return (u.host.replace(/^www\./, "") + u.pathname).replace(/\/+$/, "");
+    } catch (e) {
+      return href;
+    }
+  }
+  function modalHead(title, eyebrow, id) {
+    return (
+      '<div class="arr-modal-head"><div class="arr-head">' + markHTML() +
+      '<span class="arr-eyebrow">' + (hasLangs ? '<span translate="no">' + esc(org.short || "") + "</span>" : esc(org.short || "")) + (eyebrow ? " · " + esc(eyebrow) : "") + "</span></div>" +
+      '<button type="button" class="arr-x arr-shape" data-arr-close aria-label="' + esc(W.close) + '">' + icon("x") + "</button></div>" +
+      '<h2 class="arr-title" id="' + id + '">' + esc(title) + "</h2>"
+    );
+  }
+  function softPlaceholder(text, tag) {
+    return '<p class="arr-placeholder arr-shape">' + icon("note-pencil") + "<span><strong>" + esc(tag || W.placeholderTag) + "</strong> " + text + "</span></p>";
+  }
+  function pathRow(p) {
+    var ic = p.icon || { form: "note-pencil", email: "envelope-simple", page: "address-book", github: "github-logo", chat: "chat-circle-text", phone: "phone" }[p.kind] || "arrow-square-out";
+    var head = '<span class="arr-path-icon arr-shape">' + icon(ic) + '</span><div class="arr-path-main"><h3>' + esc(p.label) + "</h3>";
+    if (!p.href || p.placeholder) {
+      return '<li class="arr-path arr-shape is-placeholder">' + head + (p.note ? "<p>" + p.note + "</p>" : "") + softPlaceholder(p.placeholder || W.notSetUp) + "</div></li>";
+    }
+    var mail = /^mailto:/i.test(p.href);
+    var where = hostOf(p.href);
+    return (
+      '<li class="arr-path arr-shape">' + head + (p.note ? "<p>" + p.note + "</p>" : "") +
+      '<div class="arr-path-actions"><a class="arr-btn arr-btn-primary arr-shape" href="' + esc(p.href) + '"' + (mail ? "" : ' rel="noopener"') + ">" +
+      icon(mail ? "paper-plane-tilt" : "arrow-square-out") + esc(p.action || (mail ? W.writeEmail : W.openLink)) + "</a>" +
+      (mail ? '<button type="button" class="arr-btn arr-btn-quiet arr-shape" data-arr-copy="' + esc(where) + '">' + icon("copy") + esc(W.copyAddress) + "</button>" : "") +
+      '<span class="arr-path-where">' + esc(where) + "</span></div></div></li>"
+    );
+  }
+  var contactEl = null;
+  function openContact() {
+    if (!hasContact) return;
+    if (!contactEl) {
+      contactEl = makeDialog("arr-modal arr-contact", "arr-contact-title");
+      contactEl.innerHTML = panel(
+        modalHead(CONTACT.title || W.contact, W.contact, "arr-contact-title") +
+        '<p class="arr-intro">' + (CONTACT.intro || esc(W.contactIntro)) + "</p>" +
+        '<ul class="arr-paths">' + CONTACT.paths.map(pathRow).join("") + "</ul>" +
+        (CONTACT.fine ? '<p class="arr-fine">' + CONTACT.fine + "</p>" : ""),
+        "arr-modal-panel"
+      );
+    }
+    show(contactEl, contactEl.querySelector(".arr-path a, .arr-path button") || contactEl.querySelector("[data-arr-close]"));
+  }
+  function platLink(l, which) {
+    var ic = which === "public" ? "globe-simple" : "sign-in";
+    var label = (l && l.label) || (which === "public" ? W.publicLink : W.joinLink);
+    var note = l && l.note ? '<span class="arr-plat-note">' + esc(l.note) + "</span>" : "";
+    if (!l || !l.href) {
+      return '<span class="arr-plat-link is-off"><span class="arr-btn arr-btn-quiet arr-shape" aria-disabled="true">' + icon(ic) + esc(label) + '</span><span class="arr-plat-note">' + esc(W.soon) + "</span></span>";
+    }
+    return (
+      '<span class="arr-plat-link"><a class="arr-btn ' + (which === "join" ? "arr-btn-primary" : "arr-btn-quiet") + ' arr-shape" href="' + esc(l.href) + '" rel="noopener">' +
+      icon(ic) + esc(label) + "</a>" + note + "</span>"
+    );
+  }
+  function platCard(p) {
+    var k = platform(p.kind);
+    var soon = p.status === "soon" || (!(p.public && p.public.href) && !(p.join && p.join.href));
+    return (
+      '<li class="arr-plat arr-shape' + (soon ? " is-soon" : "") + '"><div class="arr-plat-head"><span class="arr-path-icon arr-shape">' + icon(p.icon || k[1]) + "</span>" +
+      '<div class="arr-plat-title"><h3>' + esc(p.name || k[0]) + "</h3>" +
+      '<span class="arr-plat-kind">' + esc(k[0]) + (soon ? ' · <span class="arr-soon">' + esc(W.soon) + "</span>" : "") + "</span></div></div>" +
+      (p.text ? "<p>" + p.text + "</p>" : "") +
+      '<div class="arr-plat-links">' + platLink(p.public, "public") + platLink(p.join, "join") + "</div></li>"
+    );
+  }
+  function bespokeCard(b) {
+    if (!b) return "";
+    return (
+      '<li class="arr-plat arr-plat-bespoke arr-shape"><div class="arr-plat-head"><span class="arr-path-icon arr-shape">' + icon(b.icon || "graph") + "</span>" +
+      '<div class="arr-plat-title"><h3>' + esc(b.title || W.bespokeTitle) + '</h3><span class="arr-plat-kind"><span class="arr-soon">' + esc(b.tag || W.sneak) + "</span></span></div></div>" +
+      (b.text ? "<p>" + b.text + "</p>" : "") +
+      (b.points && b.points.length ? '<ul class="arr-ticks">' + b.points.map(function (x) { return "<li>" + icon("sparkle") + "<span>" + x + "</span></li>"; }).join("") + "</ul>" : "") +
+      (b.note ? '<p class="arr-fine">' + b.note + "</p>" : "") + "</li>"
+    );
+  }
+  var communityEl = null;
+  function openCommunity() {
+    if (!hasCommunity) {
+      if (COMM && COMM.href) location.href = COMM.href;
+      return;
+    }
+    if (!communityEl) {
+      communityEl = makeDialog("arr-modal arr-community", "arr-community-title");
+      communityEl.innerHTML = panel(
+        modalHead(COMM.title || W.community, COMM.eyebrow || W.communityEyebrow, "arr-community-title") +
+        '<p class="arr-intro">' + (COMM.intro || esc(W.communityIntro)) + "</p>" +
+        '<ul class="arr-plats">' + (COMM.platforms || []).map(platCard).join("") + bespokeCard(COMM.bespoke) + "</ul>" +
+        (COMM.fine ? '<p class="arr-fine">' + COMM.fine + "</p>" : ""),
+        "arr-modal-panel"
+      );
+    }
+    show(communityEl, communityEl.querySelector(".arr-plat a") || communityEl.querySelector("[data-arr-close]"));
+  }
+  // Links that are really "contact" or "community" access points open the modal instead (a plain
+  // click only: modifier and middle clicks still go straight there).
+  var interceptMap = null;
+  function intercepts() {
+    if (interceptMap) return interceptMap;
+    interceptMap = {};
+    var add = function (href, what) {
+      if (!href) return;
+      var k = /^mailto:/i.test(href) ? "mailto:" + hostOf(href).toLowerCase() : normUrl(href);
+      if (k) interceptMap[k] = what;
+    };
+    if (hasContact && CONTACT.intercept !== false) CONTACT.paths.forEach(function (p) { if (!p.placeholder) add(p.href, "contact"); });
+    if (hasCommunity && COMM.intercept !== false) {
+      (COMM.platforms || []).forEach(function (p) {
+        add(p.public && p.public.href, "community");
+        add(p.join && p.join.href, "community");
+      });
+    }
+    return interceptMap;
+  }
+  function interceptOf(a) {
+    var href = typeof a === "string" ? a : a.getAttribute("href");
+    if (!href || href.charAt(0) === "#") return null;
+    var k = /^mailto:/i.test(href) ? "mailto:" + hostOf(href).toLowerCase() : normUrl(href);
+    return intercepts()[k] || null;
+  }
+
+  /* ── v1.2 · the donate page: <arrival-donate> ─────────────────────────────────────────────
+     ARRIVAL.donate = { give: [{ label, href, icon?, note?, action? }], disclaimer?: { title?, text,
+       placeholder? }, ledger?: { src (a contributors.json), title?, intro?, empty? }, crypto?:
+       { title?, text?, note? } }. contributors.json: { updated, contributors: [{ name, github?,
+       url?, kind?, since?, note? }] }, people who opted in to be named, nobody else. The crypto
+       slot stays empty until a wallet module fills [data-arr-wallet-slot]; it never shows an
+       address on its own. */
+  var KINDS = { gift: ["kindGift", "gift"], sponsor: ["kindSponsor", "handshake"], time: ["kindTime", "hand-heart"], "in-kind": ["kindInKind", "package"], founding: ["kindFounding", "plant"] };
+
+  /* ── v1.3 · give with crypto: the section, drawn at first paint ──────────────────────────
+     ARRIVAL.give = { enabled? (false keeps the empty slot), reownProjectId, chains? (EVM networks
+       the ETH address takes, default ["mainnet"]), addresses: { eth, btc, sol } (null until the
+       org publishes one), note?, title?, text?, social? (false hides email/social sign-in),
+       claim?: { to (an email for "add your name" notes) }, module? (give.js URL), practice? (v1.5.2;
+       false hides the practice gift) }.
+     This draws everything a visitor sees before they click, so nothing moves when give/give.js
+     arrives; give.js adds what follows a click (the wallet window, the connected panel, the guide).
+     An address that doesn't look like its coin's is treated as missing, never shown. */
+  var GIVE = C.give && C.give.enabled !== false ? C.give : null;
+  var COINS = [
+    { id: "eth", name: "Ethereum", sym: "ETH", icon: "currency-eth", ok: /^0x[0-9a-fA-F]{40}$/ },
+    { id: "btc", name: "Bitcoin", sym: "BTC", icon: "currency-btc", ok: /^(bc1[02-9ac-hj-np-z]{8,87}|[13][1-9A-HJ-NP-Za-km-z]{25,34})$/, uri: "bitcoin:" },
+    { id: "sol", name: "Solana", sym: "SOL", icon: "coin", ok: /^[1-9A-HJ-NP-Za-km-z]{32,44}$/, uri: "solana:" },
+  ];
+  // Networks whose own coin is ETH (so "Send ETH" means ETH on every one of them).
+  var GIVE_NETS = { mainnet: "Ethereum", ethereum: "Ethereum", base: "Base", arbitrum: "Arbitrum One", optimism: "OP Mainnet", sepolia: "sepolia" };
+  function netName(k) {
+    return k === "sepolia" ? W.sepolia : GIVE_NETS[k];
+  }
+  function giveAddress(id) {
+    var A = (GIVE && GIVE.addresses) || {};
+    var v = A[id];
+    if (v == null || v === "") return null;
+    var coin = COINS.filter(function (c) { return c.id === id; })[0];
+    v = String(v).trim();
+    if (coin && coin.ok.test(v)) return v;
+    if (window.console) console.warn("[arrival] give.addresses." + id + " doesn't look like a " + (coin ? coin.name : id) + " address, so the page shows \"coming soon\" instead.");
+    return null;
+  }
+  function giveNets() {
+    var list = (GIVE.chains && GIVE.chains.length ? GIVE.chains : ["mainnet"]).filter(function (k) { return GIVE_NETS[k]; });
+    return list.length ? list : ["mainnet"];
+  }
+  function giveShell(n, X) {
+    var G = GIVE;
+    var A = G.addresses || { eth: null, btc: null, sol: null };
+    var coins = COINS.filter(function (c) { return Object.prototype.hasOwnProperty.call(A, c.id); });
+    var any = coins.some(function (c) { return giveAddress(c.id); });
+    var who = org.short || org.name || W.us;
+    var rows = coins.map(function (c) {
+      var addr = giveAddress(c.id);
+      var head = '<span class="arr-path-icon arr-shape">' + icon(c.icon) + '</span><div class="arr-coin-main"><h3>' + esc(c.name) + ' <span class="arr-coin-sym">' + c.sym + "</span></h3>";
+      if (!addr) {
+        return '<li class="arr-coin arr-shape is-soon" data-coin="' + c.id + '">' + head + '<p class="arr-coin-soon">' + icon("hourglass-medium") + esc(G.soonText || W.treasurySoon) + "</p></div></li>";
+      }
+      var chunks = addr.match(/.{1,4}/g).map(function (s) { return "<span>" + esc(s) + "</span>"; }).join("");
+      var qid = "arr-qr-" + c.id + "-" + n;
+      return (
+        '<li class="arr-coin arr-shape" data-coin="' + c.id + '">' + head +
+        (c.id === "eth" ? '<p class="arr-coin-net">' + esc(fill(W.onNets, { nets: giveNets().map(netName).join(", ") })) + "</p>" : "") +
+        '<code class="arr-addr" translate="no" aria-label="' + esc(fill(W.addressLabel, { coin: c.name, address: addr })) + '">' + chunks + "</code>" +
+        '<div class="arr-coin-actions">' +
+        (c.id === "eth" ? '<button type="button" class="arr-btn arr-btn-primary arr-shape" data-give="send" data-coin="eth">' + icon("paper-plane-tilt") + esc(W.sendWithWallet) + "</button>" : "") +
+        '<button type="button" class="arr-btn arr-btn-quiet arr-shape" data-arr-copy="' + esc(addr) + '">' + icon("copy") + esc(W.copy) + "</button>" +
+        '<button type="button" class="arr-btn arr-btn-quiet arr-shape" data-give="qr" data-coin="' + c.id + '" aria-expanded="false" aria-controls="' + qid + '">' + icon("qr-code") + "<span>" + esc(W.showQr) + "</span></button>" +
+        (c.uri ? '<a class="arr-btn arr-btn-quiet arr-shape" data-arr-direct href="' + esc(c.uri + addr) + '">' + icon("device-mobile") + esc(W.openWalletApp) + "</a>" : "") +
+        "</div>" +
+        '<div class="arr-coin-qr" id="' + qid + '" hidden></div></div></li>'
+      );
+    }).join("");
+    var text = any
+      ? G.text || W.giveText
+      : G.previewText || W.givePreviewText;
+    var safety = any
+      ? fill(W.giveSafety, { who: esc(who) })
+      : fill(W.givePreviewSafety, { who: esc(who) });
+    return (
+      '<section class="arr-crypto arr-gift arr-shape" data-arr-wallet-slot data-arr-give data-give-mode="' + (any ? "live" : "preview") + '" aria-labelledby="arr-crypto-' + n + '">' +
+      '<h2 id="arr-crypto-' + n + '">' + icon("wallet") + esc(G.title || X.title || W.giveTitle) + (any ? "" : ' <span class="arr-soon">' + esc(W.previewTag) + "</span>") + "</h2>" +
+      "<p>" + text + "</p>" +
+      (coins.length ? '<ul class="arr-coins">' + rows + "</ul>" : "") +
+      '<div class="arr-give-actions">' +
+      '<button type="button" class="arr-btn ' + (any ? "arr-btn-quiet" : "arr-btn-primary") + ' arr-shape" data-give="connect">' + icon("plugs-connected") + "<span>" + esc(W.connectWallet) + "</span></button>" +
+      '<button type="button" class="arr-btn arr-btn-quiet arr-shape" data-give="learn">' + icon("question") + esc(W.newToWallets) + "</button>" +
+      // v1.5.2: the practice gift (give.practice: false hides it). Nothing in it is real.
+      (G.practice === false ? "" : '<button type="button" class="arr-btn arr-btn-quiet arr-shape" data-give="practice" aria-describedby="arr-gp-' + n + '">' + icon("flask") + "<span>" + esc(W.practiceGift) + "</span></button>") +
+      "</div>" +
+      (G.practice === false ? "" : '<p class="arr-fine arr-give-practice" id="arr-gp-' + n + '">' + esc(W.practiceGiftHint) + "</p>") +
+      '<p class="arr-give-live" data-give-live role="status" aria-live="polite"></p>' +
+      '<div class="arr-give-panel arr-shape" data-give-panel hidden></div>' +
+      '<p class="arr-fine">' + safety + (G.note ? " " + G.note : "") + "</p></section>"
+    );
+  }
+  // give/give.js loads when the section nears the screen (so a click finds it ready), or on the
+  // first click. It talks to nobody until the visitor asks to connect.
+  // Modules beside this file (give/give.js, v1.4's pledge/pledge.js), loaded once, as ES modules.
+  var modP = {};
+  function loadModule(path, global, custom) {
+    if (window[global]) return Promise.resolve(window[global]);
+    if (modP[path]) return modP[path];
+    modP[path] = new Promise(function (resolve, reject) {
+      var s = doc.createElement("script");
+      s.type = "module";
+      s.src = custom || KIT_BASE + path + "?v=" + VERSION;
+      s.onload = function () {
+        if (window[global]) resolve(window[global]);
+        else reject(new Error(path + " loaded but didn't start"));
+      };
+      s.onerror = function () { reject(new Error(path + " didn't load")); };
+      doc.head.appendChild(s);
+    }).catch(function (err) {
+      modP[path] = null;
+      throw err;
+    });
+    return modP[path];
+  }
+  function loadGive() {
+    return loadModule("give/give.js", "ArrivalGive", GIVE && GIVE.module);
+  }
+  // Load a module's file when its section comes within 600px of the screen (so a click finds it
+  // ready), then init it with the section.
+  function watchNear(sec, load, root) {
+    if (!sec) return;
+    var go = function () { load().then(function (M) { M.init(root || sec); }, function () {}); };
+    if (!("IntersectionObserver" in window)) return idle(go);
+    var io = new IntersectionObserver(function (es) {
+      for (var i = 0; i < es.length; i++) if (es[i].isIntersecting) { io.disconnect(); go(); return; }
+    }, { rootMargin: "600px 0px" });
+    io.observe(sec);
+  }
+  function watchGive(sec) {
+    watchNear(sec, loadGive);
+  }
+  function giveClick(sec, b) {
+    if (b.getAttribute("aria-busy") === "true") return;
+    loadGive().then(
+      function (G) {
+        G.init(sec);
+        G.act(b.getAttribute("data-give"), b, sec);
+      },
+      function () {
+        var live = sec.querySelector("[data-give-live]");
+        if (live) live.textContent = W.walletLoadFailed;
+      }
+    );
+  }
+
+  function renderDonate(el) {
+    tagLang(el);
+    var D = C.donate || {};
+    var L = D.ledger || null;
+    var X = D.crypto || {};
+    var n = ++uid;
+    var h = "";
+    if (D.give && D.give.length) {
+      h +=
+        '<section class="arr-give" aria-label="' + esc(D.giveLabel || W.waysToGive) + '">' +
+        D.give.map(function (g, i) {
+          return (
+            '<div class="arr-give-card arr-shape' + (i ? "" : " is-primary") + '"><h2>' + icon(g.icon || "heart") + esc(g.label) + "</h2>" +
+            (g.note ? "<p>" + g.note + "</p>" : "") +
+            (g.href
+              ? '<a class="arr-btn ' + (i ? "arr-btn-quiet" : "arr-btn-primary") + ' arr-shape" href="' + esc(g.href) + '" rel="noopener">' + esc(g.action || W.give) + icon("arrow-square-out") + "</a>" +
+                '<span class="arr-path-where">' + esc(hostOf(g.href)) + "</span>"
+              : softPlaceholder(g.placeholder || W.giveNotSetUp)) +
+            "</div>"
+          );
+        }).join("") +
+        "</section>";
+    }
+    if (D.disclaimer) {
+      var dc = D.disclaimer;
+      h +=
+        '<aside class="arr-disclaimer arr-shape' + (dc.placeholder ? " is-placeholder" : "") + '" aria-label="' + esc(dc.title || W.pleaseNote) + '">' +
+        '<p class="arr-disclaimer-h">' + icon(dc.placeholder ? "note-pencil" : "info") + esc(dc.title || W.pleaseNote) + (dc.placeholder ? ' <span class="arr-soon">' + esc(W.placeholderBadge) + "</span>" : "") + "</p>" +
+        "<p>" + dc.text + "</p></aside>";
+    }
+    if (L) {
+      h +=
+        '<section class="arr-contrib" aria-labelledby="arr-contrib-' + n + '"><h2 id="arr-contrib-' + n + '">' + icon("hand-heart") + esc(L.title || W.contribTitle) + "</h2>" +
+        (L.intro ? '<p class="arr-intro">' + L.intro + "</p>" : "") + '<div data-arr-contrib><p class="arr-fine">' + esc(W.gatheringNames) + "</p></div></section>";
+    }
+    h += GIVE
+      ? giveShell(n, X)
+      : '<section class="arr-crypto arr-shape" data-arr-wallet-slot aria-labelledby="arr-crypto-' + n + '">' +
+        '<h2 id="arr-crypto-' + n + '">' + icon(X.icon || "wallet") + esc(X.title || W.giveTitle) + ' <span class="arr-soon">' + esc(W.soon) + "</span></h2>" +
+        "<p>" + (X.text || W.cryptoSoonText) + "</p>" +
+        '<p class="arr-fine">' + (X.note || W.cryptoSoonNote) + "</p></section>";
+    if (D.tax) h += taxHTML(D.tax === true ? {} : D.tax, n);
+    el.innerHTML = h;
+    if (GIVE) watchGive(el.querySelector("[data-arr-give]"));
+    if (!L) return;
+    var box = el.querySelector("[data-arr-contrib]");
+    var empty = function () {
+      box.innerHTML = '<div class="arr-contrib-empty arr-shape">' + icon("plant") + "<p>" + (L.empty || W.contribEmpty) + "</p></div>";
+    };
+    if (!L.src || !window.fetch) return empty();
+    fetch(L.src, { credentials: "omit" })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .catch(function () { return null; })
+      .then(function (j) {
+        var list = (j && j.contributors) || [];
+        if (!list.length) return empty();
+        box.innerHTML =
+          '<ul class="arr-contrib-list">' +
+          list.map(function (c) {
+            var k = KINDS[c.kind] ? [W[KINDS[c.kind][0]], KINDS[c.kind][1]] : c.kind ? [c.kind, "heart"] : null;
+            var name = c.url || c.github ? '<a href="' + esc(c.url || "https://github.com/" + c.github) + '" rel="noopener">' + esc(c.name) + "</a>" : esc(c.name);
+            return (
+              '<li class="arr-contrib-item arr-shape">' + avatarTag(c, 48) +
+              '<span class="arr-person"><span class="arr-person-name">' + name + "</span>" +
+              (k ? '<span class="arr-contrib-kind">' + icon(k[1]) + esc(k[0]) + (c.since ? esc(fill(W.sinceKind, { month: fmtMonth(c.since) })) : "") + "</span>" : c.since ? '<span class="arr-contrib-kind">' + esc(fill(W.since, { month: fmtMonth(c.since) })) + "</span>" : "") +
+              (c.note ? '<span class="arr-person-role">' + esc(c.note) + "</span>" : "") + "</span></li>"
+            );
+          }).join("") +
+          "</ul>" + (j.updated ? '<p class="arr-fine">' + esc(fill(W.updatedOn, { date: fmtDate(j.updated, true) })) + "</p>" : "");
+      });
+  }
+  /* ── v1.4 · receipts and taxes (ARRIVAL.donate.tax) ──────────────────────────────────────
+     donate.tax = { status?, deductible?, receipts?, note?, title? } (true or {} for the defaults).
+     The defaults claim nothing: ask us for a receipt; whether a gift is tax-deductible depends on
+     the organization's status and your situation; this isn't tax advice. Only the org's own config
+     states a status (e.g. "a 501(c)(3) nonprofit", with its EIN if it publishes one) or that gifts
+     are deductible. deductible: a sentence, or true / false for a plain one. Strings may hold
+     simple HTML, like the rest of ARRIVAL.donate. */
+  function taxHTML(T, n) {
+    var who = org.short || org.name || W.us;
+    var ask = hasContact ? '<a href="#contact" data-arrival-open="contact">' + esc(W.reachOut) + "</a>" : esc(W.reachOut);
+    var receipts = T.receipts || fillH(W.taxReceipts, { reach: ask });
+    var deductible =
+      typeof T.deductible === "string" && T.deductible
+        ? T.deductible
+        : T.deductible === true
+          ? fill(W.taxMay, { who: esc(who) })
+          : T.deductible === false
+            ? fill(W.taxNot, { who: esc(who) })
+            : W.taxDepends;
+    var row = function (ic, label, text) {
+      return '<div class="arr-tax-row"><dt>' + icon(ic) + "<span>" + esc(label) + "</span></dt><dd>" + text + "</dd></div>";
+    };
+    return (
+      '<section class="arr-tax arr-shape" aria-labelledby="arr-tax-' + n + '"><h2 id="arr-tax-' + n + '">' + icon("receipt") + esc(T.title || W.taxTitle) + "</h2>" +
+      '<dl class="arr-tax-list">' +
+      row("receipt", W.taxReceiptsLabel, receipts) +
+      (T.status ? row("bank", W.taxStatusLabel, T.status) : "") +
+      row("scales", W.taxDeductibleLabel, deductible) +
+      "</dl>" +
+      (T.note ? "<p>" + T.note + "</p>" : "") +
+      '<p class="arr-fine">' + W.taxAdvice + "</p></section>"
+    );
+  }
+  function fmtMonth(s) {
+    var m = /^(\d{4})-(\d{2})/.exec(String(s || ""));
+    if (!m) return s;
+    try {
+      return new Date(Date.UTC(+m[1], +m[2] - 1, 15)).toLocaleDateString(locale(), { month: "long", year: "numeric", timeZone: "UTC" });
+    } catch (e) {
+      return s;
+    }
+  }
+
+  /* ── v1.2 · the site map: <arrival-map src here> ──────────────────────────────────────────
+     Reads a map.json (version 2), published by the AstroLog:
+       { version: 2, title, desc, groups: [{ id, label, icon?, note? }], nodes: [{ id, group, name,
+         line?, href?, open?, og? (absolute URL of its share image), icon?, self?, external? }] }
+     and draws every destination as a card with its share image as the thumbnail. A node whose
+     `self` equals `here` (default: this page's site id) says "You are here". The AstroLog renders
+     the same markup at build time (MapGrid.astro), so both maps look alike. */
+  function mapCard(nd, here) {
+    var isHere = !!(here && nd.self === here);
+    var thumb =
+      '<span class="arr-map-thumb arr-shape">' +
+      (nd.og ? '<img src="' + esc(nd.og) + '" alt="" width="1200" height="630" loading="lazy" decoding="async">' : '<span class="arr-map-noimg">' + icon(nd.icon || "globe-simple") + "</span>") +
+      (isHere ? '<span class="arr-map-here">' + icon("map-pin") + esc(W.youAreHere) + "</span>" : "") + "</span>";
+    var body =
+      '<span class="arr-map-body"><span class="arr-map-name">' + icon(nd.icon || "arrow-right") + "<span>" + esc(nd.name) + "</span>" +
+      (nd.external ? '<i class="ph ph-arrow-up-right arr-map-ext" aria-hidden="true"></i>' : "") + "</span>" +
+      (nd.line ? '<span class="arr-map-line">' + esc(nd.line) + "</span>" : "") +
+      (nd.href ? '<span class="arr-map-url">' + esc(hostOf(nd.href)) + "</span>" : "") + "</span>";
+    return (
+      '<li class="arr-map-item">' +
+      (nd.href
+        ? '<a class="arr-map-card arr-shape' + (isHere ? " is-here" : "") + '" href="' + esc(nd.href) + '"' + (nd.open ? ' data-arrival-open="' + esc(nd.open) + '"' : "") + (isHere ? ' aria-current="page"' : "") + ">" + thumb + body + "</a>"
+        : '<div class="arr-map-card arr-shape is-static">' + thumb + body + "</div>") +
+      "</li>"
+    );
+  }
+  function mapHTML(m, here) {
+    var groups = m.groups && m.groups.length ? m.groups : [{ id: "", label: "" }];
+    return groups
+      .map(function (g) {
+        var nodes = (m.nodes || []).filter(function (nd) { return (nd.group || "") === (g.id || ""); });
+        if (!nodes.length) return "";
+        return (
+          '<section class="arr-map-group">' + (g.label ? '<h2 class="arr-map-h">' + icon(g.icon || "map-trifold") + esc(g.label) + "</h2>" : "") +
+          (g.note ? '<p class="arr-map-note">' + esc(g.note) + "</p>" : "") +
+          '<ul class="arr-map-grid">' + nodes.map(function (nd) { return mapCard(nd, here); }).join("") + "</ul></section>"
+        );
+      })
+      .join("");
+  }
+  function renderMap(el) {
+    tagLang(el);
+    var src = el.getAttribute("src") || (C.map && C.map.src);
+    var here = el.getAttribute("here") || siteId;
+    if (!src || !window.fetch) return;
+    el.innerHTML = '<p class="arr-fine">' + esc(W.mapLoading) + "</p>";
+    fetch(src, { credentials: "omit" })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .catch(function () { return null; })
+      .then(function (m) {
+        if (!m || !m.nodes) {
+          el.innerHTML = softPlaceholder(W.mapFailed, W.notThisTime);
+          return;
+        }
+        el.innerHTML = '<div class="arr-map">' + mapHTML(m, here) + "</div>";
+        if (fresh.length) markNew(el);
+      });
+  }
+
+  /* ── v1.4 · a pledge of support: <arrival-pledge> ─────────────────────────────────────────
+     ARRIVAL.pledge = { enabled? (false: nothing), text (the pledge, in plain words), note? (the
+       org's own words, after the fine print), title?, intro?, href? (the page it lives on, so "/"
+       search finds it), reownProjectId? (default: give.reownProjectId), tokens? (false, or
+       { title, text, href, label }: the "Gratitude tokens (coming)" card), bots? (false, or
+       { title, points: [] }), verify? (false hides the "verify a signature" tool), practice? (v1.5.1;
+       false hides the practice wallet), words? }
+     Drawn here at first paint (the pledge, three steps, two cards, the verify tool), so nothing
+     moves when pledge/pledge.js arrives. pledge.js borrows give.js's wallet layer: one Reown AppKit
+     per page, the same allowlist check, the same "New to wallets?" guide. Signing is an EIP-191
+     message signature (no gas, no contract, no money), checked in the tab against the connected
+     wallet and then forgotten. Nothing is sent or recorded, and there are never any counts: counts
+     wait for records anyone can verify (the bots card says how). */
+  var PLEDGE = C.pledge && C.pledge.enabled !== false ? C.pledge : null;
+  // The pledge's words (pledge.js has its own for what follows a click). Same markers as WORDS.
+  /* PWORDS:begin */
+  var PWORDS = {
+    title: "A pledge of support",
+    preview: "Preview",
+    intro: "Sign a short pledge with a crypto wallet. It's free: no gas and no money, and for now nothing is recorded.",
+    text: "I support {org} and the people it serves.",
+    readTitle: "Read the pledge",
+    readText: "It's above. Signing it says you support it, and nothing else about you.",
+    connectTitle: "Connect a wallet",
+    connectText: "One button for a browser wallet, a phone wallet (by QR code) or an email sign-in.",
+    connect: "Connect a wallet",
+    learn: "New to wallets?",
+    practice: "Try it with a practice wallet",
+    practiceHint: "No wallet yet? The practice wallet is a throwaway key made in this tab, just to feel how signing works. Nothing is sent, nothing is saved.",
+    signTitle: "Sign it",
+    signText: "Your wallet shows the pledge and asks you to sign. It's a message, not a transaction: no gas, no contract, no money.",
+    sign: "Sign the pledge",
+    done: "done",
+    fine: "Signing sends nothing anywhere. The signature is checked here, in this tab, and then forgotten. This page never shows or keeps your wallet's address.",
+    tokensTitle: "Gratitude tokens",
+    tokensTag: "Coming",
+    tokensText:
+      "Later, a pledge may come with a token of gratitude, for anyone who'd like a deeper commitment. It would be soulbound: it stays in the wallet it was given to, and can't be sold, sent on or traded. It isn't money; it's a thank-you. It comes from the gratitude-token project Christopher W is building, which is still being tested. No dates.",
+    botsTitle: "How you'll know these aren't bots",
+    bots: [
+      "Each pledge is a signature. Anyone can check it against the wallet address that made it, with the tool below or any Ethereum toolkit.",
+      "A signature proves that a wallet signed. It doesn't prove that a unique person did: one person can make many wallets, and a program can sign too.",
+      "So before any count or list of pledges appears, pledges will be published as records anyone can check, such as on-chain attestations (the Ethereum Attestation Service is one way), optionally paired with a check that a real, unique person is behind each one. Human Passport (formerly Gitcoin Passport), World ID and BrightID are among the options; none has been chosen.",
+      "Until then, this page shows no counts at all.",
+    ],
+    verifyTitle: "Verify a signature",
+    verifyText: "Paste a wallet address, the exact message that was signed, and the signature. The check happens here in your browser; nothing is sent anywhere.",
+    address: "Wallet address",
+    addressHint: "0x and 40 more letters and numbers.",
+    signature: "Signature",
+    signatureHint: "0x and 130 more letters and numbers.",
+    message: "The message, exactly as it was signed",
+    messageHint: "Every line, space and character counts.",
+    check: "Check the signature",
+    clear: "Clear",
+    failed: "This part of the page didn't load. Check your connection, then try again.",
+    readAbout: "Read about it",
+    thisOrg: "this organization",
+  };
+  /* PWORDS:end */
+  function pledgeWords() {
+    var own = (PLEDGE && PLEDGE.words) || {};
+    return lang === BASE ? assign({}, PWORDS, own) : assign({}, PWORDS, own, langSec(lang, "pledge", (C0.pledge || {}).words));
+  }
+  var PW = pledgeWords();
+  function pledgeText() {
+    return (PLEDGE && PLEDGE.text) || PW.text.replace("{org}", org.name || org.short || PW.thisOrg);
+  }
+  function pledgeStep(k, n, title, text, body, done) {
+    return (
+      '<li class="arr-pledge-step' + (done ? " is-done" : "") + '" data-pledge-step="' + k + '"><span class="arr-pledge-num arr-shape" aria-hidden="true"><span>' + n + "</span>" + icon("check") + "</span>" +
+      '<div class="arr-pledge-body"><h3>' + esc(title) + '<span class="arr-sr" data-pledge-done' + (done ? "" : " hidden") + ">, " + esc(PW.done) + "</span></h3><p>" + esc(text) + "</p>" + (body || "") + "</div></li>"
+    );
+  }
+  function verifyHTML(n) {
+    var f = function (name, label, hint, area) {
+      var id = "arr-pv-" + name + "-" + n;
+      return (
+        '<label class="arr-give-field" for="' + id + '">' + esc(label) +
+        (area
+          ? '<textarea class="arr-input arr-pledge-msg" id="' + id + '" name="' + name + '" rows="6" spellcheck="false" autocomplete="off"></textarea>'
+          : '<input class="arr-input arr-pledge-hex" id="' + id + '" name="' + name + '" spellcheck="false" autocomplete="off" autocapitalize="off">') +
+        "<small>" + esc(hint) + "</small></label>"
+      );
+    };
+    return (
+      '<section class="arr-pledge-verify arr-shape" id="verify-signature" aria-labelledby="arr-pv-' + n + '"><h2 id="arr-pv-' + n + '">' + icon("seal-check") + esc(PW.verifyTitle) + "</h2>" +
+      "<p>" + esc(PW.verifyText) + "</p>" +
+      '<form data-pledge-form="verify" novalidate><div class="arr-give-fields">' + f("address", PW.address, PW.addressHint) + f("signature", PW.signature, PW.signatureHint) + "</div>" +
+      f("message", PW.message, PW.messageHint, true) +
+      '<div class="arr-give-actions"><button type="submit" class="arr-btn arr-btn-primary arr-shape">' + icon("check-circle") + esc(PW.check) + "</button>" +
+      '<button type="reset" class="arr-btn arr-btn-quiet arr-shape">' + icon("eraser") + esc(PW.clear) + "</button></div>" +
+      '<p class="arr-pledge-result" data-pledge-result role="status" aria-live="polite"></p></form></section>'
+    );
+  }
+  function renderPledge(el) {
+    tagLang(el);
+    if (!PLEDGE) {
+      el.hidden = true;
+      return;
+    }
+    var P = PLEDGE;
+    var n = ++uid;
+    var T = P.tokens === false ? null : P.tokens || {};
+    var B = P.bots === false ? null : P.bots || {};
+    var points = (B && B.points) || PW.bots;
+    var btn = function (name, label, ic, primary, off) {
+      return '<button type="button" class="arr-btn ' + (primary ? "arr-btn-primary" : "arr-btn-quiet") + ' arr-shape" data-pledge="' + name + '"' + (off ? " disabled" : "") + ">" + icon(ic) + "<span>" + esc(label) + "</span></button>";
+    };
+    el.innerHTML =
+      '<section class="arr-pledge arr-shape" data-arr-pledge aria-labelledby="arr-pledge-' + n + '">' +
+      '<h2 id="arr-pledge-' + n + '">' + icon("handshake") + esc(P.title || PW.title) + ' <span class="arr-soon">' + esc(PW.preview) + "</span></h2>" +
+      '<p class="arr-pledge-intro">' + (P.intro || esc(PW.intro)) + "</p>" +
+      '<blockquote class="arr-pledge-text arr-shape" data-pledge-text>' + esc(pledgeText()) + "</blockquote>" +
+      '<ol class="arr-pledge-steps">' +
+      pledgeStep("read", 1, PW.readTitle, PW.readText, "", true) +
+      pledgeStep(
+        "connect", 2, PW.connectTitle, PW.connectText,
+        '<div class="arr-give-actions">' + btn("connect", PW.connect, "plugs-connected", true) +
+          // v1.5.1: the practice wallet (pledge.practice: false hides it).
+          (P.practice === false ? "" : '<button type="button" class="arr-btn arr-btn-quiet arr-shape" data-pledge="practice" aria-describedby="arr-pp-' + n + '">' + icon("flask") + "<span>" + esc(PW.practice) + "</span></button>") +
+          btn("learn", PW.learn, "question") + "</div>" +
+          (P.practice === false ? "" : '<p class="arr-fine arr-pledge-practice" id="arr-pp-' + n + '">' + esc(PW.practiceHint) + "</p>")
+      ) +
+      pledgeStep("sign", 3, PW.signTitle, PW.signText, '<div class="arr-give-actions">' + btn("sign", PW.sign, "signature", true, true) + "</div>") +
+      "</ol>" +
+      '<p class="arr-pledge-live" data-pledge-live role="status" aria-live="polite"></p>' +
+      '<div class="arr-pledge-panel arr-shape" data-pledge-panel hidden></div>' +
+      '<p class="arr-fine">' + esc(PW.fine) + (P.note ? " " + P.note : "") + "</p></section>" +
+      (T || B
+        ? '<div class="arr-pledge-cards">' +
+          (T
+            ? '<section class="arr-pledge-card arr-shape" aria-labelledby="arr-pt-' + n + '"><h3 id="arr-pt-' + n + '">' + icon("hand-heart") + "<span>" + esc(T.title || PW.tokensTitle) +
+              ' <span class="arr-soon">' + esc(PW.tokensTag) + "</span></span></h3><p>" + (T.text || esc(PW.tokensText)) + "</p>" +
+              (T.href ? '<a class="arr-btn arr-btn-quiet arr-shape" href="' + esc(T.href) + '" rel="noopener">' + esc(T.label || PW.readAbout) + icon("arrow-square-out") + "</a>" : "") + "</section>"
+            : "") +
+          (B
+            ? '<section class="arr-pledge-card arr-shape" aria-labelledby="arr-pb-' + n + '"><h3 id="arr-pb-' + n + '">' + icon("shield-check") + "<span>" + esc(B.title || PW.botsTitle) + "</span></h3>" +
+              '<ul class="arr-ticks">' + points.map(function (x) { return "<li>" + icon("check") + "<span>" + x + "</span></li>"; }).join("") + "</ul></section>"
+            : "") +
+          "</div>"
+        : "") +
+      (P.verify === false ? "" : verifyHTML(n));
+    watchNear(el.querySelector("[data-arr-pledge]") || el, loadPledge, el);
+  }
+  function loadPledge() {
+    return loadModule("pledge/pledge.js", "ArrivalPledge", PLEDGE && PLEDGE.module);
+  }
+  function pledgeAct(root, name, el) {
+    loadPledge().then(
+      function (M) {
+        M.init(root);
+        M.act(name, el, root);
+      },
+      function () {
+        var out = root.querySelector(name === "verify" ? "[data-pledge-result]" : "[data-pledge-live]");
+        if (out) out.textContent = PW.failed;
+      }
+    );
+  }
+
+  /* ── v1.4 · scroll strips: how a visitor knows the dock scrolls ─────────────────────────────
+     A one-row strip that scrolls sideways (the bottom dock, on a phone) gets a soft fade on each
+     edge with more beyond it, and a small chevron button there that scrolls it: keyboard reachable,
+     smooth only when motion is allowed, and nothing at all while everything fits. Which strips: any
+     element with data-arr-scroll, plus, with ARRIVAL.dock = { scroll: true } (or dock: true), the
+     kit's dock markup (.universal-footer .footer-inner) and PIR's (.dock .wrap), or dock.selector.
+     The strip must already scroll (overflow-x: auto). The buttons sit in its parent, absolutely
+     placed, so the strip's own layout doesn't change; a static parent becomes position: relative. */
+  var DOCK = C.dock === true ? { scroll: true } : C.dock && typeof C.dock === "object" ? C.dock : {};
+  var STRIPS = "[data-arr-scroll]" + (DOCK.scroll ? ", " + (DOCK.selector || ".universal-footer .footer-inner, .dock .wrap") : "");
+  function scrollStrips(scope) {
+    var list = [];
+    try {
+      list = (scope || doc).querySelectorAll(STRIPS);
+    } catch (e) {}
+    for (var i = 0; i < list.length; i++) makeStrip(list[i]);
+  }
+  function makeStrip(el) {
+    if (el._arrStrip || !el.parentNode) return;
+    el._arrStrip = true;
+    el.classList.add("arr-strip");
+    var par = el.parentNode;
+    try {
+      if (getComputedStyle(par).position === "static") par.style.position = "relative";
+    } catch (e) {}
+    var mk = function (dir) {
+      var b = doc.createElement("button");
+      var label = dir === "l" ? W.scrollLeft : W.scrollRight;
+      b.type = "button";
+      b.className = "arr-strip-btn arr-shape arr-strip-btn-" + dir;
+      b.setAttribute("data-arr-strip", dir);
+      b.setAttribute("aria-label", label);
+      b.title = label;
+      b.hidden = true;
+      b.innerHTML = icon(dir === "l" ? "caret-left" : "caret-right");
+      b._arrStrip = el;
+      return b;
+    };
+    var L = mk("l");
+    var R = mk("r");
+    par.insertBefore(L, el);
+    par.insertBefore(R, el.nextSibling);
+    el._arrBtns = [L, R];
+    var raf = 0;
+    var upd = function () {
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(function () { syncStrip(el); });
+    };
+    el.addEventListener("scroll", upd, { passive: true });
+    window.addEventListener("resize", upd);
+    if (window.ResizeObserver) new ResizeObserver(upd).observe(el);
+    if (doc.fonts && doc.fonts.ready) doc.fonts.ready.then(upd);
+    syncStrip(el);
+  }
+  function syncStrip(el) {
+    var L = el._arrBtns[0];
+    var R = el._arrBtns[1];
+    var max = el.scrollWidth - el.clientWidth;
+    var x = Math.abs(el.scrollLeft);
+    var rtl = getComputedStyle(el).direction === "rtl";
+    var before = max > 1 && x > 1;
+    var after = max > 1 && x < max - 1;
+    var left = rtl ? after : before;
+    var right = rtl ? before : after;
+    el.classList.toggle("arr-strip-l", left);
+    el.classList.toggle("arr-strip-r", right);
+    var had = doc.activeElement;
+    L.hidden = !left;
+    R.hidden = !right;
+    placeStrip(el, L, R);
+    // A chevron that just ran out of room hands focus on, so focus is never dropped.
+    if ((had === L && !left) || (had === R && !right)) {
+      var other = had === L ? R : L;
+      if (!other.hidden) other.focus();
+      else {
+        var links = el.querySelectorAll("a[href], button");
+        if (links.length) links[had === L ? 0 : links.length - 1].focus();
+      }
+    }
+  }
+  function placeStrip(el, L, R) {
+    var par = el.parentNode;
+    var pr = par.getBoundingClientRect();
+    var r = el.getBoundingClientRect();
+    var top = r.top - pr.top - par.clientTop;
+    [L, R].forEach(function (b) {
+      if (b.hidden) return;
+      b.style.top = Math.round(top + (r.height - b.offsetHeight) / 2) + "px";
+    });
+    if (!L.hidden) L.style.left = Math.round(r.left - pr.left - par.clientLeft) + "px";
+    if (!R.hidden) R.style.left = Math.round(r.right - pr.left - par.clientLeft - R.offsetWidth) + "px";
+  }
+  function stripScroll(b) {
+    var s = b._arrStrip;
+    if (!s) return;
+    var dir = b.getAttribute("data-arr-strip") === "l" ? -1 : 1;
+    if (getComputedStyle(s).direction === "rtl") dir = -dir;
+    var step = dir * Math.max(80, Math.round(s.clientWidth * 0.7));
+    var smooth = state.motion !== STILL && state.reading !== "on" && !media("(prefers-reduced-motion: reduce)");
+    try {
+      s.scrollBy({ left: step, behavior: smooth ? "smooth" : "auto" });
+    } catch (e) {
+      s.scrollLeft += step;
+    }
+  }
+
+  /* ── v1.5 · switching language ────────────────────────────────────────────────────────────
+     relang() points everything the kit draws from at the new language: org.js in that language,
+     the words, the named lists and every config the kit read at load. redraw() then draws the
+     kit's elements again; an open splash or drawer stays open, in the new language. */
+  function relang(l) {
+    lang = l;
+    C = localize(l);
+    org = C.org || {};
+    site = assign({}, (C.sites || {})[siteId] || {}, mapText(window.ARRIVAL_SITE || {}, (I18N[l] || {}).text || {}, 1));
+    W = wordsFor(l);
+    lists();
+    NAV = C.nav && C.nav.items && C.nav.items.length ? C.nav : null;
+    ESS = C.essentials === false ? { donate: false, guide: false } : C.essentials || {};
+    CONTACT = site.contact !== undefined ? site.contact : C.contact || null;
+    COMM = site.community !== undefined ? site.community : C.community || null;
+    GIVE = C.give && C.give.enabled !== false ? C.give : null;
+    PLEDGE = C.pledge && C.pledge.enabled !== false ? C.pledge : null;
+    PW = pledgeWords();
+    interceptMap = null;
+  }
+  // Draw again in the visitor's language, loading its pack first when the kit needs one.
+  function switchLang(l) {
+    var go = function () {
+      if (state.lang !== l) return; // the visitor has already chosen another
+      relang(l);
+      release();
+      redraw();
+    };
+    if (l === BASE || pack(l)) go();
+    else loadPack(l).then(go);
+  }
+  var REDRAW = [
+    ["arrival-controls", renderControls],
+    ["arrival-nav", renderNav],
+    ["arrival-footer", renderFooter],
+    ["arrival-people", renderPeople],
+    ["arrival-latest", renderLatest],
+    ["arrival-map", renderMap],
+    ["arrival-langnote", renderLangNote],
+    // The giving and pledge sections redraw only until their module has started (it holds state).
+    ["arrival-donate", function (el) { if (!window.ArrivalGive) renderDonate(el); }],
+    ["arrival-pledge", function (el) { if (!window.ArrivalPledge) renderPledge(el); }],
+  ];
+  function redraw() {
+    // Remember an open drawer, by its place among the drawers, to open it again after.
+    var drawers = [].slice.call(doc.querySelectorAll("[data-arr-drawer]"));
+    var openAt = -1;
+    drawers.forEach(function (b, i) { if (b.getAttribute("aria-expanded") === "true") openAt = i; });
+    REDRAW.forEach(function (r) {
+      var list = doc.querySelectorAll(r[0]);
+      for (var i = 0; i < list.length; i++) if (list[i]._arr) r[1](list[i]);
+    });
+    // Dialogs: an open splash is drawn again in place; the others are built afresh next time.
+    if (splashEl) {
+      if (splashEl.open) {
+        splashEl.innerHTML = splashHTML();
+        tagLang(splashEl);
+        sync();
+        var f = splashEl.querySelector("input[data-arr-lang]:checked") || splashEl.querySelector("[data-arr-enter]");
+        if (f) f.focus();
+        if (noteWanted()) noteSeen();
+      } else {
+        splashEl.remove();
+        splashEl = null;
+      }
+    }
+    if (guideEl && !guideEl.open) { guideEl.remove(); guideEl = null; STEPS = null; }
+    if (pal && !pal.open) { pal.remove(); pal = null; }
+    if (contactEl && !contactEl.open) { contactEl.remove(); contactEl = null; }
+    if (communityEl && !communityEl.open) { communityEl.remove(); communityEl = null; }
+    var strips = doc.querySelectorAll("[data-arr-strip]");
+    for (var k = 0; k < strips.length; k++) {
+      var label = strips[k].getAttribute("data-arr-strip") === "l" ? W.scrollLeft : W.scrollRight;
+      strips[k].setAttribute("aria-label", label);
+      strips[k].title = label;
+    }
+    if (openAt >= 0) {
+      var btn = doc.querySelectorAll("[data-arr-drawer]")[openAt];
+      if (btn) {
+        openDrawer(btn);
+        var li = drawerOf(btn) && drawerOf(btn).querySelector("input[data-arr-lang]:checked");
+        if (li) li.focus();
+      }
+    }
+    sync();
+    langToast();
+  }
+  // A site with translated pages: go to this page's twin in the chosen language.
+  function followRoute() {
+    if (!hasLangs) return;
+    var h = routeFor(state.lang);
+    if (h && normUrl(h) !== normUrl(location.href)) location.assign(h);
+  }
+  // Once per visit, a quiet word that this page's own words aren't translated: not again after the
+  // splash said it, and not where the page already shows it (<arrival-langnote>).
+  function noteSeen(check) {
+    var k = KEY + ":langnote:" + lang;
+    try {
+      if (check && sessionStorage.getItem(k)) return true;
+      sessionStorage.setItem(k, "1");
+      return false;
+    } catch (e) {
+      return true;
+    }
+  }
+  function langToast() {
+    if (!noteWanted() || (splashEl && splashEl.open)) return;
+    if (doc.querySelector("arrival-langnote:not([hidden])")) return noteSeen();
+    if (!noteSeen(true)) toast(noteText(), 6500);
+  }
+  // <arrival-langnote>: the same note, wherever a page puts it (nothing in the base language).
+  function renderLangNote(el) {
+    if (!noteWanted()) {
+      el.hidden = true;
+      el.innerHTML = "";
+      return;
+    }
+    el.hidden = false;
+    tagLang(el);
+    el.innerHTML = '<p class="arr-langnote arr-shape">' + icon("translate") + "<span>" + esc(noteText()) + "</span></p>";
+  }
+  // hreflang alternates, when the site has translated twins of its pages.
+  function alternates() {
+    if (!hasLangs || typeof LC.route !== "function" || !doc.head || doc.head.querySelector('link[rel="alternate"][hreflang]')) return;
+    var add = function (code, href) {
+      var ln = doc.createElement("link");
+      ln.rel = "alternate";
+      ln.hreflang = code;
+      try {
+        ln.href = new URL(href, location.href).href;
+      } catch (e) {
+        return;
+      }
+      doc.head.appendChild(ln);
+    };
+    LANGS.forEach(function (l) {
+      var h = routeFor(l.id);
+      if (h) add(l.id, h);
+    });
+    var b = routeFor(BASE);
+    if (b) add("x-default", b);
+  }
+
+  /* ── custom elements (defined here in <head>, so they render as the parser reaches them) ── */
+  // v1.5: while a returning visitor's language pack loads (from the cache, usually at once), the
+  // kit's elements wait to render, so the page never flashes in the wrong language. 1.2s at most.
+  function release() {
+    var q = held;
+    held = null;
+    if (q) q.forEach(function (x) { x[1](x[0]); });
+  }
+  function define(name, render) {
+    if (!window.customElements || customElements.get(name)) return;
+    customElements.define(
+      name,
+      class extends HTMLElement {
+        connectedCallback() {
+          if (this._arr) return;
+          this._arr = true;
+          if (held) held.push([this, render]);
+          else render(this);
+        }
+      }
+    );
+  }
+  // Resolves once the first language's words are ready (or after 1.2s); the splash waits for it.
+  var langReady = null;
+  if (hasLangs) {
+    alternates();
+    if (state.lang !== BASE) {
+      relang(state.lang); // the org's own words in this language apply at once
+      if (!pack(state.lang)) {
+        held = [];
+        var late = false;
+        langReady = new Promise(function (resolve) {
+          setTimeout(function () {
+            late = true;
+            release();
+            resolve();
+          }, 1200);
+          loadPack(state.lang).then(function () {
+            if (state.lang === lang) {
+              relang(lang);
+              if (late) redraw(); // it came after the wait: draw what's already showing again
+              else release();
+            }
+            resolve();
+          });
+        });
+      }
+    }
+  }
+  // v1.5: a lineage note ("you're on a rehearsal") comes first; the splash follows its "lineage:ack".
+  function afterLineage(fn) {
+    var pending = root.hasAttribute("data-lineage-pending") || !!doc.querySelector("dialog[data-lineage][open]");
+    if (pending) window.addEventListener("lineage:ack", fn, { once: true });
+    else fn();
+  }
+  define("arrival-controls", renderControls);
+  define("arrival-avatar", renderAvatar);
+  define("arrival-people", renderPeople);
+  define("arrival-latest", renderLatest);
+  define("arrival-nav", renderNav);
+  define("arrival-footer", renderFooter);
+  define("arrival-donate", renderDonate);
+  define("arrival-map", renderMap);
+  define("arrival-pledge", renderPledge);
+  define("arrival-langnote", renderLangNote);
+
+  /* ── cursor effects: a trail behind the pointer, per motion level ────────────────────────
+     motions[i].trail = true | { colors: [...], life: ms, width: px, alpha: 0..1, sparks: 0..1,
+     sides: n }. No colors = a prism-hue sweep; sparks = the chance per move of shedding a small
+     spinning n-sided spark. Runs only with cursor effects on, a moving motion and a fine pointer. */
+  var stopTrail = null;
+  var trailKey = "";
+  function syncTrail() {
+    var m = byId(MOTIONS, state.motion);
+    var opt = m && m.trail;
+    var want = !!opt && state.cursor === "on" && state.motion !== STILL && !media("(pointer: coarse)") && !!doc.body;
+    var key = want ? state.motion : "";
+    if (key === trailKey) return;
+    if (stopTrail) {
+      stopTrail();
+      stopTrail = null;
+    }
+    trailKey = key;
+    if (want) stopTrail = startTrail(opt === true ? {} : opt);
+  }
+  function startTrail(o) {
+    var colors = o.colors && o.colors.length ? o.colors : null;
+    var LIFE = o.life || 520;
+    var WIDTH = o.width || 3.2;
+    var ALPHA = o.alpha == null ? 0.8 : o.alpha;
+    var SPARKS = o.sparks || 0;
+    var SIDES = o.sides || 0;
+    var canvas = doc.createElement("canvas");
+    canvas.className = "arr-trail";
+    canvas.setAttribute("aria-hidden", "true");
+    doc.body.appendChild(canvas);
+    var ctx = canvas.getContext("2d");
+    if (!ctx) return function () { canvas.remove(); };
+    var dpr = Math.min(2, window.devicePixelRatio || 1);
+    var pts = [];
+    var dust = [];
+    var raf = 0;
+    var n = 0;
+    var size = function () {
+      canvas.width = innerWidth * dpr;
+      canvas.height = innerHeight * dpr;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    };
+    var poly = function (x, y, r, rot, sides) {
+      ctx.beginPath();
+      for (var k = 0; k < sides; k++) {
+        var a = rot + (k * Math.PI * 2) / sides;
+        if (k) ctx.lineTo(x + r * Math.cos(a), y + r * Math.sin(a));
+        else ctx.moveTo(x + r * Math.cos(a), y + r * Math.sin(a));
+      }
+      ctx.closePath();
+    };
+    var frame = function () {
+      raf = 0;
+      var now = performance.now();
+      while (pts.length && now - pts[0].t > LIFE) pts.shift();
+      dust = dust.filter(function (d) { return now - d.t < d.life; });
+      var mode = byId(MODES, themeOf(state.light));
+      var dark = !!(mode && mode.dark);
+      var a = dark ? ALPHA : ALPHA * 0.72;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.globalCompositeOperation = dark ? "lighter" : "source-over";
+      ctx.lineCap = "round";
+      for (var i = 1; i < pts.length; i++) {
+        var life = 1 - (now - pts[i].t) / LIFE;
+        ctx.globalAlpha = Math.max(0, life * a);
+        ctx.strokeStyle = colors
+          ? colors[pts[i].c % colors.length]
+          : "hsl(" + ((pts[i].t / 6 + i * 9) % 360) + "," + (dark ? 90 : 75) + "%," + (dark ? 68 : 52) + "%)";
+        ctx.lineWidth = 0.5 + life * WIDTH;
+        ctx.beginPath();
+        ctx.moveTo(pts[i - 1].x, pts[i - 1].y);
+        ctx.lineTo(pts[i].x, pts[i].y);
+        ctx.stroke();
+      }
+      dust.forEach(function (d) {
+        var age = (now - d.t) / d.life;
+        d.vx *= 0.96;
+        d.vy = d.vy * 0.96 + 0.025;
+        d.x += d.vx;
+        d.y += d.vy;
+        d.rot += d.spin;
+        ctx.globalAlpha = Math.max(0, (1 - age) * a);
+        ctx.fillStyle = d.color;
+        if (d.sides >= 3) poly(d.x, d.y, d.r * (1 - age * 0.4), d.rot, d.sides);
+        else {
+          ctx.beginPath();
+          ctx.arc(d.x, d.y, d.r * (1 - age * 0.4), 0, Math.PI * 2);
+        }
+        ctx.fill();
+      });
+      ctx.globalAlpha = 1;
+      if (pts.length || dust.length) raf = requestAnimationFrame(frame);
+    };
+    var moveFn = function (e) {
+      if (e.pointerType === "touch") return;
+      var t = performance.now();
+      n++;
+      pts.push({ x: e.clientX, y: e.clientY, t: t, c: Math.floor(n / 3) });
+      if (pts.length > 64) pts.shift();
+      if (SPARKS && Math.random() < SPARKS && dust.length < 60) {
+        var ang = Math.random() * Math.PI * 2;
+        var sp = 0.4 + Math.random() * 1.4;
+        dust.push({
+          x: e.clientX, y: e.clientY, vx: Math.cos(ang) * sp, vy: Math.sin(ang) * sp - 0.4,
+          r: 1.6 + Math.random() * 2.6, rot: Math.random() * 6, spin: (Math.random() - 0.5) * 0.18,
+          sides: SIDES, t: t, life: 600 + Math.random() * 500,
+          color: colors ? colors[Math.floor(Math.random() * colors.length)] : "hsl(" + Math.floor(Math.random() * 360) + ",90%,70%)",
+        });
+      }
+      if (!raf) raf = requestAnimationFrame(frame);
+    };
+    size();
+    addEventListener("resize", size);
+    addEventListener("pointermove", moveFn);
+    return function () {
+      cancelAnimationFrame(raf);
+      removeEventListener("resize", size);
+      removeEventListener("pointermove", moveFn);
+      canvas.remove();
+    };
+  }
+
+  /* ── events (delegated, so every copy of every control works) ─────────────────────────── */
+  function inSplash(el) {
+    return !!(splashEl && splashEl.contains(el));
+  }
+  doc.addEventListener("change", function (e) {
+    var t = e.target;
+    if (!t || !t.matches) return;
+    var tentative = inSplash(t);
+    if (t.matches("[data-arr-light]")) set({ light: t.value }, tentative);
+    else if (t.matches("[data-arr-motion]")) set({ motion: t.value }, tentative);
+    else if (t.matches("[data-arr-contrast]")) set({ contrast: t.checked ? "more" : "standard" }, tentative);
+    else if (t.matches("[data-arr-cursor]")) set({ cursor: t.checked ? "on" : "off" }, tentative);
+    else if (t.matches("[data-arr-text]")) set({ text: t.value }, tentative);
+    else if (t.matches("[data-arr-measure]")) set({ measure: t.checked ? "comfy" : "full" }, tentative);
+    else if (t.matches("[data-arr-lang]")) {
+      set({ lang: t.value }, tentative);
+      if (!tentative) followRoute(); // the splash goes when it closes
+    }
+    else if (t.matches("[data-arr-reading]")) {
+      if (t.checked !== (state.reading === "on")) toggleReading(tentative);
+    }
+  });
+  function canOpen(what) {
+    if (what === "contact") return hasContact;
+    if (what === "community") return hasCommunity;
+    return true;
+  }
+  doc.addEventListener("click", function (e) {
+    var t = e.target && e.target.closest ? e.target : null;
+    if (!t) return;
+    var b;
+    // v1.2: the nav's dropdowns and the Menu
+    if ((b = t.closest("[data-arr-nav-toggle], [data-arr-menu]"))) {
+      if (b.getAttribute("aria-expanded") === "true") closeNavs(true);
+      else openNav(b);
+      return;
+    }
+    if (!t.closest(".arr-nav-menu, .arr-menu-panel")) closeNavs(false);
+    // v1.3: every button of the give-with-crypto module (on the page or in its guide) goes to give.js.
+    if (GIVE && (b = t.closest("[data-give]")) && !b.disabled) {
+      var gsec = b.closest("[data-arr-give]") || doc.querySelector("[data-arr-give]");
+      if (gsec) {
+        e.preventDefault();
+        giveClick(gsec, b);
+        return;
+      }
+    }
+    // v1.4: the pledge's buttons go to pledge.js; a strip's chevrons scroll it.
+    if (PLEDGE && (b = t.closest("[data-pledge]")) && !b.disabled) {
+      var proot = b.closest("arrival-pledge") || doc.querySelector("arrival-pledge");
+      if (proot && b.getAttribute("aria-busy") !== "true") {
+        e.preventDefault();
+        pledgeAct(proot, b.getAttribute("data-pledge"), b);
+        return;
+      }
+    }
+    if ((b = t.closest("[data-arr-strip]"))) {
+      stripScroll(b);
+      return;
+    }
+    if ((b = t.closest("[data-arr-copy]"))) {
+      var text = b.getAttribute("data-arr-copy");
+      try {
+        navigator.clipboard.writeText(text).then(function () { toast(W.addressCopied); }, function () { toast(text); });
+      } catch (err) {
+        toast(text);
+      }
+      return;
+    }
+    if ((b = t.closest("[data-arr-news-tip]"))) {
+      ackNews();
+      open("search");
+      return;
+    }
+    // A plain click on a link that is really a contact or community access point opens its modal.
+    var a = t.closest("a[href]");
+    if (a && !e.defaultPrevented && e.button === 0 && !e.metaKey && !e.ctrlKey && !e.shiftKey && !e.altKey && !a.closest(".arr-dialog") && !a.hasAttribute("data-arrival-open") && !a.hasAttribute("data-arr-direct")) {
+      var via = interceptOf(a);
+      if (via && canOpen(via)) {
+        e.preventDefault();
+        closeDrawers(false);
+        open(via);
+        return;
+      }
+    }
+    if ((b = t.closest("[data-arr-swatch]"))) {
+      set({ light: b.getAttribute("data-arr-swatch") });
+    } else if ((b = t.closest("[data-arr-cursor-toggle]"))) {
+      set({ cursor: state.cursor === "on" ? "off" : "on" });
+    } else if ((b = t.closest("[data-arr-reading-toggle]"))) {
+      toggleReading();
+    } else if ((b = t.closest("[data-arr-news]"))) {
+      ackNews();
+      closeDrawers(false);
+      open("search");
+    } else if ((b = t.closest("[data-arr-read-enter]"))) {
+      if (state.reading !== "on") toggleReading(true);
+      hide(splashEl);
+    } else if ((b = t.closest("[data-arr-motion-toggle]"))) {
+      set({ motion: state.motion === STILL ? state.moving || movingDefault() : STILL });
+    } else if ((b = t.closest("[data-arr-drawer]"))) {
+      if (b.getAttribute("aria-expanded") === "true") closeDrawers(true);
+      else openDrawer(b);
+      return;
+    } else if ((b = t.closest("[data-arr-lang-chip]"))) {
+      // v1.5: the language chip opens the drawer at its language row.
+      var dw = b.parentNode && b.parentNode.querySelector("[data-arr-drawer]");
+      if (dw) {
+        openDrawer(dw);
+        var lr = drawerOf(dw) && drawerOf(dw).querySelector("input[data-arr-lang]:checked");
+        if (lr) lr.focus();
+      }
+      return;
+    } else if ((b = t.closest("[data-arrival-open]"))) {
+      var what = b.getAttribute("data-arrival-open");
+      // Without a configured modal, a link keeps its own href (the no-JS fallback).
+      if (!canOpen(what)) return;
+      if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey) {
+        if (b.tagName === "A" && b.getAttribute("href") && b.getAttribute("href").charAt(0) !== "#") return;
+      }
+      e.preventDefault();
+      closeDrawers(false);
+      if (splashEl && splashEl.open) hide(splashEl, true);
+      open(what, b.getAttribute("data-arrival-step"));
+    } else if ((b = t.closest("[data-arr-enter]"))) {
+      hide(splashEl);
+    } else if ((b = t.closest("[data-arr-tour]"))) {
+      hide(splashEl, true);
+      openGuide();
+    } else if ((b = t.closest("[data-arr-close]"))) {
+      hide(b.closest("dialog"));
+    } else if ((b = t.closest("[data-arr-step]"))) {
+      goStep(+b.getAttribute("data-arr-step"));
+    } else if ((b = t.closest("[data-arr-prev]"))) {
+      goStep(step - 1);
+    } else if ((b = t.closest("[data-arr-next]"))) {
+      goStep(step + 1);
+    }
+    if (!t.closest(".arr-drawer-wrap, .arr-nav-menu, .arr-menu-panel")) closeDrawers(false);
+  });
+  // v1.4: the pledge's "verify a signature" form is checked by pledge.js (loaded on first use).
+  doc.addEventListener("submit", function (e) {
+    var f = e.target;
+    if (!PLEDGE || !f || !f.matches || !f.matches("form[data-pledge-form]")) return;
+    e.preventDefault();
+    var root = f.closest("arrival-pledge");
+    if (root) pledgeAct(root, f.getAttribute("data-pledge-form"), f);
+  });
+  doc.addEventListener("reset", function (e) {
+    var f = e.target;
+    if (!f || !f.matches || !f.matches("form[data-pledge-form]")) return;
+    var out = f.querySelector("[data-pledge-result]");
+    if (out) {
+      out.textContent = "";
+      out.removeAttribute("data-state");
+    }
+  });
+  // Focus leaving an open dropdown or Menu (Tab past its last link) closes it.
+  doc.addEventListener("focusin", function (e) {
+    var open = doc.querySelectorAll('[data-arr-nav-toggle][aria-expanded="true"], [data-arr-menu][aria-expanded="true"]');
+    for (var i = 0; i < open.length; i++) {
+      var p = panelOf(open[i]);
+      if (e.target === open[i] || (p && p.contains(e.target))) continue;
+      closeNavs(false);
+      break;
+    }
+  });
+  function typing(el) {
+    if (!el) return false;
+    if (el.isContentEditable) return true;
+    if (el.tagName === "TEXTAREA" || el.tagName === "SELECT") return true;
+    return el.tagName === "INPUT" && !/^(radio|checkbox|button|submit|reset|range|color|file)$/i.test(el.type);
+  }
+  doc.addEventListener("keydown", function (e) {
+    if (e.defaultPrevented) return;
+    var k = e.key;
+    if ((k === "k" || k === "K") && (e.metaKey || e.ctrlKey) && !e.altKey) {
+      e.preventDefault();
+      if (pal && pal.open) hide(pal);
+      else open("search");
+      return;
+    }
+    if (k === "Escape") {
+      var openN = doc.querySelector('[data-arr-nav-toggle][aria-expanded="true"], [data-arr-menu][aria-expanded="true"]');
+      if (openN) {
+        e.preventDefault();
+        closeNavs(true);
+        return;
+      }
+      var openD = doc.querySelector('[data-arr-drawer][aria-expanded="true"]');
+      if (openD) {
+        e.preventDefault();
+        closeDrawers(true);
+      }
+      hideTip();
+      return;
+    }
+    // Arrow keys inside the nav: Down on a dropdown button opens it; Up/Down/Home/End move between
+    // its links (Tab works too, and leaving closes it).
+    if (k === "ArrowDown" || k === "ArrowUp" || k === "Home" || k === "End") {
+      var tg = e.target && e.target.closest ? e.target.closest("[data-arr-nav-toggle], [data-arr-menu]") : null;
+      var pnl = e.target && e.target.closest ? e.target.closest(".arr-nav-menu, .arr-menu-panel") : null;
+      if (tg && k === "ArrowDown") {
+        e.preventDefault();
+        if (tg.getAttribute("aria-expanded") !== "true") openNav(tg);
+        var first = navRows(panelOf(tg))[0];
+        if (first) first.focus();
+        return;
+      }
+      if (pnl && !pnl.hidden) {
+        var rows = navRows(pnl);
+        var at = rows.indexOf(doc.activeElement);
+        if (!rows.length) return;
+        e.preventDefault();
+        var to = k === "Home" ? 0 : k === "End" ? rows.length - 1 : at + (k === "ArrowDown" ? 1 : -1);
+        if (to < 0) {
+          var own = doc.querySelector('[aria-controls="' + pnl.id + '"]');
+          if (own) own.focus();
+          return;
+        }
+        rows[Math.min(rows.length - 1, to)].focus();
+        return;
+      }
+    }
+    if (typing(e.target) || e.metaKey || e.ctrlKey || e.altKey) return;
+    if (k === "/") {
+      e.preventDefault();
+      if (splashEl && splashEl.open) hide(splashEl, true);
+      if (guideEl && guideEl.open) hide(guideEl, true);
+      open("search");
+    } else if (k === "?") {
+      if (pal && pal.open) return;
+      e.preventDefault();
+      if (splashEl && splashEl.open) hide(splashEl, true);
+      open("guide");
+    } else if (guideEl && guideEl.open && (k === "ArrowRight" || k === "ArrowLeft")) {
+      if (e.target && e.target.type === "radio") return;
+      e.preventDefault();
+      goStep(step + (k === "ArrowRight" ? 1 : -1));
+    }
+  });
+  window.addEventListener("hashchange", function () {
+    if (location.hash === "#welcome") open("guide");
+    else if ((location.hash === "#contact" || location.hash === "#community") && canOpen(location.hash.slice(1))) open(location.hash.slice(1));
+  });
+
+  function open(what, at) {
+    if (what === "search") openPalette();
+    else if (what === "guide") openGuide(at || undefined);
+    else if (what === "splash") openSplash();
+    else if (what === "copy") copyLink();
+    else if (what === "contact") openContact();
+    else if (what === "community") openCommunity();
+  }
+  function close() {
+    stack.slice().forEach(function (d) { hide(d); });
+  }
+
+  function boot() {
+    startVisit();
+    sync();
+    scrollStrips();
+    if (location.hash === "#welcome") openGuide();
+    else if ((location.hash === "#contact" || location.hash === "#community") && canOpen(location.hash.slice(1))) open(location.hash.slice(1));
+    else if (splashWanted()) {
+      afterLineage(function () {
+        var go = function () { if (splashWanted()) openSplash(); };
+        if (langReady) langReady.then(go);
+        else go();
+      });
+    } else if (langReady) langReady.then(langToast); // in the visitor's language, once its words are here
+    else langToast();
+    if (doc.querySelector("arrival-people, arrival-latest")) index();
+    else idle(index);
+    if (hasNews && visit && !visit.first) setTimeout(loadNews, 250);
+    else if (hasNews && visit) idle(loadNews); // the first visit only records what it knows
+  }
+  if (doc.readyState === "loading") doc.addEventListener("DOMContentLoaded", boot);
+  else boot();
+
+  window.Arrival = {
+    version: VERSION,
+    get: get,
+    set: function (patch) { set(patch, false); },
+    open: open,
+    close: close,
+    index: index,
+    initials: initials,
+    reading: function (on) {
+      if (on === undefined || !!on !== (state.reading === "on")) toggleReading();
+      return state.reading === "on";
+    },
+    news: function () {
+      return loadNews().then(function () { return { since: visit && visit.since, count: unread(), items: fresh.slice() }; });
+    },
+    // The config and site in the visitor's language (v1.5: they follow a language change).
+    get config() { return C; },
+    get site() { return site; },
+    // v1.3, for modules such as give/give.js: the kit's own dialog and toast.
+    dialog: function (o) {
+      o = o || {};
+      var id = "arr-dlg-" + ++uid;
+      var d = makeDialog("arr-modal " + (o.cls || ""), id, o.onClose);
+      d.innerHTML = panel(modalHead(o.title || "", o.eyebrow, id) + (o.html || ""), "arr-modal-panel");
+      return {
+        el: d,
+        show: function (focusEl) { show(d, focusEl || d.querySelector("[data-arr-close]")); },
+        hide: function () { hide(d); },
+      };
+    },
+    toast: toast,
+    // v1.4: give fades and chevrons to strips added after load (any [data-arr-scroll] in scope).
+    strips: scrollStrips,
+    // v1.5: the language. lang() reads it, lang("es") chooses it (and goes to a translated twin, if
+    // the site has one). words(section, orgWords) is what give.js and pledge.js merge over their own
+    // English words: the org's words in the base language, else the pack's and the org's translation.
+    lang: function (id) {
+      if (id !== undefined && hasLangs && langOf(id) && id !== state.lang) {
+        set({ lang: id });
+        followRoute();
+      }
+      return hasLangs ? state.lang : BASE;
+    },
+    languages: function () {
+      return LANGS.map(function (l) { return { id: l.id, name: l.name }; });
+    },
+    words: function (section, orgWords) {
+      if (!hasLangs || lang === BASE) return assign({}, orgWords || {});
+      return assign({}, orgWords || {}, langSec(lang, section, orgWords));
+    },
+  };
+})();

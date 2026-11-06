@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="260" viewBox="0 0 1200 260" role="img" aria-labelledby="t d">
+  <title id="t">AstroLog</title>
+  <desc id="d">The open record: changelog, library, map, ledger The picture: 18 stars arrive and join into one constellation. With reduced motion, the finished picture shows at once.</desc>
+  <style>
+    /* Motion only for readers who have not asked for less. Outside this block everything is in its finished state. */
+    @media (prefers-reduced-motion: no-preference) {
+      .draw { stroke-dasharray: 100; animation: draw 2.6s cubic-bezier(.4,0,.2,1) both; }
+      .arrive { animation: arrive .5s ease-out both; }
+      .breathe { transform-box: fill-box; transform-origin: center; animation: breathe 8s steps(48) 3s infinite; }
+      .halo { transform-box: fill-box; transform-origin: center; animation: halo 5s steps(60) 3.6s infinite; }
+    }
+    @keyframes draw { from { stroke-dashoffset: 100 } to { stroke-dashoffset: 0 } }
+    @keyframes arrive { from { opacity: 0 } to { opacity: 1 } }
+    @keyframes breathe { 0%, 100% { transform: scale(1) } 50% { transform: scale(1.07) } }
+    @keyframes halo { 0% { opacity: .55; transform: scale(1) } 70%, 100% { opacity: 0; transform: scale(2.1) } }
+    .halo { opacity: 0 }
+  </style>
+  <defs>
+    <linearGradient id="ground" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#0c111b"/><stop offset="1" stop-color="#0b101a"/></linearGradient>
+    <linearGradient id="line" gradientUnits="userSpaceOnUse" x1="668" y1="0" x2="1160" y2="0"><stop offset="0.00" stop-color="#3f8f68"/><stop offset="0.50" stop-color="#84d1a5"/><stop offset="1.00" stop-color="#bfe6cd"/></linearGradient>
+    <linearGradient id="fade" gradientUnits="userSpaceOnUse" x1="620" y1="0" x2="1200" y2="0"><stop offset="0" stop-color="#84d1a5" stop-opacity="0"/><stop offset=".35" stop-color="#84d1a5"/><stop offset="1" stop-color="#bfe6cd"/></linearGradient>
+    <clipPath id="card"><rect width="1200" height="260" rx="18"/></clipPath>
+  </defs>
+  <g clip-path="url(#card)">
+    <!-- an opaque ground: the same picture on GitHub's light and dark themes -->
+    <rect width="1200" height="260" fill="url(#ground)"/>
+    <circle class="halo" cx="908.7" cy="165.4" r="13" fill="none" stroke="#bfe6cd" stroke-width="2"/>
+    <path class="draw" pathLength="100" d="M908.7 165.4L975.3 126.2" fill="none" stroke="#426759" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="animation-delay:0.30s"/>
+    <path class="draw" pathLength="100" d="M975.3 126.2L1018.2 68.8" fill="none" stroke="#426759" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="animation-delay:0.52s"/>
+    <path class="draw" pathLength="100" d="M908.7 165.4L836.2 133.3" fill="none" stroke="#426759" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="animation-delay:0.74s"/>
+    <path class="draw" pathLength="100" d="M836.2 133.3L775.6 115.4" fill="none" stroke="#426759" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="animation-delay:0.96s"/>
+    <path class="draw" pathLength="100" d="M836.2 133.3L882.7 90.0" fill="none" stroke="#426759" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="animation-delay:1.18s"/>
+    <path class="draw" pathLength="100" d="M882.7 90.0L924.3 40.2" fill="none" stroke="#426759" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="animation-delay:1.40s"/>
+    <path class="draw" pathLength="100" d="M882.7 90.0L832.4 48.7" fill="none" stroke="#426759" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="animation-delay:1.62s"/>
+    <path class="draw" pathLength="100" d="M775.6 115.4L759.2 49.4" fill="none" stroke="#426759" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="animation-delay:1.84s"/>
+    <path class="draw" pathLength="100" d="M759.2 49.4L688.0 52.1" fill="none" stroke="#426759" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="animation-delay:2.06s"/>
+    <path class="draw" pathLength="100" d="M688.0 52.1L696.8 112.6" fill="none" stroke="#426759" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="animation-delay:2.28s"/>
+    <path class="draw" pathLength="100" d="M836.2 133.3L804.0 200.8" fill="none" stroke="#426759" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="animation-delay:2.50s"/>
+    <path class="draw" pathLength="100" d="M804.0 200.8L734.3 195.0" fill="none" stroke="#426759" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="animation-delay:2.72s"/>
+    <path class="draw" pathLength="100" d="M975.3 126.2L984.3 209.9" fill="none" stroke="#426759" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="animation-delay:2.94s"/>
+    <path class="draw" pathLength="100" d="M984.3 209.9L1052.6 198.1" fill="none" stroke="#426759" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="animation-delay:3.16s"/>
+    <path class="draw" pathLength="100" d="M1052.6 198.1L1088.0 143.5" fill="none" stroke="#426759" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="animation-delay:3.38s"/>
+    <path class="draw" pathLength="100" d="M1088.0 143.5L1145.9 172.0" fill="none" stroke="#426759" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="animation-delay:3.60s"/>
+    <path class="draw" pathLength="100" d="M1088.0 143.5L1110.7 56.3" fill="none" stroke="#426759" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="animation-delay:3.82s"/>
+    <circle class="arrive" style="animation-delay:0.15s" cx="908.7" cy="165.4" r="8.0" fill="#84d1a5"/>
+    <circle class="arrive" style="animation-delay:0.39s" cx="775.6" cy="115.4" r="4.7" fill="#bfe6cd"/>
+    <circle class="arrive" style="animation-delay:0.63s" cx="975.3" cy="126.2" r="3.5" fill="#bfe6cd"/>
+    <circle class="arrive" style="animation-delay:0.87s" cx="1088.0" cy="143.5" r="3.3" fill="#bfe6cd"/>
+    <circle class="arrive" style="animation-delay:1.11s" cx="696.8" cy="112.6" r="5.5" fill="#bfe6cd"/>
+    <circle class="arrive" style="animation-delay:1.35s" cx="1018.2" cy="68.8" r="6.0" fill="#bfe6cd"/>
+    <circle class="arrive" style="animation-delay:1.59s" cx="984.3" cy="209.9" r="3.1" fill="#bfe6cd"/>
+    <circle class="arrive" style="animation-delay:1.83s" cx="882.7" cy="90.0" r="5.9" fill="#bfe6cd"/>
+    <circle class="arrive" style="animation-delay:2.07s" cx="759.2" cy="49.4" r="4.1" fill="#bfe6cd"/>
+    <circle class="arrive" style="animation-delay:2.31s" cx="1110.7" cy="56.3" r="5.1" fill="#bfe6cd"/>
+    <circle class="arrive" style="animation-delay:2.55s" cx="804.0" cy="200.8" r="6.1" fill="#bfe6cd"/>
+    <circle class="arrive" style="animation-delay:2.79s" cx="734.3" cy="195.0" r="4.1" fill="#bfe6cd"/>
+    <circle class="arrive" style="animation-delay:3.03s" cx="924.3" cy="40.2" r="5.5" fill="#bfe6cd"/>
+    <circle class="arrive" style="animation-delay:3.27s" cx="1052.6" cy="198.1" r="4.2" fill="#bfe6cd"/>
+    <circle class="arrive" style="animation-delay:3.51s" cx="1145.9" cy="172.0" r="6.4" fill="#bfe6cd"/>
+    <circle class="arrive" style="animation-delay:3.75s" cx="836.2" cy="133.3" r="3.9" fill="#bfe6cd"/>
+    <circle class="arrive" style="animation-delay:3.99s" cx="688.0" cy="52.1" r="6.3" fill="#bfe6cd"/>
+    <circle class="arrive" style="animation-delay:4.23s" cx="832.4" cy="48.7" r="4.2" fill="#bfe6cd"/>
+    <rect x="0.0" y="248" width="300.5" height="12" fill="#0e151c"/><rect x="300.0" y="248" width="300.5" height="12" fill="#3f8f68"/><rect x="600.0" y="248" width="300.5" height="12" fill="#84d1a5"/><rect x="900.0" y="248" width="300.5" height="12" fill="#f0f7ee"/>
+    <g font-family="Helvetica Neue, Helvetica, Arial, sans-serif"><text x="56" y="72.0" fill="#84d1a5" font-size="15" font-weight="700" letter-spacing=".6">drasticstatic lab · Psychedelic Policy Reform</text><text x="56" y="137.6" fill="#f0f7ee" font-size="60" font-weight="700" letter-spacing="-.5">AstroLog</text><text x="56" y="181.4" fill="#d0d7d0" font-size="23">The open record: changelog, library, map, ledger</text></g>
+  </g>
+</svg>
